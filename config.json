@@ -1,0 +1,28 @@
+{
+    "spotify_access_token": "***secret***",
+    "elastic_url": "http://localhost:9200",
+    "elastic_user": "***secret***",
+    "elastic_password": "***secret***",
+    "stations": [
+        {
+            "name": "glglz",
+            "playlist_id": "18cUFeM5Q75ViwevsMQM1j",
+            "last_time_data_fetched": "2024-04-18T15:08:59.835101"
+        },
+        {
+            "name": "eco99",
+            "playlist_id": "7aB6UPU4A6Lkri1fDNtXhS",
+            "last_time_data_fetched": "2024-04-18T15:09:02.358417"
+        },
+        {
+            "name": "radius100",
+            "playlist_id": "1qWxXwyVeTEQ10NuMpXa13",
+            "last_time_data_fetched": "2024-04-18T15:09:04.664728"
+        },
+        {
+            "name": "galatz",
+            "playlist_id": "67HGFffStsg38sRRnNCJWH",
+            "last_time_data_fetched": "2024-04-18T15:09:06.996141"
+        }
+    ]
+}
