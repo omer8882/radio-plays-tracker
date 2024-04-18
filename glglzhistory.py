@@ -17,8 +17,8 @@ class RadioPlaysFetch():
         self.config_filename = 'config.json'
         self.TOKEN_KEY = 'spotify_access_token'
         self.LAST_FETCHED_KEY = 'last_time_data_fetched'
-        self.client_id = '470d4072c4964d97844da4ef456f185c'
-        self.client_secret = 'be8c4445f82d48a4b60efab710a2205d'
+        self.client_id = '***secret***'
+        self.client_secret = '***secret***'
         self.logger = self.get_rotating_logger('RadioPlaysFetch', 'radio_plays_fetch.log', 10*1024*1024, 5)
 
     @staticmethod
