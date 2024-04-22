@@ -13,7 +13,9 @@ class DatabaseConnector():
     def __init__(self, config_filename='config.json'):
         self.config_filename = config_filename
         self.songs_index_name = 'songs_index'
-        self.plays_index_name = 'plays_index'
+        index_prefix = 'plays_index'
+        stations = ['glglz', 'radius100', 'eco99', 'galatz']
+        self.plays_indices = [f'{s}_{index_prefix}' if s != 'glglz' else index_prefix for s in stations]
         self.es = self.get_es_connection()
 
     def get_es_connection(self):
@@ -32,7 +34,11 @@ class DatabaseConnector():
         return {}
     
     def get_sources(self, response):
-        return [hit['_source'] for hit in response['hits']['hits']]
+        sources = [hit['_source'] for hit in response['hits']['hits']]
+        for (s, res) in zip(sources, response['hits']['hits']):
+            index = res['_index'].split('_')[0] 
+            s['station'] = index if index!='plays' else 'glglz'
+        return sources
 
     def get_song_by_name(self, song_name) -> dict:
         response = self.es.search(index="songs_index", query={
@@ -77,15 +83,16 @@ class DatabaseConnector():
             sum_plays += len(song_plays)
             for play in song_plays:
                 play_to_display = song.copy()
-                play_to_display['played_at'] = self.convert_datetime(play['played_at'])
+                play_to_display['played_at'] = self.parse_datetime(play['played_at'])
+                play_to_display['station'] = play['station']
                 all_plays.append(play_to_display)
 
         sorted_plays = sorted(all_plays, key=lambda song: song['played_at'])
         for play in sorted_plays:
-            print(f"[{play['played_at'].strftime('%d/%m/%Y %H:%M')}] {', '.join([artist['name'] for artist in play['artists']])} - {play['name']} ({play['album']['release_date'][:4]})")
+            print(f"[{play['played_at'].strftime('%d/%m/%Y %H:%M')}] {', '.join([artist['name'] for artist in play['artists']])} - {play['name']} ({play['album']['release_date'][:4]}) [{play['station']}]")
         print(f"Total plays by artist: {len(sorted_plays)}")
 
-    def convert_datetime(self, played_at):
+    def parse_datetime(self, played_at):
         try:
             return datetime.strptime(played_at, "%Y-%m-%dT%H:%M:%S")
         except:
@@ -103,7 +110,8 @@ class DatabaseConnector():
         raise NoResults('Artist not found')
     
     def get_plays_by_song_id(self, song_id):
-        response = self.es.search(index="plays_index", query={
+        indices = ','.join(self.plays_indices)
+        response = self.es.search(index=indices, query={
             "match": {
                 "song_id": song_id
             }
@@ -123,4 +131,5 @@ class DatabaseConnector():
         print(f"Total plays: {len(plays)}")
 
 dbc = DatabaseConnector()
+dbc.print_artist_plays_by_name('kim petras')
 print("Compiled")
