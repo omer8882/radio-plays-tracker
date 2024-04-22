@@ -3,9 +3,12 @@ import json
 import logging
 from logging.handlers import RotatingFileHandler
 from elasticsearch import Elasticsearch
+from tqdm import tqdm
+
+stations = ['glglz', 'radius100', 'eco99', 'galatz']
 
 class ElasticConnector:
-    def __init__(self, station_name, config_filename='config.json'):
+    def __init__(self, station_name='glglz', config_filename='config.json'):
         self.config_filename = config_filename
         self.songs_index_name = 'songs_index'
         self.plays_index_name = 'plays_index' if station_name == 'glglz' else f'{station_name}_plays_index'
@@ -61,11 +64,15 @@ class ElasticConnector:
         except Exception as e:
             self.logger.exception(f"Failed to mark file as archived: {e}")
 
+    def update_plays_index(self, file_name):
+        station_name = next((s for s in stations if s in file_name), None)
+        self.plays_index_name = 'plays_index' if station_name == 'glglz' else f'{station_name}_plays_index'
+
     def process_file(self, file_path):
+        self.update_plays_index(os.path.basename(file_path))
         with open(file_path, 'r', encoding='utf-8') as file:
             data = json.load(file)
             if data.get('archived', False):
-                self.logger.info(f'Skipping elastic processing of {file_path} because it is already archived')
                 return
             self.logger.info(f"Archiving into Elastic database {file_path}...")
             for record in data['tracks']:
@@ -74,10 +81,25 @@ class ElasticConnector:
                 self.index_song_if_needed(song_data)
                 self.index_play(record)
         self.mark_as_archived(file_path)
+    
+    def cleanup_file(self, file_path):
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+                should_delete = not data.get('tracks')
+        except Exception as e:
+            return False
+        
+        if should_delete:
+            os.remove(file_path)
+            self.logger.info(f'Deleted empty file {file_path}')
+            return True
+        return False
 
     def process_files(self, folder_path='.\\simple'):
-        files_to_archive = os.listdir(folder_path)
-        for filename in files_to_archive:
-            if filename.endswith('.json'):
-                file_path = os.path.join(folder_path, filename)
+        files_to_process = [f for f in os.listdir(folder_path) if f.endswith('.json')]
+        total_files = len(files_to_process)
+        for i, filename in tqdm(enumerate(files_to_process), total=total_files, desc="Processing Files"):
+            file_path = os.path.join(folder_path, filename)
+            if not self.cleanup_file(file_path):
                 self.process_file(file_path)
