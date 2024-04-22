@@ -1,3 +1,4 @@
+from elasticsearch import ApiError as ElasticApiError
 import requests
 import base64
 import json
@@ -17,8 +18,10 @@ class RadioPlaysFetch():
         self.config_filename = 'config.json'
         self.TOKEN_KEY = 'spotify_access_token'
         self.LAST_FETCHED_KEY = 'last_time_data_fetched'
-        self.client_id = '***secret***'
-        self.client_secret = '***secret***'
+        self.client_id = '***SECRET***'
+        self.client_secret = '***SECRET***'
+        self.RAW_FOLDER = ".\\raw"
+        self.SIMPLE_FOLDER = ".\\simple"
         self.logger = self.get_rotating_logger('RadioPlaysFetch', 'radio_plays_fetch.log', 10*1024*1024, 5)
 
     @staticmethod
@@ -56,7 +59,7 @@ class RadioPlaysFetch():
             raise Exception(f'Error getting access token: {response.status_code}, {response.text}')
 
     def get_spotify_playlist_tracks(self, playlist_id: str, token: str):
-        url = f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks'
+        url = f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks' #?limit=100&offset=100
         headers = {'Authorization': f'Bearer {token}'}
 
         response = requests.get(url, headers=headers)
@@ -115,6 +118,10 @@ class RadioPlaysFetch():
 
     def timestamped_filename(self, station_name: str, timestamp: datetime):
         return f'{station_name}_tracks-{timestamp.strftime("%Y-%m-%d_%H-%M-%S")}'
+
+    def ensure_folder_exists(self, folder_path):
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
 
     # -------------------------
     #       Access Token
@@ -197,9 +204,14 @@ class RadioPlaysFetch():
         raw_data = self.get_tracks_data(playlist_id)
         timestamp: datetime = datetime.now()
         entry_filename = self.timestamped_filename(station_name, timestamp)
-        self.save_json_file(raw_data, rf".\raw\{entry_filename}")
+        self.ensure_folder_exists(self.RAW_FOLDER)
+        self.save_json_file(raw_data, os.path.join(self.RAW_FOLDER, entry_filename))
         simplified = self.simplify_spotify_data(station_name, raw_data)
-        simplifies_file_path = rf".\simple\{entry_filename}"
+        if len(simplified['tracks']) == 0:
+            self.logger.info(f'No new trakcs were fetched', extra={'station': station_name})
+            return
+        self.ensure_folder_exists(self.SIMPLE_FOLDER)
+        simplifies_file_path = os.path.join(self.SIMPLE_FOLDER, entry_filename)
         self.save_json_file(simplified, simplifies_file_path)
         self.update_last_fetched_time(station_name, timestamp)
         ElasticConnector(station_name).process_file(simplifies_file_path+".json")
@@ -215,6 +227,8 @@ class RadioPlaysFetch():
                 return
             except Exception as e:
                 self.logger.info(f'Failed attempt {cur_try} of {max_tries}: {e}', extra={'station': station_name})
+                if e is ElasticApiError:
+                    return
                 cur_try+=1
     
 
