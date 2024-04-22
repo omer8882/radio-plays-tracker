@@ -5,6 +5,7 @@ raw/
 docs/
 debug/
 config.secret.json
+proccessfilesandcleanup.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
