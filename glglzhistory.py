@@ -22,6 +22,7 @@ class RadioPlaysFetch():
         self.client_secret = '***SECRET***'
         self.RAW_FOLDER = ".\\raw"
         self.SIMPLE_FOLDER = ".\\simple"
+        self.SCHEDUELED_INTERVALS = 300 #minutes
         self.logger = self.get_rotating_logger('RadioPlaysFetch', 'radio_plays_fetch.log', 10*1024*1024, 5)
 
     @staticmethod
@@ -237,9 +238,8 @@ class RadioPlaysFetch():
         for station in stations:
             self.fetch_station_job(station['name'], station['playlist_id'])
 
-    # Schedule the job every 300 minutes
     def scheduled_fetching(self):
-        schedule.every(250).minutes.do(self.fetch_stations_job)
+        schedule.every(self.SCHEDUELED_INTERVALS).minutes.do(self.fetch_stations_job)
 
         while True:
             schedule.run_pending()
