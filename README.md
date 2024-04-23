@@ -1,5 +1,3 @@
-Here's a template for your `README.md` file:
-
 # Radio Plays Tracker
 
 Radio Plays Tracker is a Python application designed to fetch and track music plays from various radio stations using Spotify playlists and store them in an Elasticsearch database. It consists of two main components: `ElasticConnector` and `RadioPlaysFetch`.
@@ -101,5 +99,3 @@ Update the `config.json` file with your Elasticsearch configuration and Spotify 
 ## Author
 
 [OMER](https://github.com/omer8882)
-
-Feel free to customize the `README.md` file according to your project's specific requirements and details.
