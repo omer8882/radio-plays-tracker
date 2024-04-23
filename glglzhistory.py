@@ -18,8 +18,8 @@ class RadioPlaysFetch():
         self.config_filename = 'config.json'
         self.TOKEN_KEY = 'spotify_access_token'
         self.LAST_FETCHED_KEY = 'last_time_data_fetched'
-        self.client_id = '***SECRET***'
-        self.client_secret = '***SECRET***'
+        self.client_id = '***secret***'
+        self.client_secret = '***secret***'
         self.RAW_FOLDER = ".\\raw"
         self.SIMPLE_FOLDER = ".\\simple"
         self.SCHEDUELED_INTERVALS = 300 #minutes

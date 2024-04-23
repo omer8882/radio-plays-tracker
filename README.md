@@ -81,11 +81,11 @@ Update the `config.json` file with your Elasticsearch configuration and Spotify 
   "stations": [
     {
       "name": "glglz",
-      "playlist_id": "your-glglz-spotify-playlist-id"
+      "playlist_id": "glglz-spotify-playlist-id"
     },
     {
       "name": "radius100",
-      "playlist_id": "your-radius100-spotify-playlist-id"
+      "playlist_id": "radius100-spotify-playlist-id"
     }
     // Add more stations as needed
   ]
@@ -98,4 +98,4 @@ Update the `config.json` file with your Elasticsearch configuration and Spotify 
 
 ## Author
 
-[OMER](https://github.com/omer8882)
+[Omer Dahary](https://github.com/omer8882)
