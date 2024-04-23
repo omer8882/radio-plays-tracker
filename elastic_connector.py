@@ -69,6 +69,7 @@ class ElasticConnector:
         self.plays_index_name = 'plays_index' if station_name == 'glglz' else f'{station_name}_plays_index'
 
     def process_file(self, file_path):
+        """Saves into elasticsearch data in a simplified format"""
         self.update_plays_index(os.path.basename(file_path))
         with open(file_path, 'r', encoding='utf-8') as file:
             data = json.load(file)
@@ -83,6 +84,7 @@ class ElasticConnector:
         self.mark_as_archived(file_path)
     
     def cleanup_file(self, file_path):
+        """Deletes a simplified data file if it holds no data"""
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
                 data = json.load(file)
@@ -97,6 +99,7 @@ class ElasticConnector:
         return False
 
     def process_files(self, folder_path='.\\simple'):
+        """Archives data of all simplified files in a folder"""
         files_to_process = [f for f in os.listdir(folder_path) if f.endswith('.json')]
         total_files = len(files_to_process)
         for i, filename in tqdm(enumerate(files_to_process), total=total_files, desc="Processing Files"):
