@@ -1,28 +1,34 @@
 {
-    "spotify_access_token": "***secret***",
-    "elastic_url": "http://localhost:9200",
-    "elastic_user": "***secret***",
-    "elastic_password": "***secret***",
+    "spotify": {
+        "access_token": "***SECRET***",
+        "client_id": "***SECRET***",
+        "client_secret": "***SECRET***"
+    },
+    "elastic": {
+        "url": "http://localhost:9200",
+        "user": "elastic",
+        "password": "***SECRET***"
+    },
     "stations": [
         {
             "name": "glglz",
             "playlist_id": "18cUFeM5Q75ViwevsMQM1j",
-            "last_time_data_fetched": "2024-04-18T15:08:59.835101"
+            "last_time_data_fetched": "2024-04-23T20:29:21.812263"
         },
         {
             "name": "eco99",
             "playlist_id": "7aB6UPU4A6Lkri1fDNtXhS",
-            "last_time_data_fetched": "2024-04-18T15:09:02.358417"
+            "last_time_data_fetched": "2024-04-23T20:29:25.159505"
         },
         {
             "name": "radius100",
             "playlist_id": "1qWxXwyVeTEQ10NuMpXa13",
-            "last_time_data_fetched": "2024-04-18T15:09:04.664728"
+            "last_time_data_fetched": "2024-04-23T20:29:27.994276"
         },
         {
             "name": "galatz",
             "playlist_id": "67HGFffStsg38sRRnNCJWH",
-            "last_time_data_fetched": "2024-04-18T15:09:06.996141"
+            "last_time_data_fetched": "2024-04-23T20:29:30.960431"
         }
     ]
 }

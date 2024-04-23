@@ -37,10 +37,10 @@ class ElasticConnector:
 
     def get_es_connection(self):
         """Establishes connection to Elasticsearch using configuration."""
-        config = self.load_config()
-        elastic_url = config.get("elastic_url", "http://localhost:9200")
-        elastic_user = config.get("elastic_user", "elastic")
-        elastic_password = config.get("elastic_password", "password")
+        elastic_config = self.load_config().get('elastic')
+        elastic_url = elastic_config.get("url", "http://localhost:9200")
+        elastic_user = elastic_config.get("user", "elastic")
+        elastic_password = elastic_config.get("password", "password")
         
         return Elasticsearch(elastic_url, basic_auth=(elastic_user, elastic_password))
 

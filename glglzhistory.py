@@ -1,14 +1,13 @@
-from elasticsearch import ApiError as ElasticApiError
-import requests
-import base64
-import json
 import os
-from datetime import datetime, timedelta
-import schedule
 import time
+import json
+import base64
 import logging
+import schedule
+import requests
+from datetime import datetime, timedelta
+from elasticsearch import ApiError as ElasticApiError
 from logging.handlers import RotatingFileHandler
-
 
 from elastic_connector import ElasticConnector
 
@@ -16,18 +15,20 @@ class RadioPlaysFetch():
     def __init__(self):
         # global parameters
         self.config_filename = 'config.json'
-        self.TOKEN_KEY = 'spotify_access_token'
+        self.TOKEN_KEY = 'access_token'
         self.LAST_FETCHED_KEY = 'last_time_data_fetched'
-        self.client_id = '***secret***'
-        self.client_secret = '***secret***'
         self.RAW_FOLDER = ".\\raw"
         self.SIMPLE_FOLDER = ".\\simple"
         self.SCHEDUELED_INTERVALS = 300 #minutes
-        self.logger = self.get_rotating_logger('RadioPlaysFetch', 'radio_plays_fetch.log', 10*1024*1024, 5)
 
-    @staticmethod
-    def get_rotating_logger(name, log_file='elastic_for_simple.log', max_log_size=10*1024*1024, backup_count=5):
-        logger = logging.getLogger(name)
+        config = self.load_config()
+        self.client_id = config.get('spotify')['client_id']
+        self.client_secret = config.get('spotify')['client_secret']
+
+        self.logger = self.get_rotating_logger('RadioPlaysFetch')
+
+    def get_rotating_logger(self, logger_name, log_file='radio_plays_fetch.log', max_log_size=10*1024*1024, backup_count=5):
+        logger = logging.getLogger(logger_name)
         logger.setLevel(logging.INFO)
         
         if not logger.handlers:
@@ -131,14 +132,14 @@ class RadioPlaysFetch():
     def load_token(self):
         """Loads the access token from a JSON configuration file."""
         config = self.load_config()
-        token = config.get(self.TOKEN_KEY)
+        token = config.get('spotify').get(self.TOKEN_KEY)
         self.logger.info("Loaded access Token:", token)
         return token
 
     def save_token(self, token: str):
         """Updates the access token in the config file."""
         config = self.load_config()
-        config[self.TOKEN_KEY] = token
+        config['spotify'][self.TOKEN_KEY] = token
         self.save_config(config)
 
     def get_new_token(self):
@@ -148,9 +149,7 @@ class RadioPlaysFetch():
 
     def try_load_token(self):
         token = self.load_token()
-        if token == None:
-            token = self.get_new_token()
-        return token
+        return token if token is not None else self.get_new_token()
 
     # -------------------------
     #          Config
