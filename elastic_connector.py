@@ -5,7 +5,7 @@ from logging.handlers import RotatingFileHandler
 from elasticsearch import Elasticsearch
 from tqdm import tqdm
 
-stations = ['glglz', 'radius100', 'eco99', 'galatz']
+stations = ['glglz', 'radius100', 'eco99', 'galatz', 'kan88']
 
 class ElasticConnector:
     def __init__(self, station_name='glglz', config_filename='config.json'):

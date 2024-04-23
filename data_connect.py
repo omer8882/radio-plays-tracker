@@ -14,7 +14,7 @@ class DatabaseConnector():
         self.config_filename = config_filename
         self.songs_index_name = 'songs_index'
         index_prefix = 'plays_index'
-        stations = ['glglz', 'radius100', 'eco99', 'galatz']
+        stations = ['glglz', 'radius100', 'eco99', 'galatz', 'kan88']
         self.plays_indices = [f'{s}_{index_prefix}' if s != 'glglz' else index_prefix for s in stations]
         self.es = self.get_es_connection()
 
