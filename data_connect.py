@@ -3,6 +3,7 @@ import os
 import json
 from elasticsearch import Elasticsearch
 from datetime import datetime
+from helper import Helper
 
 class NoResults(Exception):
         def __init__(self, message="No results from database"):
@@ -14,24 +15,9 @@ class DatabaseConnector():
         self.config_filename = config_filename
         self.songs_index_name = 'songs_index'
         index_prefix = 'plays_index'
-        stations = ['glglz', 'radius100', 'eco99', 'galatz', 'kan88']
+        stations = Helper.get_station_names()
         self.plays_indices = [f'{s}_{index_prefix}' if s != 'glglz' else index_prefix for s in stations]
-        self.es = self.get_es_connection()
-
-    def get_es_connection(self):
-        """Establishes connection to Elasticsearch using configuration."""
-        elastic_config = self.load_config().get("elastic")
-        elastic_url = elastic_config.get("url", "http://localhost:9200")
-        elastic_user = elastic_config.get("user", "elastic")
-        elastic_password = elastic_config.get("password", "password")
-        return Elasticsearch(elastic_url, basic_auth=(elastic_user, elastic_password))
-
-    def load_config(self):
-        """Loads configuration data from a JSON file."""
-        if os.path.exists(self.config_filename):
-            with open(self.config_filename, 'r') as file:
-                return json.load(file)
-        return {}
+        self.es = Helper.get_es_connection()
     
     def get_sources(self, response):
         sources = [hit['_source'] for hit in response['hits']['hits']]
@@ -131,4 +117,4 @@ class DatabaseConnector():
         print(f"Total plays: {len(plays)}")
 
 dbc = DatabaseConnector()
-print(".")
+print("Use dbc for data connection...")

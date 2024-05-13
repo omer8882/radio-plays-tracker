@@ -10,6 +10,7 @@ from elasticsearch import ApiError as ElasticApiError
 from logging.handlers import RotatingFileHandler
 
 from elastic_connector import ElasticConnector
+from helper import Helper
 
 class RadioPlaysFetch():
     def __init__(self):
@@ -21,23 +22,11 @@ class RadioPlaysFetch():
         self.SIMPLE_FOLDER = ".\\simple"
         self.SCHEDUELED_INTERVALS = 250 #minutes
 
-        config = self.load_config()
+        config = Helper.load_config()
         self.client_id = config.get('spotify')['client_id']
         self.client_secret = config.get('spotify')['client_secret']
 
-        self.logger = self.get_rotating_logger('RadioPlaysFetch')
-
-    def get_rotating_logger(self, logger_name, log_file='radio_plays_fetch.log', max_log_size=10*1024*1024, backup_count=5):
-        logger = logging.getLogger(logger_name)
-        logger.setLevel(logging.INFO)
-        
-        if not logger.handlers:
-            handler = RotatingFileHandler(log_file, maxBytes=max_log_size, backupCount=backup_count, encoding='utf-8')
-            formatter = logging.Formatter('%(asctime)s - %(levelname)s - [%(station)s] %(message)s')
-            handler.setFormatter(formatter)
-            logger.addHandler(handler)
-        
-        return logger
+        self.logger = Helper.get_rotating_logger('RadioPlaysFetch', log_file='radio_plays_fetch.log')
 
     # -------------------------
     #       Web Requests
@@ -131,16 +120,16 @@ class RadioPlaysFetch():
 
     def load_token(self):
         """Loads the access token from a JSON configuration file."""
-        config = self.load_config()
+        config = Helper.load_config()
         token = config.get('spotify').get(self.TOKEN_KEY)
         self.logger.info("Loaded access Token:", token)
         return token
 
     def save_token(self, token: str):
         """Updates the access token in the config file."""
-        config = self.load_config()
+        config = Helper.load_config()
         config['spotify'][self.TOKEN_KEY] = token
-        self.save_config(config)
+        Helper.save_config(config)
 
     def get_new_token(self):
         token = self.get_spotify_access_token()
@@ -155,34 +144,22 @@ class RadioPlaysFetch():
     #          Config
     # -------------------------
 
-    def save_config(self, data):
-        """Saves configuration data to a JSON file."""
-        with open(self.config_filename, 'w') as file:
-            json.dump(data, file, indent=4)
-
-    def load_config(self):
-        """Loads configuration data from a JSON file."""
-        if os.path.exists(self.config_filename):
-            with open(self.config_filename, 'r') as file:
-                return json.load(file)
-        return {}
-
     def update_last_fetched_time(self, station_name: str, timestamp: datetime):
         """Updates the last time data was fetched in the config file."""
-        config = self.load_config()
+        config = Helper.load_config()
         config['stations'] = [{**station, self.LAST_FETCHED_KEY: timestamp.isoformat()} if station['name'] == station_name else station for station in config['stations']]
-        self.save_config(config)
+        Helper.save_config(config)
         self.logger.info(f'Updated last fetched time {timestamp}', extra={'station': station_name})
 
     def get_last_fetched_time(self, station_name: str):
         """Gets from config the last time data was fetched and saved"""
-        config = self.load_config()
+        config = Helper.load_config()
         last_fetched = next((station['last_time_data_fetched'] for station in config['stations'] if station['name'] == station_name), None)
         self.logger.info(f'Loaded last time fetched: {last_fetched}', extra={'station': station_name})
         return last_fetched
     
     def get_stations(self):
-        config = self.load_config()
+        config = Helper.load_config()
         return config['stations']
 
     # -------------------------

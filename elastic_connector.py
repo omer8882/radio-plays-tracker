@@ -4,45 +4,15 @@ import logging
 from logging.handlers import RotatingFileHandler
 from elasticsearch import Elasticsearch
 from tqdm import tqdm
-
-stations = ['glglz', 'radius100', 'eco99', 'galatz', 'kan88']
+from helper import Helper
 
 class ElasticConnector:
     def __init__(self, station_name='glglz', config_filename='config.json'):
         self.config_filename = config_filename
         self.songs_index_name = 'songs_index'
         self.plays_index_name = 'plays_index' if station_name == 'glglz' else f'{station_name}_plays_index'
-        self.logger = self.get_rotating_logger('ElasticScriptLogger', 'elastic_indexing.log', 10*1024*1024, 5)
-        self.es = self.get_es_connection()
-
-    def load_config(self):
-        """Loads configuration data from a JSON file."""
-        if os.path.exists(self.config_filename):
-            with open(self.config_filename, 'r') as file:
-                return json.load(file)
-        return {}
-
-    @staticmethod
-    def get_rotating_logger(name, log_file='elastic_for_simple.log', max_log_size=10*1024*1024, backup_count=5):
-        logger = logging.getLogger(name)
-        logger.setLevel(logging.INFO)
-        
-        if not logger.handlers:
-            handler = RotatingFileHandler(log_file, maxBytes=max_log_size, backupCount=backup_count, encoding='utf-8')
-            formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-            handler.setFormatter(formatter)
-            logger.addHandler(handler)
-        
-        return logger
-
-    def get_es_connection(self):
-        """Establishes connection to Elasticsearch using configuration."""
-        elastic_config = self.load_config().get('elastic')
-        elastic_url = elastic_config.get("url", "http://localhost:9200")
-        elastic_user = elastic_config.get("user", "elastic")
-        elastic_password = elastic_config.get("password", "password")
-        
-        return Elasticsearch(elastic_url, basic_auth=(elastic_user, elastic_password))
+        self.logger = Helper.get_rotating_logger('ElasticScriptLogger', 'elastic_indexing.log')
+        self.es = Helper.get_es_connection()
 
     def index_song_if_needed(self, song):
         if not self.es.exists(index=self.songs_index_name, id=song['id']):
@@ -65,7 +35,8 @@ class ElasticConnector:
             self.logger.exception(f"Failed to mark file as archived: {e}")
 
     def update_plays_index(self, file_name):
-        station_name = next((s for s in stations if s in file_name), None)
+        station_names = Helper.get_station_names()
+        station_name = next((s for s in station_names if s in file_name), None)
         self.plays_index_name = 'plays_index' if station_name == 'glglz' else f'{station_name}_plays_index'
 
     def process_file(self, file_path):
