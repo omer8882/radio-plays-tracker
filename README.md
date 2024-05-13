@@ -73,9 +73,7 @@ A class filled with helping methods for querying the saved data from Elastic
 ```python
 from data_connect import DatabaseConnector
 
-# Create an instance of DatabaseConnector
 dbc = DatabaseConnector()
-
 
 dbc.print_artist_plays_by_name('charli xcx')
 """ Output:
@@ -85,6 +83,7 @@ dbc.print_artist_plays_by_name('charli xcx')
   [24/04/2024 16:28] Charli XCX - Track 10 (2017) [galatz]
   Total plays by artist: 9
   """
+
 dbc.print_song_plays('padam padam')
 """ Output:
   12/04/2024 23:04
