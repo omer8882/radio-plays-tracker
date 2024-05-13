@@ -20,7 +20,6 @@ class RadioPlaysFetch():
         self.LAST_FETCHED_KEY = 'last_time_data_fetched'
         self.RAW_FOLDER = ".\\raw"
         self.SIMPLE_FOLDER = ".\\simple"
-        self.SCHEDUELED_INTERVALS = 250 #minutes
 
         config = Helper.load_config()
         self.client_id = config.get('spotify')['client_id']
@@ -220,8 +219,8 @@ class RadioPlaysFetch():
         for station in stations:
             self.fetch_station_job(station['name'], station['playlist_id'])
 
-    def scheduled_fetching(self):
-        schedule.every(self.SCHEDUELED_INTERVALS).minutes.do(self.fetch_stations_job)
+    def scheduled_fetching(self, interval_mins = 250):
+        schedule.every(interval_mins).minutes.do(self.fetch_stations_job)
 
         while True:
             schedule.run_pending()
@@ -230,4 +229,4 @@ class RadioPlaysFetch():
 if __name__ == "__main__":
     archiver = RadioPlaysFetch()
     archiver.fetch_stations_job()
-    archiver.scheduled_fetching()
+    archiver.scheduled_fetching(250)
