@@ -33,20 +33,6 @@ Radio Plays Tracker is a Python application designed to fetch and track music pl
 
 ## Usage
 
-### `ElasticConnector`
-
-The `ElasticConnector` class is responsible for establishing a connection to Elasticsearch and indexing song and play data.
-
-```python
-from elastic_connector import ElasticConnector
-
-# Create an instance of ElasticConnector
-connector = ElasticConnector()
-
-# Process files in a folder
-connector.process_files(folder_path='.\\simple')
-```
-
 ### `RadioPlaysFetch`
 
 The `RadioPlaysFetch` class fetches music play data from Spotify playlists associated with radio stations and stores them in Elasticsearch.
@@ -59,14 +45,52 @@ fetcher = RadioPlaysFetch()
 
 # Fetch play data for all stations
 fetcher.fetch_stations_job()
+
+# Schedule fetching (in minutes)
+fetcher.scheduled_fetching(240)
 ```
 
-### Schedule Fetching
+### `ElasticConnector`
 
-To schedule regular fetching of play data, run the `scheduled_fetching` method.
+The `ElasticConnector` class is responsible for establishing a connection to Elasticsearch and indexing song and play data.
 
 ```python
-fetcher.scheduled_fetching()
+from elastic_connector import ElasticConnector
+
+# Create an instance of ElasticConnector
+connector = ElasticConnector(station_name)
+
+# Process files in a folder
+connector.process_file(folder_path='.\\simple')
+# or
+connector.process_file(fsimplifies_format_file_path)
+```
+
+### `DataConnect`
+
+A class filled with helping methods for querying the saved data from Elastic
+
+```python
+from data_connect import DatabaseConnector
+
+# Create an instance of DatabaseConnector
+dbc = DatabaseConnector()
+
+
+dbc.print_artist_plays_by_name('charli xcx')
+""" Output:
+  [23/02/2024 03:15] Icona Pop, Charli XCX - I Love It (feat. Charli XCX) (2019) [glglz]
+  [23/02/2024 03:32] Charli XCX, Kim Petras, Jay Park - Unlock It (2021) [glglz]
+  [07/03/2024 21:14] Charli XCX - Von dutch (2024) [glglz]
+  [24/04/2024 16:28] Charli XCX - Track 10 (2017) [galatz]
+  Total plays by artist: 9
+  """
+dbc.print_song_plays('padam padam')
+""" Output:
+  12/04/2024 23:04
+  03/02/2024 00:18
+  Total plays: 2
+"""
 ```
 
 ## Configuration
@@ -75,10 +99,17 @@ Update the `config.json` file with your Elasticsearch configuration and Spotify 
 
 ```json
 {
-  "elastic_url": "http://localhost:9200",
-  "elastic_user": "elastic",
-  "elastic_password": "password",
-  "stations": [
+    "spotify": {
+        "access_token": "***secret***",
+        "client_id": "***secret***",
+        "client_secret": "***secret***"
+    },
+    "elastic": {
+        "url": "http://localhost:9200",
+        "user": "elastic",
+        "password": "password"
+    },
+    "stations": [
     {
       "name": "glglz",
       "playlist_id": "glglz-spotify-playlist-id"
