@@ -7,8 +7,7 @@ from tqdm import tqdm
 from helper import Helper
 
 class ElasticConnector:
-    def __init__(self, station_name='glglz', config_filename='config.json'):
-        self.config_filename = config_filename
+    def __init__(self, station_name='glglz'):
         self.songs_index_name = 'songs_index'
         self.plays_index_name = 'plays_index' if station_name == 'glglz' else f'{station_name}_plays_index'
         self.logger = Helper.get_rotating_logger('ElasticScriptLogger', 'elastic_indexing.log')
