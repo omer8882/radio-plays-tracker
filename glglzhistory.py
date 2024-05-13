@@ -19,7 +19,7 @@ class RadioPlaysFetch():
         self.LAST_FETCHED_KEY = 'last_time_data_fetched'
         self.RAW_FOLDER = ".\\raw"
         self.SIMPLE_FOLDER = ".\\simple"
-        self.SCHEDUELED_INTERVALS = 300 #minutes
+        self.SCHEDUELED_INTERVALS = 250 #minutes
 
         config = self.load_config()
         self.client_id = config.get('spotify')['client_id']
@@ -204,14 +204,16 @@ class RadioPlaysFetch():
         raw_data = self.get_tracks_data(playlist_id)
         timestamp: datetime = datetime.now()
         entry_filename = self.timestamped_filename(station_name, timestamp)
-        self.ensure_folder_exists(self.RAW_FOLDER)
-        self.save_json_file(raw_data, os.path.join(self.RAW_FOLDER, entry_filename))
+        raw_station_subfolder = os.path.join(self.RAW_FOLDER, station_name)
+        self.ensure_folder_exists(raw_station_subfolder)
+        self.save_json_file(raw_data, os.path.join(raw_station_subfolder, entry_filename))
         simplified = self.simplify_spotify_data(station_name, raw_data)
         if len(simplified['tracks']) == 0:
-            self.logger.info(f'No new trakcs were fetched', extra={'station': station_name})
+            self.logger.warning(f'No new trakcs were fetched', extra={'station': station_name})
             return
-        self.ensure_folder_exists(self.SIMPLE_FOLDER)
-        simplifies_file_path = os.path.join(self.SIMPLE_FOLDER, entry_filename)
+        simple_station_subfoler = os.path.join(self.SIMPLE_FOLDER, station_name)
+        self.ensure_folder_exists(simple_station_subfoler)
+        simplifies_file_path = os.path.join(simple_station_subfoler, entry_filename)
         self.save_json_file(simplified, simplifies_file_path)
         self.update_last_fetched_time(station_name, timestamp)
         ElasticConnector(station_name).process_file(simplifies_file_path+".json")
@@ -221,14 +223,18 @@ class RadioPlaysFetch():
     def fetch_station_job(self, station_name, playlist_id):
         max_tries = 2
         cur_try = 1
+        backoff_time = 5
+
         while cur_try <= max_tries:
             try:
                 self.log_station_tracks(station_name, playlist_id)
                 return
+            except ElasticApiError as e:
+                self.logger.error(f"ElasticApiError on attempt {cur_try} of {max_tries}: {e}", extra={'station': station_name})
+                return
             except Exception as e:
-                self.logger.info(f'Failed attempt {cur_try} of {max_tries}: {e}', extra={'station': station_name})
-                if e is ElasticApiError:
-                    return
+                self.logger.warning(f"Failed attempt {cur_try} of {max_tries}: {e}", extra={'station': station_name})
+                time.sleep(backoff_time)
                 cur_try+=1
     
 
