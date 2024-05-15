@@ -152,12 +152,12 @@ class RadioPlaysFetch():
 
     def get_last_fetched_time(self, station_name: str):
         """Gets from config the last time data was fetched and saved"""
-        config = Helper.load_config()
-        last_fetched = next((station['last_time_data_fetched'] for station in config['stations'] if station['name'] == station_name), None)
+        stations = self.get_stations_config()
+        last_fetched = next((station['last_time_data_fetched'] for station in stations if station['name'] == station_name), None)
         self.logger.info(f'Loaded last time fetched: {last_fetched}', extra={'station': station_name})
         return last_fetched
     
-    def get_stations(self):
+    def get_stations_config(self):
         config = Helper.load_config()
         return config['stations']
 
@@ -209,13 +209,13 @@ class RadioPlaysFetch():
                 self.logger.error(f"ElasticApiError on attempt {cur_try} of {max_tries}: {e}", extra={'station': station_name})
                 return
             except Exception as e:
-                self.logger.warning(f"Failed attempt {cur_try} of {max_tries}: {e}", extra={'station': station_name})
+                self.logger.error(f"Failed attempt {cur_try} of {max_tries}: {e}", extra={'station': station_name})
                 time.sleep(backoff_time)
                 cur_try+=1
     
 
     def fetch_stations_job(self):
-        stations = self.get_stations()
+        stations = self.get_stations_config()
         for station in stations:
             self.fetch_station_job(station['name'], station['playlist_id'])
 
