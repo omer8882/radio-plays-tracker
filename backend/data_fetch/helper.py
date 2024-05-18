@@ -7,9 +7,9 @@ class Helper:
         return
 
     @staticmethod
-    def load_config(config_filename='config.json'):
+    def load_config(config_filename='./config.json'):
         """Loads configuration data from a JSON file."""
-        if os.path.exists(config_filename):
+        if os.path.exists(config_filename) or os.path.join(os.path.dirname(os.path.abspath(__file__)), config_filename):
             with open(config_filename, 'r') as file:
                 return json.load(file)
         return {}
@@ -33,7 +33,7 @@ class Helper:
         
         if not logger.handlers:
             handler = RotatingFileHandler(log_file, maxBytes=max_log_size, backupCount=backup_count, encoding='utf-8')
-            formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+            formatter = logging.Formatter('%(asctime)s - %(levelname)s - [%(station)s] %(message)s')
             handler.setFormatter(formatter)
             logger.addHandler(handler)
         
