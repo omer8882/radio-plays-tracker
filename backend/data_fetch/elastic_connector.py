@@ -4,7 +4,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from elasticsearch import Elasticsearch
 from tqdm import tqdm
-from helper import Helper
+from data_fetch.helper import Helper
 
 class ElasticConnector:
     def __init__(self, station_name='glglz'):
@@ -18,9 +18,10 @@ class ElasticConnector:
             self.es.index(index=self.songs_index_name, id=song['id'], document=song)
             self.logger.info(f"Indexed: {', '.join([artist['name'] for artist in song['artists']])} - {song['name']} ({song['album']['release_date'][:4]})")
 
-    def index_play(self, full_record):
+    def index_play(self, full_record, station = None):
         play_document = {'song_id': full_record['id'], 'played_at': full_record['played_at']}
-        self.es.index(index=self.plays_index_name, id=full_record['played_at'], document=play_document)
+        index = f'{station}_plays_index' if station else self.plays_index_name
+        self.es.index(index=index, id=full_record['played_at'], document=play_document)
 
     def mark_as_archived(self, file_path):
         """Mark a file as archived by adding 'archived': true."""

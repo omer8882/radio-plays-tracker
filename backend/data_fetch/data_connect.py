@@ -116,5 +116,10 @@ class DatabaseConnector():
             print(datetime.strptime(play['played_at'], "%Y-%m-%dT%H:%M:%S").strftime('%d/%m/%Y %H:%M'))
         print(f"Total plays: {len(plays)}")
 
+
+
+    def get_station_plays(self, station):
+        return ""
+
 dbc = DatabaseConnector()
 print("Use dbc for data connection...")
