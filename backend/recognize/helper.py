@@ -9,10 +9,14 @@ class Helper:
     @staticmethod
     def load_config(config_filename='./config.json'):
         """Loads configuration data from a JSON file."""
-        if os.path.exists(config_filename) or os.path.join(os.path.dirname(os.path.abspath(__file__)), config_filename):
-            with open(config_filename, 'r') as file:
-                return json.load(file)
-        return {}
+        if os.path.exists(config_filename):
+            filepath = config_filename
+        elif os.path.join(os.path.dirname(os.path.abspath(__file__)), config_filename):
+            filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), config_filename)
+        else:
+            return {}
+        with open(filepath, 'r') as file:
+            return json.load(file)
     
     @staticmethod
     def save_config(data, config_filename='config.json'):

@@ -84,8 +84,11 @@ class DatabaseConnector():
         except:
             try:
                 return datetime.strptime(played_at, "%Y-%m-%dT%H:%M:%SZ")
-            except Exception as e:
-                raise Exception('Cant parse some time...\n'+e)
+            except:
+                try:
+                    return datetime.fromisoformat(played_at)
+                except Exception as e:
+                    raise Exception('Cant parse some time...\n'+e)
 
     def get_artist_id(self, artist_name):
         songs_by_artist = self.get_artist_songs_by_name(artist_name)
@@ -116,5 +119,11 @@ class DatabaseConnector():
             print(datetime.strptime(play['played_at'], "%Y-%m-%dT%H:%M:%S").strftime('%d/%m/%Y %H:%M'))
         print(f"Total plays: {len(plays)}")
 
+
+
+    def get_station_plays(self, station):
+        return ""
+
 dbc = DatabaseConnector()
+dbc.print_artist_plays_by_name('solange')
 print("Use dbc for data connection...")
