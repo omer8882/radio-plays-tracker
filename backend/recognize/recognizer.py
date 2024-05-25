@@ -5,8 +5,8 @@ from datetime import datetime
 import asyncio
 from shazamio import Shazam
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from data_fetch.helper import Helper
-from data_fetch.elastic_connector import ElasticConnector
+from helper import Helper
+from elastic_connector import ElasticConnector
 
 class RecognizeSongs:
     def __init__(self):
