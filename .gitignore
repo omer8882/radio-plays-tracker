@@ -6,6 +6,7 @@ docs/
 debug/
 config.secret.json
 proccessfilesandcleanup.py
+*.mp3
 
 .vscode
 
