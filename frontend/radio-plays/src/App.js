@@ -21,7 +21,7 @@ function App() {
           bgColor="#BBDEFB"
         />
         <StationContainer 
-          station="100fm" 
+          station="radius100" 
           logo={fm100Logo} 
           bgColor="#cccc31"
         />

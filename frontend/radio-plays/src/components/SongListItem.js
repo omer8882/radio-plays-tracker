@@ -1,5 +1,5 @@
 import React from 'react';
-import { ListItem, ListItemText, Box, Typography } from '@mui/material';
+import { ListItem, Box, Typography } from '@mui/material';
 
 const SongListItem = ({ song }) => {
     const overlayColor = 'rgba(0, 0, 0, 0.07)'; // 10% opaque black

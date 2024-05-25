@@ -1,35 +1,56 @@
 import React, { useEffect, useState } from 'react';
-import { List, Typography, Box } from '@mui/material';
+import { List, Box, CircularProgress } from '@mui/material';
 import SongListItem from './SongListItem';
 import axios from 'axios';
 
 const SongList = ({ station }) => {
   const [songs, setSongs] = useState([]);
+  const [displayedData, setDisplayedData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
-  //   // Fetch songs from the API
-  //   axios.get(`/api/songs?station=${station}`)
-  //     .then(response => {
-  //       setSongs(response.data);
-  //     })
-  //     .catch(error => {
-  //       console.error("Error fetching songs:", error);
-  //     });
-  // }, [station]);
+  const sim_songs = [
+                      {time: "11:11", title: "אדי באדי", artist: "שחר טבוך, אדם בוחבוט"},
+                      {time: "11:09", title: "Von Dutch", artist: "Charli XCX"},
+                      {time: "11:05", title: "בלב מדבר", artist: "מאיר אריאל"}
+  ] ;
+  const ghost_data = [
+    {time: " ", title: " ", artist: " "},
+    {time: " ", title: " ", artist: " "},
+    {time: " ", title: " ", artist: " "},
+    {time: " ", title: " ", artist: " "},
+    {time: " ", title: " ", artist: " "},
+    {time: " ", title: " ", artist: " "},
+    {time: " ", title: " ", artist: " "}
+] ;
+  const error_songs = [
+    {time: "00:00", title: "server error", artist: ""}
+  ] ;
+
+  const fetchData = async () => {
+    setLoading(true);
+    setDisplayedData(songs == [] ? ghost_data : songs);
+    try {
+      const response = await axios.get(`http://localhost:5000/api/station_last_plays?station=${station}`);
+      setSongs(response.data);
+      setDisplayedData(response.data)
+    } catch (err) {
+      console.error("Error fetching songs:", err);
+      setDisplayedData(error_songs)
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const sim_songs = [
-                        {time: "11:11", title: "נאדי באדי", artist: "שחר טבוך, אדם בוחבוט"},
-                        {time: "11:09", title: "Von Dutch", artist: "Charli XCX"},
-                        {time: "11:05", title: "בלב מדבר", artist: "מאיר אריאל"}
-                      ] ;
-    setSongs(sim_songs)
+    fetchData();
+    const interval = setInterval(fetchData, 60000); // Refresh data every 60 seconds
+    return () => clearInterval(interval); // Cleanup interval on component unmount
   }, [station]);
 
   return (
     <Box>
       <List>
-        {songs.map(song => (
+        {displayedData.map(song => (
           <SongListItem key={song.id} song={song} />
         ))}
       </List>
