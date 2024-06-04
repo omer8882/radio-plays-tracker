@@ -31,13 +31,13 @@ class Helper:
         return station_names
 
     @staticmethod
-    def get_rotating_logger(name, log_file='elastic_indexing.log', max_log_size=10*1024*1024, backup_count=5):
+    def get_rotating_logger(name, log_file='elastic_indexing.log', max_log_size=10*1024*1024, backup_count=5, station_info=False):
         logger = logging.getLogger(name)
         logger.setLevel(logging.INFO)
         
         if not logger.handlers:
             handler = RotatingFileHandler(log_file, maxBytes=max_log_size, backupCount=backup_count, encoding='utf-8')
-            formatter = logging.Formatter('%(asctime)s - %(levelname)s - [%(station)s] %(message)s')
+            formatter = logging.Formatter('%(asctime)s - %(levelname)s - ' + ('[%(station)s] ' if station_info else '') + '%(message)s')
             handler.setFormatter(formatter)
             logger.addHandler(handler)
         

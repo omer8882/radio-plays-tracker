@@ -21,7 +21,7 @@ class RecognizeSongs:
         self.client_secret = config.get('spotify')['client_secret']
 
         self.es_con = ElasticConnector()
-        self.logger = Helper.get_rotating_logger('RadioPlaysFetch', log_file='radio_plays_fetch.log')
+        self.logger = Helper.get_rotating_logger('RadioPlaysFetch', log_file='radio_plays_fetch.log', station_info=True)
 
     # ---------------------------------
     #       SPOTIFY ACCESS TOKEN       
@@ -247,7 +247,7 @@ if __name__ == '__main__':
             try:
                 recognize.capture_song(station['name'], station['stream_url'])
             except Exception as e:
-                recognize.logger.error(f"Something went wrong capturing '{station['name']}'. Details: {e}")
+                recognize.logger.error(f"Something went wrong capturing '{station['name']}'. Details: {e}", extra={'station': station['name']})
         elapsed_time = (time.perf_counter() - start_time)
         print(f"Elapsed time: {elapsed_time} s")
         time.sleep(40)
