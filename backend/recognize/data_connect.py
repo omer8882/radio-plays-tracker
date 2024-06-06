@@ -123,7 +123,3 @@ class DatabaseConnector():
 
     def get_station_plays(self, station):
         return ""
-
-dbc = DatabaseConnector()
-dbc.print_artist_plays_by_name('solange')
-print("Use dbc for data connection...")

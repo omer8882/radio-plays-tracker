@@ -14,3 +14,15 @@ def initialize_routes(app):
             return jsonify(last_songs)
         except Exception as e:
             return "Server Error: "+str(e), 500
+        
+
+    @app.route('/api/get_artist_plays', methods=['GET'])
+    def get_artist_plays():
+        artist = request.args.get('artist')
+        if artist is None:
+            return "No artist", 404
+        try:
+            plays = dbc.get_artist_plays(artist)
+            return jsonify(plays)
+        except Exception as e:
+            return "Server Error: "+str(e), 500
