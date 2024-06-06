@@ -4,10 +4,6 @@ import SongListItem from './SongListItem';
 import axios from 'axios';
 
 const SongList = ({ station }) => {
-  const [songs, setSongs] = useState([]);
-  const [displayedData, setDisplayedData] = useState([]);
-  const [loading, setLoading] = useState(true);
-
   const sim_songs = [
                       {time: "11:11", title: "אדי באדי", artist: "שחר טבוך, אדם בוחבוט"},
                       {time: "11:09", title: "Von Dutch", artist: "Charli XCX"},
@@ -21,16 +17,21 @@ const SongList = ({ station }) => {
     {time: " ", title: " ", artist: " "},
     {time: " ", title: " ", artist: " "},
     {time: " ", title: " ", artist: " "}
-] ;
+  ] ;
   const error_songs = [
     {time: "00:00", title: "server error", artist: ""}
   ] ;
+  
+  const [songs, setSongs] = useState([]);
+  const [displayedData, setDisplayedData] = useState(ghost_data);
+  const [loading, setLoading] = useState(true);
+
 
   const fetchData = async () => {
     setLoading(true);
     setDisplayedData(songs == [] ? ghost_data : songs);
     try {
-      const response = await axios.get(`http://localhost:5000/api/station_last_plays?station=${station}`);
+      const response = await axios.get(`http://192.168.1.36:5000/api/station_last_plays?station=${station}`);
       setSongs(response.data);
       setDisplayedData(response.data)
     } catch (err) {
@@ -48,7 +49,7 @@ const SongList = ({ station }) => {
   }, [station]);
 
   return (
-    <Box>
+    <Box >
       <List>
         {displayedData.map(song => (
           <SongListItem key={song.id} song={song} />

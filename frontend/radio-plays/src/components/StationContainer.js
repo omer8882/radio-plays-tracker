@@ -1,15 +1,22 @@
 import React from 'react';
-import { Box, Paper } from '@mui/material';
+import { Box, Accordion, AccordionSummary, AccordionDetails, Paper } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SongList from './SongList';
 
 const StationContainer = ({ station, logo, bgColor }) => {
   return (
-    <Paper style={{ padding: '0px', backgroundColor: bgColor, borderRadius: '15px', margin: '20px 2px 10px 2px'}}  sx={{ boxShadow: 4 }}>
-      <Box display="flex" flexDirection="column" alignItems="center">
-        <Box component="img" src={logo} alt={`${station} logo`} sx={{ width: '90px', height: '70px', objectFit: 'contain', margin: '10px 0px 10px 0px' }} />
-        <SongList station={station} />
-      </Box>
-    </Paper>
+    //<Paper style={{ padding: '0px', backgroundColor: bgColor, borderRadius: '15px', margin: '20px 2px 10px 2px'}}  sx={{ boxShadow: 4 }}>
+      <Accordion style={{backgroundColor: bgColor, borderRadius: '15px', margin: '10px 2px 5px 2px', width: '100%'}} sx={{ boxShadow: 6 }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls={`${station}-content`} id={`${station}-header`}>
+          <Box display="flex" flexDirection="column" alignItems="center" width="100%">
+            <Box component="img" src={logo} alt={`${station} logo`} sx={{ width: '90px', height: '70px', objectFit: 'contain', margin: '5px 0px 5px 0px' }} />
+          </Box>
+        </AccordionSummary>
+        <AccordionDetails sx={{ padding: '0 0px', }}>
+          <SongList station={station}/>
+        </AccordionDetails>
+      </Accordion>
+    //</Paper>
   );
 };
 
