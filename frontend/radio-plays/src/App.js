@@ -1,14 +1,17 @@
 import React from 'react';
-import { Container, Box } from '@mui/material';
+import { Container, Box, Typography } from '@mui/material';
 import StationContainer from './components/StationContainer';
+import SearchBar from './components/SearchBar';
+import TopHits from './components/TopHits';
 import eco99Logo from './assets/eco99_logo.png';
 import glglzLogo from './assets/glglz_logo.png';
 import fm100Logo from './assets/100fm_logo.png';
 import kan88Logo from './assets/kan88_logo.png';
+import { alignProperty } from '@mui/material/styles/cssUtils';
 
 function App() {
   return (
-    <Container>
+    <Container display="flex" >
       <Box display="flex" justifyContent="space-around" flexWrap="wrap">
         <StationContainer 
           station="glglz" 
@@ -30,6 +33,9 @@ function App() {
           logo={kan88Logo} 
           bgColor="#b38bae"
         />
+        <Box my={4}>
+          <TopHits />
+        </Box>
       </Box>
     </Container>
   );

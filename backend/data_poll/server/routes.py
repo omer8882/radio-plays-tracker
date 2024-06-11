@@ -26,3 +26,32 @@ def initialize_routes(app):
             return jsonify(plays)
         except Exception as e:
             return "Server Error: "+str(e), 500
+        
+    @app.route('/api/search', methods=['GET'])
+    def search():
+        query = request.args.get('query')
+        if query is None:
+            return "No query", 404
+        try:
+            results = dbc.search(query)
+            return jsonify(results)
+        except Exception as e:
+            return "Server Error: "+str(e), 500
+        
+    @app.route('/api/top_hits', methods=['GET'])
+    def top_hits():
+        days = request.args.get('days')
+        top_n = request.args.get('topn')
+        if days is None:
+            days = 7
+        else:
+            days = int(days)
+        if top_n is None:
+            top_n = 5
+        else:
+            top_n = int(top_n)
+        try:
+            results = dbc.top_hits(days, top_n)
+            return jsonify(results)
+        except Exception as e:
+            return "Server Error: "+str(e), 500

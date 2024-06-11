@@ -2,11 +2,12 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from elasticsearch_dsl import Search
+from elasticsearch_dsl import Search, Q, A
 from elasticsearch_dsl.query import Match
 from elasticsearch_dsl.connections import connections
 from recognize.helper import Helper
 from server.models import *
+from datetime import datetime, timedelta
 
 FULL_DATE_TIME_FORMAT = "%d/%m/%Y %H:%M:%S"
 THE_TIME_FORMAT = "%H:%M"
@@ -63,7 +64,10 @@ class DataConnect:
     def to_play_model(self, song, time_format="%H:%M"):
         artists = ', '.join([artist['name'] for artist in song['artists']])
         time = self.convert_to_clock_time(song['played_at'], time_format)
-        return {"title": song['name'], 'artist': artists, 'time': time, 'station': song.get('station')};
+        return {"title": song['name'], 'artist': artists, 'time': time, 'station': song.get('station')}
+    
+    def to_hits_model(self, songs):
+        return [{"title": song['name'], 'artist': ', '.join([artist['name'] for artist in song['artists']]), 'hits': song['hits']} for song in songs]
 
     # # # # # # # # # # #
     # # #  Queries  # # #
@@ -95,11 +99,22 @@ class DataConnect:
         return plays
     
     def __search_songs(self, title="", artist="") -> dict:
-        s = Search(using=self.client, index=self.songs_index).query(Match(name=title, artists_name=artist))
+        s = Search(using=self.client, index=self.songs_index).query(Match(name=title, artists__name=artist))
         response = s.execute()
         hits = response.hits.hits
         if hits:
             return hits[0].to_dict()
+        else:
+            raise NoResults('No Songs Found.')
+        
+    def __free_Search(self, query="") -> list:
+        # Using multi_match for free text search across multiple fields
+        q = Q('multi_match', query=query, fields=['name', 'artists.name'], fuzziness='AUTO')
+        s = Search(using=self.client, index=self.songs_index).query(q)
+        response = s.execute()
+        hits = response.hits.hits
+        if hits:
+            return [hit.to_dict() for hit in hits]
         else:
             raise NoResults('No Songs Found.')
         
@@ -127,6 +142,42 @@ class DataConnect:
             song['played_at'] = play.played_at
             songs.append(song)
         return songs
+    
+    def get_top_played_songs(self, days=7, top_n=5):
+        end_date = datetime.utcnow()
+        start_date = end_date - timedelta(days=days)
+        
+        # Step 1: Construct the Search object with filter and aggregation
+        indices = ','.join(self.plays_indices)
+        s = Search(using=self.client, index=indices)
+        s = s.filter('range', played_at={'gte': start_date, 'lte': end_date})
+        
+        # Adding aggregation for top songs by song_id
+        a = A('terms', field='song_id.keyword', size=top_n, shard_size=30)
+        s.aggs.bucket('top_songs', a)
+        
+        # Step 2: Execute the search
+        response = s.execute()
+
+        # Step 3: Extract top song IDs and counts from the aggregation
+        top_song_buckets = response.aggregations.top_songs.buckets
+        top_songs_info = [(bucket.key, bucket.doc_count) for bucket in top_song_buckets]
+        
+        # Step 4: Fetch metadata for top songs from songs_index
+        top_songs_metadata = []
+        if top_songs_info:
+            top_song_ids = [song_id for song_id, _ in top_songs_info]
+            q = Q('ids', values=top_song_ids)
+            s_meta = Search(using=self.client, index=self.songs_index).query(q)
+            metadata_response = s_meta.execute()
+            
+            # Combine metadata with play counts
+            for hit in metadata_response:
+                song_data = hit.to_dict()
+                song_data['hits'] = next(count for song_id, count in top_songs_info if song_id == hit.meta.id)
+                top_songs_metadata.append(song_data)
+        top_songs_metadata.sort(key=lambda song: song['hits'], reverse=True)
+        return top_songs_metadata
 
     # # # # # # # # # # # # # # #
     # # #   Public Methods  # # #
@@ -158,3 +209,11 @@ class DataConnect:
         sorted_plays = sorted(all_plays, key=lambda song: song['played_at'], reverse=True)
         sorted_plays_to_display = [self.to_play_model(play, FULL_DATE_TIME_FORMAT) for play in sorted_plays]
         return sorted_plays_to_display
+    
+    def search(self, query):
+        results = self.__free_Search(query)
+        return [r['_source']for r in results]
+    
+    def top_hits(self, days, top_n):
+        top_hits = self.get_top_played_songs(days, top_n)
+        return self.to_hits_model(top_hits)
