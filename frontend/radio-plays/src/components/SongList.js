@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { List, Box, CircularProgress } from '@mui/material';
+import { List, Box } from '@mui/material';
 import SongListItem from './SongListItem';
 import axios from 'axios';
 
 const SongList = ({ station }) => {
-  const sim_songs = [
+  /*const sim_songs = [
                       {time: "11:11", title: "אדי באדי", artist: "שחר טבוך, אדם בוחבוט"},
                       {time: "11:09", title: "Von Dutch", artist: "Charli XCX"},
                       {time: "11:05", title: "בלב מדבר", artist: "מאיר אריאל"}
-  ] ;
+  ] ;*/
   const ghost_data = [
     {time: " ", title: " ", artist: " "},
     {time: " ", title: " ", artist: " "},
@@ -24,11 +24,11 @@ const SongList = ({ station }) => {
   
   const [songs, setSongs] = useState([]);
   const [displayedData, setDisplayedData] = useState(ghost_data);
-  const [loading, setLoading] = useState(true);
+  //const [loading, setLoading] = useState(true);
 
 
   const fetchData = async () => {
-    setLoading(true);
+    //setLoading(true);
     setDisplayedData(songs == [] ? ghost_data : songs);
     try {
       const response = await axios.get(`http://192.168.1.36:5000/api/station_last_plays?station=${station}`);
@@ -38,7 +38,7 @@ const SongList = ({ station }) => {
       console.error("Error fetching songs:", err);
       setDisplayedData(error_songs)
     } finally {
-      setLoading(false);
+      //setLoading(false);
     }
   };
 

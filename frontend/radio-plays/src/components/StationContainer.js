@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Accordion, AccordionSummary, AccordionDetails, Paper } from '@mui/material';
+import { Box, Accordion, AccordionSummary, AccordionDetails, } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SongList from './SongList';
 

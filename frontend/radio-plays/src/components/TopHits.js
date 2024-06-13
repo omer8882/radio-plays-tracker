@@ -8,7 +8,7 @@ const TopHits = () => {
   const [timeRange, setTimeRange] = useState('7');
   const [topHits, setTopHits] = useState([]);
 
-  const sim_hits_7 = [
+  /*const sim_hits_7 = [
     { title: "Espresso", artist: "Sabrina Carpenter", hits: 9 },
     { title: "נאדי באדי", artist: "שחר טבוך, אדם בוחבוט", hits: 8 },
     { title: "360", artist: "Charli XCX", hits: 4 }
@@ -17,7 +17,7 @@ const TopHits = () => {
     { title: "Espresso", artist: "Sabrina Carpenter", hits: 33 },
     { title: "נאדי באדי", artist: "שחר טבוך, אדם בוחבוט", hits: 28 },
     { title: "360", artist: "Charli XCX", hits: 12 }
-  ];
+  ];*/
 
   useEffect(() => {
     const fetchTopHits = async () => {
