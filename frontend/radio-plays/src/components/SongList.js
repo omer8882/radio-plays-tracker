@@ -46,7 +46,7 @@ const SongList = ({ station }) => {
     fetchData();
     const interval = setInterval(fetchData, 60000); // Refresh data every 60 seconds
     return () => clearInterval(interval); // Cleanup interval on component unmount
-  }, [station, fetchData]);
+  }, [station]);
 
   return (
     <Box >
