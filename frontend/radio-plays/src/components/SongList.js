@@ -29,7 +29,7 @@ const SongList = ({ station }) => {
 
   const fetchData = async () => {
     //setLoading(true);
-    setDisplayedData(songs == [] ? ghost_data : songs);
+    setDisplayedData(songs === [] ? ghost_data : songs);
     try {
       const response = await axios.get(`http://192.168.1.36:5000/api/station_last_plays?station=${station}`);
       setSongs(response.data);
@@ -46,7 +46,7 @@ const SongList = ({ station }) => {
     fetchData();
     const interval = setInterval(fetchData, 60000); // Refresh data every 60 seconds
     return () => clearInterval(interval); // Cleanup interval on component unmount
-  }, [station]);
+  }, [station, fetchData]);
 
   return (
     <Box >
