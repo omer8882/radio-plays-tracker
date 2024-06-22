@@ -1,0 +1,7 @@
+pydub
+fastapi
+asyncio
+uvicorn
+datetime
+shazamio
+elasticsearch_dsl

@@ -1,10 +1,7 @@
-from flask import Flask
-from flask_cors import CORS
-from .routes import initialize_routes
-
-app = Flask(__name__)
-CORS(app) 
+from fastapi import FastAPI
+from . import routes
 
 def create_server():
-    initialize_routes(app)
+    app = FastAPI()
+    routes.initialize_routes(app)
     return app

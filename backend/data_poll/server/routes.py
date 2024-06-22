@@ -1,57 +1,38 @@
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, HTTPException, Query
 from db_connect.db_connect import DataConnect
+from typing import List, Optional
 
 dbc = DataConnect()
 
-def initialize_routes(app):
-    @app.route('/api/station_last_plays', methods=['GET'])
-    def get_station_last_plays():
-        station = request.args.get('station')
-        if station is None:
-            return "No station", 404
+def initialize_routes(app: FastAPI):
+    @app.get("/api/station_last_plays")
+    async def get_station_last_plays(station: str = Query(..., description="The name of the radio station")):
         try:
             last_songs = dbc.get_last_plays_from_station(station)
-            return jsonify(last_songs)
+            return last_songs
         except Exception as e:
-            return "Server Error: "+str(e), 500
-        
+            raise HTTPException(status_code=500, detail=f"Server Error: {str(e)}")
 
-    @app.route('/api/get_artist_plays', methods=['GET'])
-    def get_artist_plays():
-        artist = request.args.get('artist')
-        if artist is None:
-            return "No artist", 404
+    @app.get("/api/get_artist_plays")
+    async def get_artist_plays(artist: str = Query(..., description="The name of the artist")):
         try:
             plays = dbc.get_artist_plays(artist)
-            return jsonify(plays)
+            return plays
         except Exception as e:
-            return "Server Error: "+str(e), 500
-        
-    @app.route('/api/search', methods=['GET'])
-    def search():
-        query = request.args.get('query')
-        if query is None:
-            return "No query", 404
+            raise HTTPException(status_code=500, detail=f"Server Error: {str(e)}")
+
+    @app.get("/api/search")
+    async def search(query: str = Query(..., description="The search query")):
         try:
             results = dbc.search(query)
-            return jsonify(results)
+            return results
         except Exception as e:
-            return "Server Error: "+str(e), 500
-        
-    @app.route('/api/top_hits', methods=['GET'])
-    def top_hits():
-        days = request.args.get('days')
-        top_n = request.args.get('topn')
-        if days is None:
-            days = 7
-        else:
-            days = int(days)
-        if top_n is None:
-            top_n = 5
-        else:
-            top_n = int(top_n)
+            raise HTTPException(status_code=500, detail=f"Server Error: {str(e)}")
+
+    @app.get("/api/top_hits")
+    async def top_hits(days: Optional[int] = Query(7, description="Number of days"), top_n: Optional[int] = Query(5, description="Top N hits")):
         try:
             results = dbc.top_hits(days, top_n)
-            return jsonify(results)
+            return results
         except Exception as e:
-            return "Server Error: "+str(e), 500
+            raise HTTPException(status_code=500, detail=f"Server Error: {str(e)}")
