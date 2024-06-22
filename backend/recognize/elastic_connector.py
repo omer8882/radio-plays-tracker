@@ -1,8 +1,5 @@
 import os
 import json
-import logging
-from logging.handlers import RotatingFileHandler
-from elasticsearch import Elasticsearch
 from tqdm import tqdm
 from helper import Helper
 

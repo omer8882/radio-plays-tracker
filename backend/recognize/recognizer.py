@@ -1,5 +1,4 @@
 from pydub import AudioSegment
-from pydub.playback import play
 import os, sys, requests, time, base64
 from datetime import datetime
 import asyncio

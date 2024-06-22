@@ -1,7 +1,3 @@
-
-import os
-import json
-from elasticsearch import Elasticsearch
 from datetime import datetime
 from helper import Helper
 
