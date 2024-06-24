@@ -1,44 +1,45 @@
-import React, { useState } from 'react';
-import { TextField, Button, Box, List, ListItem, ListItemText } from '@mui/material';
-import axios from 'axios';
+import React from 'react';
+import { Box, InputBase } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 
-const SearchBar = () => {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
+const SearchBar = ({ query, setQuery, handleSearch }) => {
+  const handleInputChange = (e) => {
+    setQuery(e.target.value);
+  };
 
-  const handleSearch = async () => {
-    try {
-      const response = await axios.get(`http://192.168.56.1:5000/api/search?query=${query}`);
-      setResults(response.data);
-    } catch (error) {
-      console.error("Error fetching search results:", error);
+  const handleKeyDown = (e) => {
+    if ( e.key === 'Enter') {
+      handleSearch(e);
     }
   };
 
   return (
-    <Box>
-      <Box display="flex" justifyContent="center" alignItems="center" mb={2}>
-        <TextField
-          variant="outlined"
-          label="Search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          sx={{ width: '70%' }}
-        />
-        <Button variant="contained" color="primary" onClick={handleSearch} sx={{ ml: 2 }}>
-          Search
-        </Button>
-      </Box>
-      <List>
-        {results.map((song) => (
-          <ListItem key={song.id} button>
-            <ListItemText
-              primary={`${song.name} - ${song.artist}`}
-              secondary={`${song.album}`}
-            />
-          </ListItem>
-        ))}
-      </List>
+    <Box
+      sx={{
+        margin: "5px 0px 0px 0px",
+        padding: "8px",
+        borderRadius: "8px",
+        border: "1px solid #ccc",
+        width: "100%",
+        display: "flex",
+        justifyContent: "start",
+        gap: "0.5em",
+        alignItems: "center",
+        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+      }}
+    >
+      <SearchIcon />
+      <InputBase
+        value={query}
+        onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        sx={{
+          width: "100%",
+          border: 'none',
+          outline: 'none',
+        }}
+        placeholder="Search"
+      />
     </Box>
   );
 };

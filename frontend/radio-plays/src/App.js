@@ -6,11 +6,13 @@ import eco99Logo from './assets/eco99_logo.png';
 import glglzLogo from './assets/glglz_logo.png';
 import fm100Logo from './assets/100fm_logo.png';
 import kan88Logo from './assets/kan88_logo.png';
+import Search from './components/Search';
 
 function App() {
   return (
     <Container display="flex" >
-      <Typography variant="h3" font align="center">מה הושמע ברדיו</Typography>
+      <Typography variant="h3" font align="center" sx={{margin:"8px 0px 8px 0px"}}>מה הושמע ברדיו</Typography>
+      <Search/>
       <Box display="flex" justifyContent="space-around" flexWrap="wrap">
         <StationContainer 
           station="glglz" 
