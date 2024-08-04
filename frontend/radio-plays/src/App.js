@@ -6,6 +6,7 @@ import eco99Logo from './assets/eco99_logo.png';
 import glglzLogo from './assets/glglz_logo.png';
 import fm100Logo from './assets/100fm_logo.png';
 import kan88Logo from './assets/kan88_logo.png';
+import fm103Logo from './assets/103fm_logo.png';
 import Search from './components/Search';
 
 function App() {
@@ -33,6 +34,11 @@ function App() {
           station="kan88" 
           logo={kan88Logo} 
           bgColor="#b38bae"
+        />
+        <StationContainer 
+          station="103fm" 
+          logo={fm103Logo} 
+          bgColor="#64D1DE"
         />
         <Box my={4}>
           <TopHits />

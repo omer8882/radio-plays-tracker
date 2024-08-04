@@ -248,5 +248,5 @@ if __name__ == '__main__':
             except Exception as e:
                 recognize.logger.error(f"Something went wrong capturing '{station['name']}'. Details: {e}", extra={'station': station['name']})
         elapsed_time = (time.perf_counter() - start_time)
-        print(f"Elapsed time: {elapsed_time} s")
+        print(f"{datetime.now()} - Elapsed time: {int(elapsed_time)}s")
         time.sleep(40)

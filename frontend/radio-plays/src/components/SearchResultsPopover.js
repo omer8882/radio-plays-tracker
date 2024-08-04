@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, List, ListItem, Typography, Popover, IconButton } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 
 const overlayColor = 'rgba(0, 0, 0, 0.07)';
 
@@ -13,7 +12,7 @@ const SearchResultsPopover = ({ id, open, anchorEl, handleClose, results, textFi
       onClose={handleClose}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-      PaperProps={{ style: { width: textFieldRef.current ? textFieldRef.current.clientWidth : '70%' } }}
+      PaperProps={{ style: { width: textFieldRef.current ? textFieldRef.current.clientWidth : '100%' } }}
       sx={{ margin: '7px 0px 0px 0px' }}
     >
       <Box sx={{ p: 0, maxHeight: '50vh', overflowY: 'auto' }}>
