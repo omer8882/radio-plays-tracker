@@ -14,7 +14,7 @@ const Search = () => {
     console.log("Search triggered");
     setAnchor(textFieldRef.current);
     try {
-      const response = await axios.get(`http://192.168.1.36:5000/api/search?query=${query}`);
+      const response = await axios.get(`https://server.mahushma.com/api/search?query=${query}`);
       setResults(response.data);
     } catch (error) {
       console.error("Error fetching search results:", error);

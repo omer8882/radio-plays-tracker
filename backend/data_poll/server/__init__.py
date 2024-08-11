@@ -5,13 +5,10 @@ from . import routes
 def create_server():
     app = FastAPI()
 
-    frontend_ip = '192.168.1.36'
-
     origins = [
         "http://localhost",
         "http://localhost:3000",
-        f"http://{frontend_ip}:3000",
-        "http://your-domain.com",  # Add your frontend domain here
+        "https://mahushma.com",  # Add your frontend domain here
     ]
 
     app.add_middleware(
