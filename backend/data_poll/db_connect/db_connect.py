@@ -136,7 +136,7 @@ class DataConnect:
                     songs_by_artist.append(song_result)
         return songs_by_artist
     
-    def __get_plays_by_song_id(self, song_id, days):
+    def __get_plays_by_song_id(self, song_id, days=None):
         indices = ','.join(self.plays_indices)
         s = Search(using=self.client, index=indices).query(Match(song_id=song_id))[:100]
         response = s.execute()
@@ -144,7 +144,7 @@ class DataConnect:
         
         if days is not None:
             end_date = datetime.utcnow()
-            start_date = end_date - timedelta(days=days)
+            start_date = end_date - timedelta(days=days) if days is not None else datetime.min
             plays = [play for play in plays if start_date <= self.parse_time(play['played_at']) <= end_date]
         
         return plays
@@ -241,7 +241,7 @@ class DataConnect:
 
         sorted_plays = sorted(all_plays, key=lambda song: song['played_at'], reverse=True)
         sorted_plays_to_display = [self.to_play_model(play, FULL_DATE_TIME_FORMAT) for play in sorted_plays]
-        return sorted_plays_to_display
+        return sorted_plays_to_display[:100]
     
     def search(self, query):
         results = self.__free_Search(query)
