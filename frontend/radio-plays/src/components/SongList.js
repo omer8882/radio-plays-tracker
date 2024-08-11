@@ -31,7 +31,7 @@ const SongList = ({ station }) => {
     //setLoading(true);
     setDisplayedData(songs === [] ? ghost_data : songs);
     try {
-      const response = await axios.get(`http://192.168.1.36:5000/api/station_last_plays?station=${station}`);
+      const response = await axios.get(`https://server.mahushma.com/api/station_last_plays?station=${station}`);
       setSongs(response.data);
       setDisplayedData(response.data)
     } catch (err) {

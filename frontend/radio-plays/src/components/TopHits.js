@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, ToggleButton, ToggleButtonGroup, Paper, List, ListItem, ListItemText } from '@mui/material';
+import { Box, Typography, ToggleButton, ToggleButtonGroup, Paper, List, ListItem, Tooltip } from '@mui/material';
 import axios from 'axios';
+import StationBreakdown from './StationBreakdown';
 
 const overlayColor = 'rgba(0, 0, 0, 0.07)'; // 10% opaque black
 
 const TopHits = () => {
   const [timeRange, setTimeRange] = useState('7');
   const [topHits, setTopHits] = useState([]);
+  const [stationBreakdowns, setStationBreakdowns] = useState({});
 
   /*const sim_hits_7 = [
     { title: "Espresso", artist: "Sabrina Carpenter", hits: 9 },
@@ -22,7 +24,7 @@ const TopHits = () => {
   useEffect(() => {
     const fetchTopHits = async () => {
       try {
-        const response = await axios.get(`http://192.168.1.36:5000/api/top_hits?days=${timeRange}`);
+        const response = await axios.get(`https://server.mahushma.com/api/top_hits?days=${timeRange}`);
         setTopHits(response.data);
         //setTopHits(timeRange === '7' ? sim_hits_7 : sim_hits_30);
       } catch (error) {
@@ -32,6 +34,27 @@ const TopHits = () => {
 
     fetchTopHits();
   }, [timeRange]);
+
+
+  useEffect(() => {
+    const fetchStationBreakdowns = async () => {
+      const breakdowns = {};
+      for (const hit of topHits) {
+        try {
+          const response = await axios.get(`https://server.mahushma.com/api/song_plays_by_station?song_id=${hit.id}&days=${timeRange}`);
+          breakdowns[hit.id] = response.data;
+        } catch (error) {
+          console.error(`Error fetching station breakdown for song ${hit.id}:`, error);
+        }
+      }
+      setStationBreakdowns((prevBreakdowns) => ({
+        ...prevBreakdowns,
+        ...breakdowns
+      }));
+    };
+
+    fetchStationBreakdowns();
+  }, [topHits, timeRange]);
 
   return (
     <Paper style={{ backgroundColor: '#DCE9C4', padding: '0px', borderRadius: '15px', margin: '10px 2px 5px 2px', width: '100%' }} sx={{ boxShadow: 6 }}>
@@ -65,7 +88,28 @@ const TopHits = () => {
             }}
           >
             <Box>
-              <Typography variant="subtitle1">השמעות: {hit.hits}</Typography>
+              <Tooltip
+                title={
+                  stationBreakdowns[hit.id] ? (
+                    <StationBreakdown stationBreakdown={stationBreakdowns[hit.id]} />
+                  ) : (
+                    'Loading...'
+                  )
+                }
+                arrow
+                componentsProps={{
+                  tooltip: {
+                    sx: {
+                      boxShadow: 'none',
+                      padding: 0,
+                      margin: 0,
+                      borderRadius: '10px'
+                    },
+                  },
+                }}
+              >
+                <Typography variant="subtitle1">השמעות: {hit.hits}</Typography>
+              </Tooltip>
             </Box>
             <Box flexGrow={1} display="flex" justifyContent="flex-end">
               <Box textAlign="right">

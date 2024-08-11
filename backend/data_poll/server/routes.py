@@ -36,3 +36,11 @@ def initialize_routes(app: FastAPI):
             return results
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Server Error: {str(e)}")
+    
+    @app.get("/api/song_plays_by_station")
+    async def song_plays_by_station(song_id: str = Query(..., description="The ID of the song"), days: Optional[int] = Query(None, description="Num of last days to count the plays")):
+        try:
+            station_breakdown = dbc.get_song_plays_by_station(song_id, days)
+            return station_breakdown
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Server Error: {str(e)}")

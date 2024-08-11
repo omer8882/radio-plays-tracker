@@ -42,17 +42,24 @@ class DataConnect:
     # # #  Converters   # # #
     # # # # # # # # # # # # #
 
-    def convert_to_clock_time(self, date_time, format=THE_TIME_FORMAT):
+    def parse_time(self, date_time):
         try:
-            return datetime.strptime(date_time, "%Y-%m-%dT%H:%M:%S").strftime(format)
+            return datetime.strptime(date_time, "%Y-%m-%dT%H:%M:%S")
         except:
             try:
-                return datetime.strptime(date_time, "%Y-%m-%dT%H:%M:%SZ").strftime(format)
+                return datetime.strptime(date_time, "%Y-%m-%dT%H:%M:%SZ")
             except:
                 try:
-                    return datetime.fromisoformat(date_time).strftime(format)
+                    return datetime.fromisoformat(date_time)
                 except Exception as e:
-                    return datetime
+                    return None
+
+    def convert_to_clock_time(self, date_time, format=THE_TIME_FORMAT):
+        parsed_time = self.parse_time(date_time)
+        if parsed_time:
+            return parsed_time.strftime(format)
+        else:
+            return None
 
     def response_to_plays(self, response):
         plays = []
@@ -67,7 +74,7 @@ class DataConnect:
         return {"title": song['name'], 'artist': artists, 'time': time, 'station': song.get('station')}
     
     def to_hits_model(self, songs):
-        return [{"title": song['name'], 'artist': ', '.join([artist['name'] for artist in song['artists']]), 'hits': song['hits']} for song in songs]
+        return [{"id": song['id'], "title": song['name'], 'artist': ', '.join([artist['name'] for artist in song['artists']]), 'hits': song['hits']} for song in songs]
 
     # # # # # # # # # # #
     # # #  Queries  # # #
@@ -129,12 +136,19 @@ class DataConnect:
                     songs_by_artist.append(song_result)
         return songs_by_artist
     
-    def __get_plays_by_song_id(self, song_id):
+    def __get_plays_by_song_id(self, song_id, days):
         indices = ','.join(self.plays_indices)
         s = Search(using=self.client, index=indices).query(Match(song_id=song_id))[:100]
         response = s.execute()
-        return [hit['_source'].to_dict() | {'station': hit['_index'].split('_')[0]} for hit in response['hits']['hits']]
-    
+        plays = [hit['_source'].to_dict() | {'station': hit['_index'].split('_')[0]} for hit in response['hits']['hits']]
+        
+        if days is not None:
+            end_date = datetime.utcnow()
+            start_date = end_date - timedelta(days=days)
+            plays = [play for play in plays if start_date <= self.parse_time(play['played_at']) <= end_date]
+        
+        return plays
+
     def __plays_list_to_songs_list(self, plays: List[Play]):
         songs = []
         for play in plays:
@@ -142,6 +156,17 @@ class DataConnect:
             song['played_at'] = play.played_at
             songs.append(song)
         return songs
+    
+    def __get_plays_breakdown_by_station(self, song_id, days=None):
+        plays = self.__get_plays_by_song_id(song_id, days)
+        station_breakdown = {}
+        for play in plays:
+            station = play['station']
+            if station in station_breakdown:
+                station_breakdown[station] += 1
+            else:
+                station_breakdown[station] = 1
+        return station_breakdown
     
     def get_top_played_songs(self, days=7, top_n=5):
         end_date = datetime.utcnow()
@@ -153,7 +178,7 @@ class DataConnect:
         s = s.filter('range', played_at={'gte': start_date, 'lte': end_date})
         
         # Adding aggregation for top songs by song_id
-        a = A('terms', field='song_id.keyword', size=top_n, shard_size=30)
+        a = A('terms', field='song_id.keyword', size=top_n, shard_size=60)
         s.aggs.bucket('top_songs', a)
         
         # Step 2: Execute the search
@@ -176,6 +201,14 @@ class DataConnect:
                 song_data = hit.to_dict()
                 song_data['hits'] = next(count for song_id, count in top_songs_info if song_id == hit.meta.id)
                 top_songs_metadata.append(song_data)
+
+        # Step 5: Validate the counts
+        for hit in top_songs_metadata:
+            plays = self.__get_plays_by_song_id(hit['id'], days)
+            if plays != hit['hits']:
+                print(f"Error: {hit['name']} has {len(plays)} plays but {hit['hits']} hits")
+                hit['hits'] = max(hit['hits'], len(plays))
+
         top_songs_metadata.sort(key=lambda song: song['hits'], reverse=True)
         return top_songs_metadata
 
@@ -217,3 +250,6 @@ class DataConnect:
     def top_hits(self, days, top_n):
         top_hits = self.get_top_played_songs(days, top_n)
         return self.to_hits_model(top_hits)
+
+    def get_song_plays_by_station(self, song_id, days=None):
+        return self.__get_plays_breakdown_by_station(song_id, days)
