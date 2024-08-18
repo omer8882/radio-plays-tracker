@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { List, Box } from '@mui/material';
 import SongListItem from './SongListItem';
 import axios from 'axios';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
+import './SongList.css'; // Ensure to add relevant CSS
 
 const SongList = ({ station }) => {
   /*const sim_songs = [
@@ -23,16 +25,25 @@ const SongList = ({ station }) => {
   ] ;
   
   const [songs, setSongs] = useState([]);
-  const [displayedData, setDisplayedData] = useState(ghost_data);
+  const [displayedSongs, setDisplayedData] = useState(ghost_data);
   //const [loading, setLoading] = useState(true);
 
 
   const fetchData = async () => {
     //setLoading(true);
-    setDisplayedData(songs === [] ? ghost_data : songs);
+    setDisplayedData(songs == [] ? ghost_data : songs);
     try {
       const response = await axios.get(`https://server.mahushma.com/api/station_last_plays?station=${station}`);
-      setSongs(response.data);
+      const newSongs = response.data;
+      const existingSongIds = new Set(displayedSongs.map(song => song.id));
+      newSongs.forEach(song => {
+        if (!existingSongIds.has(song.id)) {
+            displayedSongs.pop();
+            displayedSongs.unshift(song);
+            existingSongIds.add(song.id);
+        }
+      });
+
       setDisplayedData(response.data)
     } catch (err) {
       console.error("Error fetching songs:", err);
@@ -49,11 +60,15 @@ const SongList = ({ station }) => {
   }, [station]);
 
   return (
-    <Box >
+    <Box>
       <List>
-        {displayedData.map(song => (
-          <SongListItem key={song.id} song={song} />
-        ))}
+        <TransitionGroup component={null}>
+          {displayedSongs.map((song, index) => (
+            <CSSTransition key={song.id} timeout={500} classNames="fade-slide">
+              <SongListItem song={song} />
+            </CSSTransition>
+          ))}
+        </TransitionGroup>
       </List>
     </Box>
   );
