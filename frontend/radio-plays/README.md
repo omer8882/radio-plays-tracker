@@ -1,95 +1,70 @@
-# Radio Plays Tracker (MaHushma.com)
+# Getting Started with Create React App
 
-## Overview
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-This repository contains the complete source code for MaHushma.com, a passion project made for archiving and displaying everything played on selected radio stations. The project actively recognizes songs, logs them into a database, and presents the data through a user-friendly WebUI where users can view and analyze radio play statistics.
+## Available Scripts
 
-## Key Features
+In the project directory, you can run:
 
-- **Active Recognition and Archiving**: The system continuously monitors selected radio stations, recognizes the songs being played, and archives them in a database.
-- **Public Access and Visualization**: Users can explore the archived data, see what has been played on various stations, and access detailed statistics via the website.
+### `npm start`
 
-## Project Structure
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-### Recognizer
+The page will reload when you make changes.\
+You may also see any lint errors in the console.
 
-A Python process that actively listens to Radio Stations online, recognizes which songs are playing at any given moment in selected radio stations (using shazamio) and stores the data in an Elasticsearch database.
+### `npm test`
 
-**`backend/recognize/`** 
-  - **`recognizer.py`**: Logic for recognizing songs played on the radio stations.
-  - **`elastic_connector.py`**: Manages interactions with Elasticsearch for indexing.
-  - **`data_connect.py`**: Connecting the recognition logic and the database.
-  - **`config.json`**: Configuration file that defines the stations being monitored, Elasticsearch settings, and other key parameters.
+Launches the test runner in the interactive watch mode.\
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### Server
+### `npm run build`
 
-A Python process handling WebAPI requests using Uvicorn and Swagger to poll existing data from the Elasticsearch database (To be used by the WebUI)
+Builds the app for production to the `build` folder.\
+It correctly bundles React in production mode and optimizes the build for the best performance.
 
-  **`backend/data_poll/`**
-  - **`run.py`**: The main script to start the server service
-  - **`db_connect/`**
-    - **`db_connect.py`**: Contains the logic for connecting to the elastic database.
-  - **`server/`**
-    - **`models.py`**: Defines the data models
-    - **`routes.py`**: Defines the API endpoint routes
+The build is minified and the filenames include the hashes.\
+Your app is ready to be deployed!
 
-### Frontend
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-A React WebUI showing a variery of ways to view what played recently on the radio and analyze how much songs where played.
+### `npm run eject`
 
-- **`frontend/radio-plays-tracker/`**:
-  - **Key Features:**:
-    - **`Recently Played`**: View the last 10 songs played in each station.
-    - **`Top Hits`**: The Top 5 most played songs in the last 7/20 days.
-    - **`Search`**: Search a song to see details about it and breakdown of its number of plays in each station.
-  - Future Features:
-    - Wanna know what song you heard on the radio around 8am last Tuesday? Just use this not-yet-implemented feature to know! We already got the data, we just need to give you access to it!
-    - It's great to see the name of the song! Can't you give me the link to the Spotify/Youtube/Apple music? I can and I will!
-    - More details on the songs themselves please, you already got the page to fill it in... ok...
+**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
+If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-## Installation Instructions
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
 
-### Backend Setup
+You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/omer8882/radio-plays-tracker.git
-   cd radio-plays-tracker/backend
-   ```
+## Learn More
 
-2. **Install dependencies**:
-   ```bash
-   pip install -r data_poll/requirements.txt
-   ```
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-3. **Configure the system**:
-   - Update the `recognize/config.json` file with the necessary settings for your environment, including the radio stations to monitor and Elasticsearch configurations.
+To learn React, check out the [React documentation](https://reactjs.org/).
 
-4. **Run the Backend Services**:
-   - Start the recognition service:
-     ```bash
-     python recognize/recognizer.py
-     ```
-   - Start the data polling service (See all avalable API endpoints in `http://localhost:5000/docs#/`):
-     ```bash
-     python data_poll/run.py
-     ```
+### Code Splitting
 
-### Frontend Setup
+This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
 
-1. **Navigate to the frontend directory**:
-   `cd radio-plays-tracker/frontend/radio-plays-tracker`
-2. **Install dependencies**:
-   `npm install`
-3. **Run the frontend server**:
-   `npm start`
-4. Access in your web browser at `http://localhost:3000`.
+### Analyzing the Bundle Size
 
-## Contributing
+This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
 
-Contributions are welcome! If you'd like to help improve this project, please fork the repository and submit a pull request. Make sure to follow the code style and write clear commit messages.
+### Making a Progressive Web App
 
-## License
+This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+### Advanced Configuration
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+
+### Deployment
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+
+### `npm run build` fails to minify
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
