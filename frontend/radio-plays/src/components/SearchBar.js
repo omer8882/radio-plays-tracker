@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, InputBase } from '@mui/material';
+import { Box, InputBase, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
 const SearchBar = ({ query, setQuery, handleSearch }) => {
@@ -28,7 +28,9 @@ const SearchBar = ({ query, setQuery, handleSearch }) => {
         boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
       }}
     >
-      <SearchIcon />
+      <IconButton onClick={handleSearch} aria-label="Search">
+        <SearchIcon />
+      </IconButton>
       <InputBase
         value={query}
         onChange={handleInputChange}
