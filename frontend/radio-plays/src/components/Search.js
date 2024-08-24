@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import axios from 'axios';
 import SearchBar from './SearchBar';
 import SearchResultsPopover from './SearchResultsPopover';
@@ -20,6 +20,18 @@ const Search = () => {
       console.error("Error fetching search results:", error);
     }
   };
+
+  const showSongDetailsItem = (song) => (
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', margin: '0', borderRadius: '0' }}>
+      <Box>
+        <Typography variant="subtitle1" align="left">{`${song.name} - ${song.artists[0].name}`}</Typography>
+        <Typography variant="body2" align="left" color="textSecondary">{`${song.album.name}`}</Typography>
+      </Box>
+      <Box>
+        <Typography variant="subtitle1" align="right"></Typography>
+      </Box>
+    </Box>
+  );
 
   const handleClose = () => {
     setAnchor(null);
@@ -43,6 +55,7 @@ const Search = () => {
         handleClose={handleClose}
         results={results}
         textFieldRef={textFieldRef}
+        showItemDetails={showSongDetailsItem}
       />
     </Box>
   );

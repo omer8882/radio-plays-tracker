@@ -71,7 +71,7 @@ class DataConnect:
     def to_play_model(self, song, time_format="%H:%M"):
         artists = ', '.join([artist['name'] for artist in song['artists']])
         time = self.convert_to_clock_time(song['played_at'], time_format)
-        return {"title": song['name'], 'artist': artists, 'time': time, 'station': song.get('station')}
+        return {"title": song['name'], 'artist': artists, 'time': time, 'station': song.get('station'), 'album': song['album']['name']}
     
     def to_hits_model(self, songs):
         return [{"id": song['id'], "title": song['name'], 'artist': ', '.join([artist['name'] for artist in song['artists']]), 'hits': song['hits']} for song in songs]
@@ -88,9 +88,9 @@ class DataConnect:
         else:
             raise NoResults('Song not found')
 
-    def __get_last_plays(self, index, size=10):
+    def __get_last_plays(self, index, num=10):
         # Query the last X plays by sorting on played_at in descending order
-        s = Search(using=self.client, index=index).sort({'played_at': {'order': 'desc'}})[:size]
+        s = Search(using=self.client, index=index).sort({'played_at': {'order': 'desc'}})[:num]
         response = s.execute()
         plays = self.response_to_plays(response)
         return plays
@@ -216,8 +216,8 @@ class DataConnect:
     # # #   Public Methods  # # #
     # # # # # # # # # # # # # # #
 
-    def get_last_plays_from_station(self, station):
-        plays = self.__get_last_plays(f'{station}_plays_index')
+    def get_last_plays_from_station(self, station, num=10):
+        plays = self.__get_last_plays(f'{station}_plays_index', num)
         songs = self.__plays_list_to_songs_list(plays)
         results = []
         for song in songs:
@@ -253,3 +253,30 @@ class DataConnect:
 
     def get_song_plays_by_station(self, song_id, days=None):
         return self.__get_plays_breakdown_by_station(song_id, days)
+
+    def search_around(self, station: str, timestamp: str, range_minutes: int = 35):
+        """
+        Searches for songs played around a certain time on a specific station.
+        
+        :param station: The name of the radio station.
+        :param timestamp: The reference timestamp around which to search (string in "%Y-%m-%dT%H:%M:%S" format).
+        :param range_minutes: The time range around the timestamp to search in minutes.
+        :return: A list of songs played around the given time.
+        """
+        # Parse the timestamp to a datetime object
+        target_time = self.parse_time(timestamp)
+        if not target_time:
+            raise ValueError("Invalid timestamp format. Please use '%Y-%m-%dT%H:%M:%S'.")
+
+        # Compute the time range around the target time
+        start_time = target_time - timedelta(minutes=range_minutes)
+        end_time = target_time + timedelta(minutes=range_minutes)
+
+        # Use the existing __get_plays_in_range method to find plays
+        index = f"{station}_plays_index"
+        plays = self.__get_plays_in_range(index, start_time, end_time, size=100)  # Adjust size as needed
+
+        # Convert plays to song details
+        songs = self.__plays_list_to_songs_list(plays)
+        return songs #[self.to_play_model(song) for song in songs]
+
