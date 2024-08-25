@@ -6,19 +6,18 @@ This repository contains the complete source code for MaHushma.com, a passion pr
 
 ## Key Features
 
-- **Active Recognition and Archiving**: The system continuously monitors selected radio stations, recognizes the songs being played, and archives them in a database.
-- **Public Access and Visualization**: Users can explore the archived data, see what has been played on various stations, and access detailed statistics via the website.
+- **Active Recognition and Archiving**: Continuously monitoring selected radio stations, recognizing the songs being played, and archiving them in a database.
+- **Public Access and Visualization**: Interactive WebUI to explore the archived data, see what has been played on various stations, and detailed statistics.
 
 ## Project Structure
 
 ### Recognizer
 
-A Python process that actively listens to Radio Stations online, recognizes which songs are playing at any given moment in selected radio stations (using shazamio), extracts more details about the song (using spotify api) and stores the data in an Elasticsearch database.
+A Python process that actively listens to selected radio stations and recognizes which songs are playing at any given moment (using shazamio), extracts more details about the song (using spotify api) and stores the data in an Elasticsearch database.
 
 **`backend/recognize/`** 
   - **`recognizer.py`**: Logic for recognizing songs played on the radio stations.
   - **`elastic_connector.py`**: Manages interactions with Elasticsearch for indexing.
-  - **`data_connect.py`**: Connecting the recognition logic and the database.
   - **`config.json`**: Configuration file that defines the stations being monitored, Elasticsearch settings, and other key parameters.
 
 ### Server
@@ -35,16 +34,16 @@ A Python process handling WebAPI requests using Uvicorn and Swagger to poll exis
 
 ### Frontend
 
-A React WebUI showing a variery of ways to view what played recently on the radio and analyze how much songs where played.
+A React WebUI showing a variery of ways to view what played on the radio and interact with that data.
 
 - **`frontend/radio-plays-tracker/`**:
   - **Key Features:**:
     - **`Recently Played`**: View the last 10 songs played in each station.
-    - **`Top Hits`**: The Top 5 most played songs in the last 7/20 days.
-    - **`Search`**: Search a song to see details about it and breakdown of its number of plays in each station.
+    - **`Search Around`**: Wanna know what song you heard on the radio around 8am last Tuesday? Just search it!
+    - **`Top Hits`**: The Top 5 most played songs in the last 7/30 days.
   - Future Features:
-    - Wanna know what song you heard on the radio around 8am last Tuesday? Just use this not-yet-implemented feature to know! We already got the data, we just need to give you access to it!
-    - It's great to see the name of the song! Can't you give me the link to the Spotify/Youtube/Apple music? I can and I will!
+    - Search a song to see details about it and breakdown of its number of plays in each station. We already got the data, we just need to give you access to it!
+    - "It's great to see the name of the song! Can't you give me the link to the Spotify/Youtube/Apple music?" I can and I will!
     - More details on the songs themselves please, you already got the page to fill it in... ok...
 
 
@@ -87,7 +86,7 @@ A React WebUI showing a variery of ways to view what played recently on the radi
             "name": "radius100",
             "stream_url": "https://cdn.cybercdn.live/Radios_100FM/Audio/icecast.audio",
             "last_song_recorded": /* Used by Recognizer */,
-            "live_intro": 5 //Seconds, if the stream url has a station intro for every time it opens
+            "live_intro": 5 //(Seconds) if the stream url has a station intro for every time it opens
         }
         // Add more stations as needed
     ]
