@@ -24,10 +24,14 @@ const SearchAround = () => {
     setAnchor(textFieldRef.current);
 
     try {
-      const response = await axios.get(`https://server.mahushma.com/api/search_around?station=${station}&timestamp=${encodeURIComponent(formattedTimestamp)}&range_minutes=30`);
-      setResults(response.data);
+      const response = await axios.get(`https://server.mahushma.com/api/search_around?station=${station}&timestamp=${encodeURIComponent(formattedTimestamp)}&range_minutes=40`);
+      if (response.data.length > 0)
+        setResults(response.data);
+      else
+        setResults([{ name: 'No songs found', artists: [{ name: '' }], played_at: '' }]);
     } catch (error) {
       console.error("Error fetching search around results:", error);
+      setResults([]);
     }
   };
 
