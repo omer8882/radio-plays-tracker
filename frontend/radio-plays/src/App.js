@@ -18,6 +18,7 @@ function App() {
     <Container display="flex" >
       <Typography variant="h3" font align="center" sx={{margin:"8px 0px 8px 0px"}}>מה הושמע ברדיו</Typography>
       <SearchAround/>
+      <Typography variant="h5" font align="center" sx={{margin:"8px 0px 8px 0px"}}>:השמעות אחרונות</Typography>
       <Box display="flex" justifyContent="space-around" flexWrap="wrap" aria-label="Last played on stations">
         <StationContainer 
           station="glglz" 
