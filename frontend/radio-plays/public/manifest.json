@@ -1,6 +1,6 @@
 {
-  "short_name": "Radio Plays",
-  "name": "Radio Plays Tracker",
+  "short_name": "מה הושמע ברדיו",
+  "name": "מה הושמע ברדיו (גלגלצ, גלצ, רדיוס 100, אקו 99 ועוד)",
   "icons": [
     {
       "src": "assets/app_logo.png",
