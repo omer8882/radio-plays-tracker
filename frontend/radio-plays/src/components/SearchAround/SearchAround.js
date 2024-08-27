@@ -28,7 +28,7 @@ const SearchAround = () => {
       if (response.data.length > 0)
         setResults(response.data);
       else
-        setResults([{ name: 'No songs found', artists: [{ name: '' }], played_at: '' }]);
+        setResults([{ name: 'לא נמצאו שירים לזמן זה', artists: [{ name: '' }], played_at: '' }]);
     } catch (error) {
       console.error("Error fetching search around results:", error);
       setResults([]);
