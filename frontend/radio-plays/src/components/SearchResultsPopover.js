@@ -8,14 +8,11 @@ const overlayColor = 'rgba(0, 0, 0, 0.07)';
 const SearchResultsPopover = ({ id, open, anchorEl, handleClose, results, textFieldRef, showItemDetails}) => {
   const [showModal, setShowModal] = useState(false);
   const [songDetails, setSongDetails] = useState({});
-  const [stationBreakdown, setStationBreakdown] = useState({});
   const listRef = useRef(null); // Reference to the List element
 
   const handleSongClick = async (song) => {
     try {
       setSongDetails(song);
-      const stationBreakdownResponse = await axios.get(`https://server.mahushma.com/api/song_plays_by_station?song_id=${song.id}`);
-      setStationBreakdown(stationBreakdownResponse.data);
       setShowModal(true);
     } catch (error) {
       console.error('Error fetching song details or plays by station:', error);
@@ -64,7 +61,6 @@ const SearchResultsPopover = ({ id, open, anchorEl, handleClose, results, textFi
         showModal={showModal}
         setShowModal={setShowModal}
         songDetails={songDetails}
-        stationBreakdown={stationBreakdown}
       />
     </>
   );

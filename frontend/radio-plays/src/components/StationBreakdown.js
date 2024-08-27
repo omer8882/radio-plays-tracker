@@ -65,7 +65,7 @@ return (
             </Box>
             </Box>
         ) : (
-            <Typography>No station breakdown available.</Typography>
+            <Typography></Typography>
         )}
     </Box>
 );
