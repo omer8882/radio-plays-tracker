@@ -32,7 +32,7 @@ const SearchAroundBar = ({ onSearch }) => {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box display="flex" flexWrap="wrap" justifyContent="center" dir="rtl" alignItems="center" gap={2} 
-       style={{backgroundColor: "#F5F5F5", borderRadius: '10px', padding:'12px', margin: '10px 2px 5px 2px', width: '100%', boxSizing: 'border-box'}} sx={{ boxShadow: 2 }}>
+       style={{backgroundColor: "#F5F5F5", borderRadius: '10px', padding:'12px', margin: '10px 2px 5px 2px', width: '100%', boxSizing: 'border-box'}} sx={{ boxShadow: 3 }}>
           <Typography variant="h6">מה הושמע ב</Typography>
 
           <DatePicker

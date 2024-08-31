@@ -66,7 +66,7 @@ const SearchAround = () => {
   const id = open ? 'search-around-popover' : undefined;
 
   return (
-    <Box sx={{ display: 'flex', width: '100%',justifyContent: "center"}}>
+    <Box sx={{ display: 'flex', width: '100%', justifyContent: "center"}}>
       <Box ref={textFieldRef}>
         <SearchAroundBar onSearch={handleSearch} />
       </Box>
