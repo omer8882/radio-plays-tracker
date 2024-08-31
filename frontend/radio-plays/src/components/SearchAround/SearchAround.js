@@ -67,7 +67,7 @@ const SearchAround = () => {
 
   return (
     <Box sx={{ display: 'flex', width: '100%',justifyContent: "center"}}>
-      <Box ref={textFieldRef} display="flex" justifyContent="center" alignItems="center" mb={2}>
+      <Box ref={textFieldRef}>
         <SearchAroundBar onSearch={handleSearch} />
       </Box>
       <SearchResultsPopover
@@ -82,5 +82,4 @@ const SearchAround = () => {
     </Box>
   );
 };
-
 export default SearchAround;
