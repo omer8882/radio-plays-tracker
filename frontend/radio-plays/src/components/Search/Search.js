@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Box, Typography } from '@mui/material';
 import axios from 'axios';
 import SearchBar from './SearchBar';
-import SearchResultsPopover from './SearchResultsPopover';
+import SearchResultsPopover from '../SearchResultsPopover';
 
 const Search = () => {
   const [query, setQuery] = useState('');
