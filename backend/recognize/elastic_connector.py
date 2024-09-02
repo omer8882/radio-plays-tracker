@@ -14,6 +14,11 @@ class ElasticConnector:
         if not self.es.exists(index=self.songs_index_name, id=song['id']):
             self.es.index(index=self.songs_index_name, id=song['id'], document=song)
             self.logger.info(f"Indexed: {', '.join([artist['name'] for artist in song['artists']])} - {song['name']} ({song['album']['release_date'][:4]})")
+        else:
+            existing_song = self.es.get(index=self.songs_index_name, id=song['id'])
+            if 'external_links' not in existing_song['_source']:
+                self.es.index(index=self.songs_index_name, id=song['id'], document=song)
+                self.logger.info(f"Reindexed: {', '.join([artist['name'] for artist in song['artists']])} - {song['name']} ({song['album']['release_date'][:4]}) with external links: {song['external_links']}")
 
     def index_play(self, full_record, station = None):
         play_document = {'song_id': full_record['id'], 'played_at': full_record['played_at']}
