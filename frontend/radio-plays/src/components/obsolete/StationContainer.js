@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Accordion, AccordionSummary, AccordionDetails, } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import SongList from './SongList';
+import SongList from '../SongList';
 
 const StationContainer = ({ station, logo, bgColor }) => {
   return (
