@@ -5,15 +5,14 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimeField } from '@mui/x-date-pickers/TimeField';
 
-const stations = 
-{
+const stations = {
   'גלגלצ': 'glglz',
   'רדיוס 100': 'radius100',
   'אקו 99': 'eco99',
   'כאן 88': 'kan88',
-  '103': 'fm103',
+  '103 fm': '103fm',
   'גלצ': 'galatz'
-}
+};
 
 const SearchAroundBar = ({ onSearch }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -21,7 +20,6 @@ const SearchAroundBar = ({ onSearch }) => {
   const [selectedStation, setSelectedStation] = useState('glglz');
 
   const handleSearch = () => {
-    // Call the onSearch function with the selected values
     onSearch({
       date: selectedDate,
       time: selectedTime,
@@ -31,60 +29,96 @@ const SearchAroundBar = ({ onSearch }) => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box display="flex" flexWrap="wrap" justifyContent="center" dir="rtl" alignItems="center" gap={2} 
-       style={{backgroundColor: "#F5F5F5", borderRadius: '10px', padding:'12px', margin: '10px 2px 5px 2px', width: '100%', boxSizing: 'border-box'}} sx={{ boxShadow: 3 }}>
-          <Typography variant="h6">מה הושמע ב</Typography>
+      <Box
+        display="flex"
+        flexWrap="wrap"
+        justifyContent="center"
+        dir="rtl"
+        alignItems="center"
+        gap={2}
+        style={{
+          backgroundColor: "#F5F5F5",
+          borderRadius: '10px',
+          padding: '8px',
+          margin: '10px 2px 5px 2px',
+          width: '100%',
+          boxSizing: 'border-box'
+        }}
+        sx={{ boxShadow: 3 }}
+      >
+        <Typography variant="subtitle2">מה הושמע ב</Typography>
 
-          <DatePicker
-            label="יום"
-            value={selectedDate}
-            dir="rtl"
-            onChange={(newValue) => setSelectedDate(newValue)}
-            sx={{ width: 150, minWidth: 150 }}
-            renderInput={(params) => <TextField {...params} variant="outlined" size="small" 
-            sx={{ width: 50 }}
-            />}
-          />
+        <DatePicker
+          label="יום"
+          value={selectedDate}
+          onChange={(newValue) => setSelectedDate(newValue)}
+          sx={{ 
+            width: 135, 
+            '& .MuiInputBase-root': { 
+              height: 33, 
+              fontSize: '0.8rem' // Make text smaller
+            } ,
+            '& .MuiSvgIcon-root': {
+              fontSize: '1rem',
+              padding: 0
+            }
+          }}
+          renderInput={(params) => (
+            <TextField {...params} variant="outlined" size="small" />
+          )}
+        />
 
-          <Typography variant="h6"> בסביבות </Typography>
+        <Typography variant="subtitle2">בסביבות</Typography>
 
+        <TimeField
+          label="שעה"
+          value={selectedTime}
+          format="HH:mm"
+          onChange={(newValue) => setSelectedTime(newValue)}
+          sx={{ 
+            width: 60, 
+            '& .MuiInputBase-root': { 
+              height: 33, 
+              fontSize: '0.8rem' // Make text smaller
+            } 
+          }}
+          renderInput={(params) => (
+            <TextField {...params} variant="outlined" size="small" />
+          )}
+        />
 
-          <TimeField
-            label="שעה"
-            value={selectedTime}
-            format="HH:mm"
-            dir="rtl"
-            onChange={(newValue) => setSelectedTime(newValue)}
-            sx={{ width: 80, minWidth: 80 }}
-            renderInput={(params) => 
-              <TextField  {...params} variant="outlined" size="small"/>}
-          />
+        <Typography variant="subtitle2">בתחנה</Typography>
 
-          <Typography variant="h6"> בתחנה </Typography>
+        <TextField
+          select
+          label="תחנה"
+          value={selectedStation}
+          onChange={(event) => setSelectedStation(event.target.value)}
+          variant="outlined"
+          size="small"
+          sx={{ 
+            width: 100, 
+            '& .MuiInputBase-root': { 
+              height: 33, 
+              fontSize: '0.8rem' // Make text smaller
+            } 
+          }}
+        >
+          {Object.entries(stations).map(([key, value]) => (
+            <MenuItem key={key} value={value}>
+              {key}
+            </MenuItem>
+          ))}
+        </TextField>
 
-          <TextField
-            select
-            label="תחנה"
-            InputLabelProps={{alignItems: "right"}}
-            value={selectedStation}
-            onChange={(event) => setSelectedStation(event.target.value)}
-            variant="outlined"
-            size="small"
-            sx={{ width: 'auto', minWidth: 150 }}
-            >
-            {Object.entries(stations).map(([key, value]) => (
-              <MenuItem key={key} value={value}>
-                {key}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSearch}>
-            חיפוש
-          </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          size="small"
+          sx={{ height: 30, fontSize: '0.8rem' }}
+          onClick={handleSearch}>
+          חיפוש
+        </Button>
       </Box>
     </LocalizationProvider>
   );
