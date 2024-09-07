@@ -33,7 +33,7 @@ const stationsInfo = {
     },
     'galatz': {
       logo: galatzLogo,
-      bgColor: '#f0f0f0'
+      bgColor: '#ebe834'
     }
 };
 
