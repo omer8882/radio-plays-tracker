@@ -71,7 +71,7 @@ class DataConnect:
     def to_play_model(self, song, time_format="%H:%M"):
         artists = ', '.join([artist['name'] for artist in song['artists']])
         time = self.convert_to_clock_time(song['played_at'], time_format)
-        return {"title": song['name'], 'artist': artists, 'time': time, 'station': song.get('station'), 'album': song['album']['name']}
+        return {"id": song['id'], "title": song['name'], 'artist': artists, 'time': time, 'station': song.get('station'), 'album': song['album']['name']}
     
     def to_hits_model(self, songs):
         return [{"id": song['id'], "title": song['name'], 'artist': ', '.join([artist['name'] for artist in song['artists']]), 'hits': song['hits']} for song in songs]
