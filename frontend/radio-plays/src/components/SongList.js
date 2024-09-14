@@ -54,8 +54,8 @@ const SongList = ({ station }) => {
             boxShadow: 2,
             boxSizing: 'border-box',
             border: '1px solid',
-            borderTop: '0px',
             borderColor: '#c0c0c0',
+            borderTop: '0px',
             }}>
       <List>
         <TransitionGroup component={null}>

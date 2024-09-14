@@ -1,22 +1,25 @@
 import React from 'react';
-import { Container, Box, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import TopHits from './components/TopHits';
-//import Search from './components/Search';
 import SearchAround from './components/SearchAround/SearchAround';
 import LastPlays from './components/LastPlays/LastPlays';
+import AppBar from './components/AppBar';
 
 function App() {
   return (
-    <Container display="flex" >
-      <Typography variant="h3" font align="center" sx={{margin:"8px 0px 8px 0px"}}>מה הושמע ברדיו</Typography>
-      <SearchAround/>
-      <Box display="flex" justifyContent="space-around" flexWrap="wrap" aria-label="Last played on stations">
-        <LastPlays/>
-        <Box my={4}>
-          <TopHits />
+    <Box sx={{ width: '100%', backgroundColor: '#EEEEEE'}}>
+      <AppBar />
+      
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '90%', mx: 'auto' }}>
+        <SearchAround />
+        <Box display="flex" justifyContent="space-around" flexWrap="wrap" aria-label="Last played on stations" sx={{ width: '100%', padding: '0 20px' }}>
+          <LastPlays />
+          <Box my={4}>
+            <TopHits />
+          </Box>
         </Box>
       </Box>
-    </Container>
+    </Box>
   );
 }
 

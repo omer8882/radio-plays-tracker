@@ -39,7 +39,7 @@ const SearchResultsPopover = ({ id, open, anchorEl, handleClose, results, textFi
         onClose={handleClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-        PaperProps={{ style: { width: textFieldRef.current ? textFieldRef.current.clientWidth : '100%', borderRadius: '16px' } }}
+        PaperProps={{ style: { backgroundColor: '#dedadc', width: textFieldRef.current ? textFieldRef.current.clientWidth : '100%', borderRadius: '16px' } }}
         sx={{ margin: '7px 0px 0px 0px' }}
       >
         <Box sx={{ p: 0, maxHeight: '75vh', overflowY: 'auto' }} ref={listRef}>

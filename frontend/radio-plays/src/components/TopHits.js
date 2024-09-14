@@ -55,9 +55,8 @@ const TopHits = () => {
 
     fetchStationBreakdowns();
   }, [topHits, timeRange]);
-
   return (
-    <Paper style={{ backgroundColor: '#DCE9C4', padding: '0px', borderRadius: '15px', margin: '10px 2px 5px 2px', width: '100%' }} sx={{ boxShadow: 6 }}>
+    <Paper style={{ backgroundColor: '#dedadc', padding: '0px', borderRadius: '15px', margin: '10px 2px 5px 2px', width: '100%', border: '1px solid', borderColor: '#c0c0c0',}} sx={{ boxShadow: 6 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" style={{ padding: '6px' }}>
         <ToggleButtonGroup
           value={timeRange}

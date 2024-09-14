@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Typography, Box, Button, TextField, MenuItem } from '@mui/material';
+import { Typography, Box, Button, TextField, MenuItem, IconButton } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimeField } from '@mui/x-date-pickers/TimeField';
+import SearchIcon from '@mui/icons-material/Search';
 
 const stations = {
   'גלגלצ': 'glglz',
@@ -35,16 +36,18 @@ const SearchAroundBar = ({ onSearch }) => {
         justifyContent="center"
         dir="rtl"
         alignItems="center"
-        gap={2}
+        gap={1}
         style={{
-          backgroundColor: "#F5F5F5",
+          backgroundColor: "#dedadc", //F5F5F5
           borderRadius: '10px',
           padding: '8px',
-          margin: '10px 2px 5px 2px',
+          margin: '20px 2px 5px 2px',
           width: '100%',
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          border: '1px solid',
+          borderColor: '#c0c0c0',
         }}
-        sx={{ boxShadow: 3 }}
+        sx={{ boxShadow: 2 }}
       >
         <Typography variant="subtitle2">מה הושמע ב</Typography>
 
@@ -111,14 +114,13 @@ const SearchAroundBar = ({ onSearch }) => {
           ))}
         </TextField>
 
-        <Button
-          variant="contained"
+        <IconButton 
           color="primary"
           size="small"
           sx={{ height: 30, fontSize: '0.8rem' }}
           onClick={handleSearch}>
-          חיפוש
-        </Button>
+          <SearchIcon fontSize="small" />
+        </IconButton>
       </Box>
     </LocalizationProvider>
   );
