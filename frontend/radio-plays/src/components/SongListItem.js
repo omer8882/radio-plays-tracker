@@ -1,17 +1,35 @@
 import React from 'react';
 import { ListItem, Box, Typography } from '@mui/material';
+import EqualizerIcon from './EqualizerIcon';
 
 const SongListItem = ({ song }) => {
     const overlayColor = 'rgba(0, 0, 0, 0.07)'; // 10% opaque black
-    return (
-        <ListItem style={{ display: 'flex', width: '100%', justifyContent: 'space-between', padding: '10px 15px', backgroundColor: overlayColor, margin: '0', borderRadius: '0' }}>
-            <Box>
-                <Typography variant="subtitle1">{song.time}</Typography>
+
+    const isSongPlaying = (playedAt) => {
+        const now = new Date();
+        const [playedHour, playedMinute] = playedAt.split(':').map(Number);
+        const playedTime = new Date(now);
+        playedTime.setHours(playedHour, playedMinute, 0, 0); // Set hours and minutes from the playedAt string
+        const differenceInMinutes = (now - playedTime) / (1000 * 60); // Convert to minutes
+        console.log(`isSongPlaying played ${playedTime} diff ${differenceInMinutes}`)
+        return differenceInMinutes <= 3 && differenceInMinutes >= 0; // Only return true if it's within 3 minutes and not in the future
+      };
+
+      return (
+        <ListItem style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 15px', backgroundColor: overlayColor, margin: '0', borderRadius: '0', alignItems: 'center' }}>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography variant="subtitle1" sx={{ marginRight: '8px' }}>{song.time}</Typography>
+                {isSongPlaying(song.time) && (
+                  <EqualizerIcon sx={{ animation: 'equalizer 1s infinite ease-in-out' }} />
+                )}
             </Box>
-            <Box>
-                <Typography variant="subtitle1" align="right">{song.title}</Typography>
-                <Typography variant="body2" color="textSecondary" align="right">{song.artist}</Typography>
+    
+            <Box sx={{ textAlign: 'right' }}>
+                <Typography variant="subtitle1">{song.title}</Typography>
+                <Typography variant="body2" color="textSecondary">{song.artist}</Typography>
             </Box>
+    
         </ListItem>
     );
 };

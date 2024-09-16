@@ -1,0 +1,41 @@
+.equalizer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    width: 16px; /* Adjust width based on the size of the bars */
+    height: 18px; /* Adjust height based on desired size */
+  }
+  
+  .bar {
+    width: 2px;
+    height: 100%; /* Full height, but we animate the scaleY */
+    background-color: black; /* Change this color as needed */
+    animation: equalizerBar 1.2s infinite ease-in-out;
+    transform-origin: bottom; /* Anchors the scaling animation to the bottom */
+  }
+  
+  .bar:nth-child(1) {
+    animation-delay: -0.6s;
+  }
+  .bar:nth-child(2) {
+    animation-delay: -0.48s;
+  }
+  .bar:nth-child(3) {
+    animation-delay: -0.23s;
+  }
+  .bar:nth-child(4) {
+    animation-delay: -0.15s;
+  }
+  .bar:nth-child(5) {
+    animation-delay: 0s;
+  }
+  
+  @keyframes equalizerBar {
+    0%, 100% {
+      transform: scaleY(0.3); /* Bar height at its smallest */
+    }
+    50% {
+      transform: scaleY(0.9); /* Bar height at its tallest */
+    }
+  }
+  
