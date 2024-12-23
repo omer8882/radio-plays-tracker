@@ -5,3 +5,6 @@ uvicorn
 datetime
 shazamio
 elasticsearch_dsl
+
+requests
+tqdm
