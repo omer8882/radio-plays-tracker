@@ -207,11 +207,15 @@ class RecognizeSongs:
             current_time: float = time.time()
             if current_time - start_time > duration:
                 break
-
-        with open(filename, 'wb') as file:
+        
+        temp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), './temp')
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
+    
+        file_path = os.path.join(temp_dir , filename)
+        with open(file_path, 'wb') as file:
             file.write(audio_data)
 
-        file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"File not found: {file_path}")
         
