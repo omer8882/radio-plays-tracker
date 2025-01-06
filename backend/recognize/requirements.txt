@@ -1,0 +1,8 @@
+pydub
+fastapi
+asyncio
+datetime
+shazamio
+requests
+elasticsearch
+tqdm
