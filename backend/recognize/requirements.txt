@@ -1,9 +1,8 @@
 pydub
 fastapi
 asyncio
-uvicorn
 datetime
-elasticsearch_dsl
 shazamio
 requests
+elasticsearch
 tqdm
