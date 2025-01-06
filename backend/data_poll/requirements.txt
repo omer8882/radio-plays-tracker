@@ -4,3 +4,6 @@ asyncio
 uvicorn
 datetime
 elasticsearch_dsl
+shazamio
+requests
+tqdm
