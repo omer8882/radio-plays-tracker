@@ -60,7 +60,7 @@ const SearchResultsPopover = ({ id, open, anchorEl, handleClose, results, textFi
       <SongDetailsPage
         showModal={showModal}
         setShowModal={setShowModal}
-        songDetails={songDetails}
+        songId={songDetails.id}
       />
     </>
   );
