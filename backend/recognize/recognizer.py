@@ -320,12 +320,12 @@ if __name__ == '__main__':
     recognize = RecognizeSongs()
     stations = recognize.get_stations_config()
     while True:
-        start_time = time.perf_counter()
+        #start_time = time.perf_counter()
         for station in stations:
             try:
                 recognize.capture_song(station['name'], station['stream_url'])
             except Exception as e:
                 recognize.logger.error(f"Something went wrong capturing '{station['name']}'. Details: {e}", extra={'station': station['name']})
-        elapsed_time = (time.perf_counter() - start_time)
-        print(f"{datetime.now()} - Elapsed time: {int(elapsed_time)}s")
-        time.sleep(40)
+        #elapsed_time = (time.perf_counter() - start_time)
+        #print(f"{datetime.now()} - Elapsed time: {int(elapsed_time)}s")
+        #time.sleep(40)
