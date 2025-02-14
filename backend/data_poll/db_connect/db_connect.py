@@ -253,6 +253,9 @@ class DataConnect:
 
     def get_song_plays_by_station(self, song_id, days=None):
         return self.__get_plays_breakdown_by_station(song_id, days)
+    
+    def get_song_details(self, song_id):
+        return self.__get_song_info(song_id)
 
     def search_around(self, station: str, timestamp: str, range_minutes: int = 35):
         """
