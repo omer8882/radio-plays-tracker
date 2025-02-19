@@ -8,6 +8,12 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+echo "[ --- Pulling Latest --- ]"
+cd ../
+git fetch
+git pull
+cd ./scripts
+
 echo "[ --- Building All Processes --- ]"
 ./build-mahushma.sh
 if [ $? -ne 0 ]; then

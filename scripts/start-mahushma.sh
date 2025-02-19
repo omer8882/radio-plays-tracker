@@ -23,7 +23,7 @@ fi
 
 echo
 echo "Starting Server"
-sudo systemctl start mahushma-sevrer
+sudo systemctl start mahushma-server
 if systemctl is-active --quiet mahushma-server; then
   echo "Server started successfully."
 else
