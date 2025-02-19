@@ -138,7 +138,7 @@ class DataConnect:
     
     def __get_plays_by_song_id(self, song_id, days=None):
         indices = ','.join(self.plays_indices)
-        s = Search(using=self.client, index=indices).query(Match(song_id=song_id))[:100]
+        s = Search(using=self.client, index=indices).query(Match(song_id=song_id))[:1000]
         response = s.execute()
         plays = [hit['_source'].to_dict() | {'station': hit['_index'].split('_')[0]} for hit in response['hits']['hits']]
         
