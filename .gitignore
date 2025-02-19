@@ -8,6 +8,7 @@ config.secret.json
 proccessfilesandcleanup.py
 *.mp3
 temp/
+frontend/radio-plays/build/
 
 .vscode
 
@@ -21,7 +22,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
+#build/
 develop-eggs/
 dist/
 downloads/
@@ -186,7 +187,7 @@ cython_debug/
 **/coverage
 
 # production
-**/build
+#**/build
 
 # misc
 package-lock.json
