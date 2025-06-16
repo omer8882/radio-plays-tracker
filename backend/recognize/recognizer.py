@@ -160,7 +160,7 @@ class TrackProcessor:
     def __init__(self, es_connector: ElasticConnector):
         self.es_connector = es_connector
     
-    def process_track(self, track: Dict[str, Any], shazam_track: Dict[str, Any], spotify_track: Dict[str, Any]) -> None:
+    def process_track(self, track: Dict[str, Any], shazam_track: Dict[str, Any], spotify_track: Dict[str, Any], station: str) -> None:
         simplified = self._simplify_spotify_data(spotify_track)
         self._add_external_links(simplified, shazam_track, spotify_track)
         self.es_connector.index_song_if_needed(simplified)
@@ -300,7 +300,7 @@ class RadioPlaysTracker:
             )
             
             # Process track
-            self.track_processor.process_track(spotify_track, track, spotify_track)
+            self.track_processor.process_track(spotify_track, track, spotify_track, station.name)
             self.config_manager.update_last_song_recorded(station.name, spotify_track['id'])
             
         except Exception as e:
