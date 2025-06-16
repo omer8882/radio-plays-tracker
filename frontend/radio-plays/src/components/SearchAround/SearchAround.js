@@ -15,7 +15,7 @@ const SearchAround = () => {
 
     // Combine date and time into a single timestamp
     const timestamp = new Date(date);
-    timestamp.setHours(time.getHours() + 2);
+    timestamp.setHours(time.getHours() + 3);
     timestamp.setMinutes(time.getMinutes());
     setChosenTimestamp(timestamp)
     
