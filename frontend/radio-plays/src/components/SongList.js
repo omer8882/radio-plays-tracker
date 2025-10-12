@@ -30,7 +30,7 @@ const SongList = ({ station }) => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`https://server.mahushma.com/api/station_last_plays?station=${station.name}`);
+      const response = await axios.get(`https://localhost:5001/api/station_last_plays?station=${station.name}`);
       setDisplayedData(response.data);
     } catch (err) {
       console.error("Error fetching songs:", err);

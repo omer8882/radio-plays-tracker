@@ -4,5 +4,6 @@ asyncio
 datetime
 shazamio
 requests
-elasticsearch
+psycopg2-binary
 tqdm
+tzdata

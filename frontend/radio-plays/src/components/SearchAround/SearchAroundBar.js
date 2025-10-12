@@ -8,7 +8,7 @@ import SearchIcon from '@mui/icons-material/Search';
 
 const stations = {
   'גלגלצ': 'glglz',
-  'רדיוס 100': 'radius100',
+  'רדיוס 100': '100fm',
   'אקו 99': 'eco99',
   'כאן 88': 'kan88',
   '103 fm': '103fm',

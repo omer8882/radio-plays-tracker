@@ -15,16 +15,26 @@ const SearchAround = () => {
 
     // Combine date and time into a single timestamp
     const timestamp = new Date(date);
-    timestamp.setHours(time.getHours() + 3);
+    timestamp.setHours(time.getHours());
     timestamp.setMinutes(time.getMinutes());
-    setChosenTimestamp(timestamp)
+    timestamp.setSeconds(0);
+    timestamp.setMilliseconds(0);
+    setChosenTimestamp(timestamp);
     
-    const formattedTimestamp = timestamp.toISOString().slice(0, 19); // Format as required
+    // Format as local time (Israel time) without timezone conversion
+    // YYYY-MM-DDTHH:MM:SS format (no Z suffix, so backend treats it as local Israel time)
+    const year = timestamp.getFullYear();
+    const month = String(timestamp.getMonth() + 1).padStart(2, '0');
+    const day = String(timestamp.getDate()).padStart(2, '0');
+    const hours = String(timestamp.getHours()).padStart(2, '0');
+    const minutes = String(timestamp.getMinutes()).padStart(2, '0');
+    const seconds = String(timestamp.getSeconds()).padStart(2, '0');
+    const formattedTimestamp = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 
     setAnchor(textFieldRef.current);
 
     try {
-      const response = await axios.get(`https://server.mahushma.com/api/search_around?station=${station}&timestamp=${encodeURIComponent(formattedTimestamp)}&range_minutes=40`);
+      const response = await axios.get(`https://localhost:5001/api/search_around?station=${station}&timestamp=${encodeURIComponent(formattedTimestamp)}&range_minutes=40`);
       if (response.data.length > 0)
         setResults(response.data);
       else
@@ -37,8 +47,9 @@ const SearchAround = () => {
 
   const showSongDetailsItem = (song, chosenTimestamp) => {
     const chosenTime = new Date(chosenTimestamp).getTime();
-    const playedTime = new Date(song.played_at).getTime();
+    const playedTime = new Date(song.playedAt).getTime();
     const timeDifference = Math.abs(chosenTime - playedTime) / (1000 * 60); // Difference in minutes
+    console.log(`Chosen time: ${chosenTime}, Played time: ${playedTime}, Time difference: ${timeDifference} minutes`);
     const maxOpacity = 0.2; // Max opacity for closest time
     const minOpacity = 0.0; // Min opacity for furthest time
     const opacity = Math.max(minOpacity, maxOpacity - (timeDifference / 60)); // Assuming 30 minutes range
@@ -47,7 +58,7 @@ const SearchAround = () => {
     return (
       <Box sx={{ display: 'flex', background: backgroundColor, padding: '15px 20px', width: '100%', justifyContent: 'space-between', margin: '0', borderRadius: '0' }}>
         <Box>
-          <Typography variant="subtitle1" align="left" padding='7px 0px 0px 7px'>{song.played_at.slice(11, 16)}</Typography>
+          <Typography variant="subtitle1" align="left" padding='7px 0px 0px 7px'>{song.playedAt.slice(11, 16)}</Typography>
         </Box>
         <Box margin='0px 5px 0px 0px'>
           <Typography variant="subtitle1" align="right">{song.name}</Typography>

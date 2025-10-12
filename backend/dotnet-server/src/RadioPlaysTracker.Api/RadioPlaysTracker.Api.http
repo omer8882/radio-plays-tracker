@@ -1,0 +1,6 @@
+@RadioPlaysTracker.Api_HostAddress = http://localhost:5122
+
+GET {{RadioPlaysTracker.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

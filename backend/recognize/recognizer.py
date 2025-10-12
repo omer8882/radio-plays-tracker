@@ -1,14 +1,22 @@
 from typing import Any, Dict, List, Optional, Tuple, Protocol
 from pydub import AudioSegment
 import os, sys, requests, time, base64
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import asyncio
-from shazamio import Shazam
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# Timezone handling with fallback
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    # Fallback for older Python versions
+    from backports.zoneinfo import ZoneInfo
+
+#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from helper import Helper
-from elastic_connector import ElasticConnector
+from postgres_connector import PostgresConnector
+from shazamio import Shazam
 
 @dataclass
 class StationConfig:
@@ -157,18 +165,22 @@ class SongRecognizer:
         return await self.shazam.recognize(audio_path)
 
 class TrackProcessor:
-    def __init__(self, es_connector: ElasticConnector):
-        self.es_connector = es_connector
+    def __init__(self, db_connector: PostgresConnector):
+        self.db_connector = db_connector
     
     def process_track(self, track: Dict[str, Any], shazam_track: Dict[str, Any], spotify_track: Dict[str, Any], station: str) -> None:
         simplified = self._simplify_spotify_data(spotify_track)
         self._add_external_links(simplified, shazam_track, spotify_track)
-        self.es_connector.index_song_if_needed(simplified)
-        self.es_connector.index_play(simplified, station)
+        self.db_connector.index_song_if_needed(simplified)
+        self.db_connector.index_play(simplified, station)
     
     def _simplify_spotify_data(self, raw: Dict[str, Any]) -> Dict[str, Any]:
+        # Always use Israel timezone regardless of server location
+        israel_tz = ZoneInfo('Asia/Jerusalem')
+        israel_now = datetime.now(timezone.utc).astimezone(israel_tz)
+        
         return {
-            "played_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "played_at": israel_now.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "id": raw.get("id"),
             "name": raw.get("name"),
             "artists": [
@@ -257,7 +269,7 @@ class RadioPlaysTracker:
         )
         self.stream_capture = StreamCapture()
         self.song_recognizer = SongRecognizer()
-        self.track_processor = TrackProcessor(ElasticConnector())
+        self.track_processor = TrackProcessor(PostgresConnector())
         self.logger = Helper.get_rotating_logger(
             'RadioPlaysFetch',
             log_file='radio_plays_fetch.log',
@@ -314,8 +326,9 @@ class RadioPlaysTracker:
             stations = self.config_manager.get_stations()
             for station in stations:
                 await self.process_station(station)
-            await asyncio.sleep(40)
+            await asyncio.sleep(20)
 
 if __name__ == '__main__':
+    print("Starting Radio Plays Tracker...")
     tracker = RadioPlaysTracker()
     asyncio.run(tracker.run())

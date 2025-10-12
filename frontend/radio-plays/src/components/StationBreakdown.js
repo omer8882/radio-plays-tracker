@@ -19,7 +19,7 @@ const stationsInfo = {
       logo: eco99Logo,
       bgColor: '#BBDEFB'
     },
-    'radius100': {
+    '100fm': {
       logo: fm100Logo,
       bgColor: '#cccc31'
     },

@@ -2,121 +2,134 @@
 
 ## Overview
 
-This repository contains the complete source code for MaHushma.com, a passion project made for archiving and displaying everything played on selected radio stations. The project actively recognizes songs, logs them into a database, and presents the data through a user-friendly WebUI where users can view and analyze radio play statistics.
+Track what's playing on radio stations in real-time! This project continuously monitors radio stations, recognizes songs using Shazam and Spotify APIs, stores the data in PostgreSQL, and presents it through an interactive web interface.
 
-## Key Features
+## ✨ Features
 
-- **Active Recognition and Archiving**: Continuously monitoring selected radio stations, recognizing the songs being played, and archiving them in a database.
-- **Public Access and Visualization**: Interactive WebUI to explore the archived data, see what has been played on various stations, and detailed statistics.
+- 🎵 **Real-Time Recognition**: Active monitoring of 6 radio stations (Galglatz, Galatz, 100FM, 103FM, Eco99, Kan88)
+- 📊 **Rich Analytics**: View recently played songs, top hits, and search by timestamp
+- 🔍 **Search Around**: Remember hearing a song Tuesday at 8am? Search by station and time to find it
+- 📈 **Station Breakdown**: See how many times each song was played across different stations
+- 🌐 **Public Web UI**: Clean, responsive interface built with React and Material-UI
 
-## Project Structure
+## 🏗️ Architecture
 
-### Recognizer
+### Backend
 
-A Python process that actively listens to selected radio stations and recognizes which songs are playing at any given moment (using shazamio), extracts more details about the song (using spotify api) and stores the data in an Elasticsearch database.
+#### **Song Recognizer** (`backend/recognize/`)
+Python service that captures radio streams and identifies songs.
+- **Stack**: Python 3.x, ShazamIO, Spotify API, psycopg2
+- **Function**: Continuously listens to radio streams, recognizes songs, enriches metadata
+- **Database**: Writes directly to PostgreSQL
 
-**`backend/recognize/`** 
-  - **`recognizer.py`**: Logic for recognizing songs played on the radio stations.
-  - **`elastic_connector.py`**: Manages interactions with Elasticsearch for indexing.
-  - **`config.json`**: Configuration file that defines the stations being monitored, Elasticsearch settings, and other key parameters.
+#### **API Server** (`backend/dotnet-server/`)
+RESTful API built with .NET 8+ following Clean Architecture principles.
+- **Stack**: ASP.NET Core Web API, Entity Framework Core, PostgreSQL (Npgsql)
+- **Architecture**: Clean Architecture (Api → Core → Infrastructure layers)
+- **Endpoints**: 
+  - `/api/station_last_plays` - Recent plays by station
+  - `/api/top_hits` - Most played songs in last 7/30 days
+  - `/api/search_around` - Find songs by timestamp
+  - `/api/song_details` - Detailed song information
+  - `/api/stations` - List all monitored stations
 
-### Server
+### Frontend (`frontend/radio-plays/`)
 
-A Python process handling WebAPI requests using Uvicorn and Swagger to poll existing data from the Elasticsearch database (To be used by the WebUI)
+React SPA with Material-UI providing an intuitive interface for exploring radio play data.
+- **Stack**: React, Material-UI, Axios
+- **Features**: Real-time updates, responsive design, station-specific views
 
-  **`backend/data_poll/`**
-  - **`run.py`**: The main script to start the server service
-  - **`db_connect/`**
-    - **`db_connect.py`**: Contains the logic for connecting to the elastic database.
-  - **`server/`**
-    - **`models.py`**: Defines the data models
-    - **`routes.py`**: Defines the API endpoint routes
+### Database
 
-### Frontend
-
-A React WebUI showing a variery of ways to view what played on the radio and interact with that data.
-
-- **`frontend/radio-plays-tracker/`**:
-  - **Key Features:**:
-    - **`Recently Played`**: View the last 10 songs played in each station.
-    - **`Search Around`**: Wanna know what song you heard on the radio around 8am last Tuesday? Just search it!
-    - **`Top Hits`**: The Top 5 most played songs in the last 7/30 days.
-  - Future Features:
-    - Search a song to see details about it and breakdown of its number of plays in each station. We already got the data, we just need to give you access to it!
-    - "It's great to see the name of the song! Can't you give me the link to the Spotify/Youtube/Apple music?" I can and I will!
-    - More details on the songs themselves please, you already got the page to fill it in... ok...
+PostgreSQL with normalized schema optimized for time-series queries:
+- **Tables**: songs, artists, albums, stations, plays (with junction tables)
+- **Indexes**: Optimized for timestamp-based queries and fuzzy text search (pg_trgm)
+- **Timezone**: All timestamps stored in (Asia/Jerusalem) time 
 
 
-## Installation Instructions
+## 🚀 Quick Start
 
-### Backend Setup
+### Prerequisites
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/omer8882/radio-plays-tracker.git
-   cd radio-plays-tracker/backend
-   ```
+- PostgreSQL 14+ (with timezone set to `Asia/Jerusalem`)
+- .NET 8+ SDK
+- Python 3.8+
+- Node.js 16+ and npm
+- Spotify API credentials ([Get them here](https://developer.spotify.com/dashboard))
 
-2. **Install dependencies**:
-   ```bash
-   pip install -r data_poll/requirements.txt
-   ```
+### 1. Database Setup
 
-3. **Configure**:
-   - Update the `recognize/config.json` file with the necessary settings for your environment, including the radio stations to monitor and Elasticsearch configurations.
-    ```json
-    {
-        "spotify": {
-            "access_token": "***secret***",
-            "client_id": "***secret***",
-            "client_secret": "***secret***"
-        },
-        "elastic": {
-            "url": "http://localhost:9200",
-            "user": "elastic",
-            "password": "password"
-        },
-        "stations": [
-        {
-            "name": "glglz",
-            "stream_url": "https://glzwizzlv.bynetcdn.com/glglz_mp3",
-            "last_song_recorded": /* Used by Recognizer */
-        },
-        {
-            "name": "radius100",
-            "stream_url": "https://cdn.cybercdn.live/Radios_100FM/Audio/icecast.audio",
-            "last_song_recorded": /* Used by Recognizer */,
-            "live_intro": 5 //(Seconds) if the stream url has a station intro for every time it opens
-        }
-        // Add more stations as needed
-    ]
-    }
-    ```
+```bash
+# Create database and initialize schema
+cd backend/dotnet-server
+psql -U postgres -f scripts/init-db.sql
+```
 
-4. **Run the Backend Services**:
-   - Start the recognition service:
-     ```bash
-     python recognize/recognizer.py
-     ```
-   - Start the data polling service (See all avalable API endpoints in `http://localhost:5000/docs#/`):
-     ```bash
-     python data_poll/run.py
-     ```
+### 2. Configuration
 
-### Frontend Setup
+```bash
+# Copy template and add your credentials
+cd backend/recognize
+cp config.template.json config.json
+# Edit config.json with your Spotify API keys and PostgreSQL password
+```
 
-1. **Navigate to the frontend directory**:
-   `cd radio-plays-tracker/frontend/radio-plays-tracker`
-2. **Install dependencies**:
-   `npm install`
-3. **Run the frontend server**:
-   `npm start`
-4. Access in your web browser at `http://localhost:3000`.
+See [CONFIG_MANAGEMENT.md](CONFIG_MANAGEMENT.md) for details on managing secrets.
 
-## Contributing
+### 3. Backend Services
 
-Contributions are welcome! If you'd like to help improve this project, please fork the repository and submit a pull request. Make sure to follow the code style and write clear commit messages.
+#### .NET API Server
+```bash
+cd backend/dotnet-server/src/RadioPlaysTracker.Api
+dotnet restore
+dotnet run
+# API runs on https://localhost:5001
+```
 
-## License
+#### Python Song Recognizer
+```bash
+cd backend/recognize
+pip install -r requirements.txt
+python recognizer.py
+```
+
+### 4. Frontend
+
+```bash
+cd frontend/radio-plays
+npm install
+npm start
+# Web UI runs on http://localhost:3000
+```
+
+## 🛠️ Tech Stack
+
+**Backend**
+- .NET 8+ (ASP.NET Core, Entity Framework Core)
+- Python 3.x (ShazamIO, psycopg2, requests)
+- PostgreSQL 14+ (Npgsql, pg_trgm extension)
+
+**Frontend**
+- React 18+
+- Material-UI (MUI)
+- Axios
+
+**APIs**
+- Spotify Web API
+- ShazamIO (song recognition)
+
+> **Why so many technologies?** This project is a playground for learning and experimentation! Mixing .NET, Python, PostgreSQL, and React in one stack might seem like overkill, but it's all about embracing challenges and exploring different tools. Each tech was chosen to solve specific problems—and honestly, because learning new things is fun! 🚀
+
+## 🤝 Contributing
+
+Contributions are welcome! Whether it's bug fixes, new features, or documentation improvements:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

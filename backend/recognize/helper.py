@@ -1,6 +1,6 @@
 import os, json, logging
 from logging.handlers import RotatingFileHandler
-from elasticsearch import Elasticsearch
+#from elasticsearch import Elasticsearch
 
 class Helper:
     def __init__(self):
