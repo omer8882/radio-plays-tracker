@@ -1,0 +1,37 @@
+{
+    "stations": [
+        {
+            "name": "glglz",
+            "stream_url": "https://glzwizzlv.bynetcdn.com/glglz_mp3",
+            "last_song_recorded": null
+        },
+        {
+            "name": "eco99",
+            "stream_url": "http://eco01.livecdn.biz/ecolive/99fm/icecast.audio",
+            "last_song_recorded": null,
+            "live_intro": 5
+        },
+        {
+            "name": "100fm",
+            "stream_url": "https://cdn.cybercdn.live/Radios_100FM/Audio/icecast.audio",
+            "last_song_recorded": null,
+            "live_intro": 5
+        },
+        {
+            "name": "103fm",
+            "stream_url": "https://103fm-live.mediacast.co.il/103fm_aac",
+            "last_song_recorded": null,
+            "live_intro": 5
+        },
+        {
+            "name": "galatz",
+            "stream_url": "http://glzwizzlv.bynetcdn.com/glz_mp3",
+            "last_song_recorded": null
+        },
+        {
+            "name": "kan88",
+            "stream_url": "http://kanliveicy.media.kan.org.il/icy/kan88_mp3",
+            "last_song_recorded": null
+        }
+    ]
+}
