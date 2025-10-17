@@ -5,7 +5,6 @@ raw/
 docs/
 debug/
 config.secret.json
-config.json
 proccessfilesandcleanup.py
 *.mp3
 temp/
