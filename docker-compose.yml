@@ -74,14 +74,14 @@ services:
       context: ./frontend/radio-plays
       dockerfile: Dockerfile
       args:
-        REACT_APP_API_BASE_URL: ${FRONTEND_API_BASE_URL:-http://http:8080}
+        REACT_APP_API_BASE_URL: ${FRONTEND_API_BASE_URL:-http://api:8080}
     container_name: mahushma-frontend
     restart: unless-stopped
     depends_on:
       api:
         condition: service_started
     ports:
-      - "${FRONTEND_PORT:-3000}:80"
+      - "${FRONTEND_PORT:-3000}:3000"
     networks:
       - app
 
@@ -89,7 +89,7 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: mahushma-cloudflared
     restart: unless-stopped
-    command: tunnel run
+    command: tunnel --config /etc/cloudflared/config.yml run
     environment:
       TUNNEL_TOKEN: ${CLOUDFLARED_TUNNEL_TOKEN:-}
     depends_on:
@@ -97,6 +97,8 @@ services:
         condition: service_started
     profiles:
       - tunnel
+    volumes:
+      - "${CLOUDFLARED_CONFIG_DIR:-./ops/cloudflared}:/etc/cloudflared"
     networks:
       - app
 
