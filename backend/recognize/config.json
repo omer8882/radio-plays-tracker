@@ -1,8 +1,8 @@
 {
     "spotify": {
         "access_token": "***secret***",
-        "client_id": "***secret***",
-        "client_secret": "***secret***"
+        "client_id": "470d4072c4964d97844da4ef456f185c",
+        "client_secret": "be8c4445f82d48a4b60efab710a2205d"
     },
     "elastic": {
         "url": "http://localhost:9200",
