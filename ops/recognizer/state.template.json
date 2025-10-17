@@ -1,3 +1,4 @@
+// Template of the state file for the recognizer operationcalled state.json
 {
   "stations": {
     "glglz": {
