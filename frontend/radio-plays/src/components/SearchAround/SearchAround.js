@@ -9,6 +9,7 @@ const SearchAround = () => {
   const [results, setResults] = useState([]);
   const [anchor, setAnchor] = useState(null);
   const [chosenTimestamp, setChosenTimestamp] = useState(null);
+  const [noResults, setNoResults] = useState(false);
   const textFieldRef = useRef(null);
 
   const handleSearch = async ({ date, time, station }) => {
@@ -19,6 +20,7 @@ const SearchAround = () => {
     timestamp.setSeconds(0);
     timestamp.setMilliseconds(0);
     setChosenTimestamp(timestamp);
+    setNoResults(false);
     
     // Format as local time (Israel time) without timezone conversion
     // YYYY-MM-DDTHH:MM:SS format (no Z suffix, so backend treats it as local Israel time)
@@ -34,13 +36,17 @@ const SearchAround = () => {
 
     try {
   const response = await axios.get(`${API_BASE_URL}/api/search_around?station=${station}&timestamp=${encodeURIComponent(formattedTimestamp)}&range_minutes=40`);
-      if (response.data.length > 0)
+      if (response.data.length > 0) {
         setResults(response.data);
-      else
-        setResults([{ name: 'לא נמצאו שירים לזמן זה', artists: [{ name: '' }], played_at: '' }]);
+        setNoResults(false);
+      } else {
+        setResults([]);
+        setNoResults(true);
+      }
     } catch (error) {
       console.error("Error fetching search around results:", error);
       setResults([]);
+      setNoResults(true);
     }
   };
 
@@ -48,7 +54,6 @@ const SearchAround = () => {
     const chosenTime = new Date(chosenTimestamp).getTime();
     const playedTime = new Date(song.playedAt).getTime();
     const timeDifference = Math.abs(chosenTime - playedTime) / (1000 * 60); // Difference in minutes
-    console.log(`Chosen time: ${chosenTime}, Played time: ${playedTime}, Time difference: ${timeDifference} minutes`);
     const maxOpacity = 0.2; // Max opacity for closest time
     const minOpacity = 0.0; // Min opacity for furthest time
     const opacity = Math.max(minOpacity, maxOpacity - (timeDifference / 60)); // Assuming 30 minutes range
@@ -57,7 +62,7 @@ const SearchAround = () => {
     return (
       <Box sx={{ display: 'flex', background: backgroundColor, padding: '15px 20px', width: '100%', justifyContent: 'space-between', margin: '0', borderRadius: '0' }}>
         <Box>
-          <Typography variant="subtitle1" align="left" padding='7px 0px 0px 7px'>{song?.playedAt.slice(11, 16)}</Typography>
+          <Typography variant="subtitle1" align="left" padding='7px 0px 0px 7px'>{song?.playedAt?.slice(11, 16)}</Typography>
         </Box>
         <Box margin='0px 5px 0px 0px'>
           <Typography variant="subtitle1" align="right">{song?.name}</Typography>
@@ -70,6 +75,7 @@ const SearchAround = () => {
   const handleClose = () => {
     setAnchor(null);
     setResults([]);
+    setNoResults(false);
   };
 
   const open = Boolean(anchor);
@@ -88,6 +94,7 @@ const SearchAround = () => {
         results={results}
         textFieldRef={textFieldRef}
         showItemDetails={(song) => showSongDetailsItem(song, chosenTimestamp)}
+        noResults={noResults}
       />
     </Box>
   );

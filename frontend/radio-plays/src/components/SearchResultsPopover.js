@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, List, ListItem, Popover } from '@mui/material';
+import { Box, List, ListItem, Popover, Typography } from '@mui/material';
 import axios from 'axios';
 import SongDetailsPage from './SongDetailsPage';
 
 const overlayColor = 'rgba(0, 0, 0, 0.07)';
 
-const SearchResultsPopover = ({ id, open, anchorEl, handleClose, results, textFieldRef, showItemDetails}) => {
+const SearchResultsPopover = ({ id, open, anchorEl, handleClose, results, textFieldRef, showItemDetails, noResults = false }) => {
   const [showModal, setShowModal] = useState(false);
   const [songDetails, setSongDetails] = useState({});
   const listRef = useRef(null); // Reference to the List element
@@ -42,15 +42,21 @@ const SearchResultsPopover = ({ id, open, anchorEl, handleClose, results, textFi
       >
         <Box sx={{ p: 0, maxHeight: '75vh', overflowY: 'auto' }} ref={listRef}>
           <List sx={{ width: '100%'}}>
-            {results.map((song) => (
-              <ListItem
-                key={song.id}
-                button
-                onClick={() => handleSongClick(song)}
-                sx={{ display: 'flex', width: '100%', justifyContent: 'space-between', backgroundColor: overlayColor, padding:'0', margin: '0', borderRadius: '0' }} >
-                {showItemDetails(song)}
+            {noResults ? (
+              <ListItem sx={{ display: 'flex', justifyContent: 'center', backgroundColor: overlayColor, padding: '16px' }}>
+                <Typography variant="subtitle1" align="center">לא נמצאו שירים לזמן זה</Typography>
               </ListItem>
-            ))}
+            ) : (
+              results.map((song) => (
+                <ListItem
+                  key={song.id}
+                  button
+                  onClick={() => handleSongClick(song)}
+                  sx={{ display: 'flex', width: '100%', justifyContent: 'space-between', backgroundColor: overlayColor, padding:'0', margin: '0', borderRadius: '0' }} >
+                  {showItemDetails(song)}
+                </ListItem>
+              ))
+            )}
           </List>
         </Box>
       </Popover>

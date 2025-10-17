@@ -13,7 +13,6 @@ const SongDetailsModal = ({ showModal, setShowModal, songId }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log("showModal = " + showModal + ", songId = " + songId)
     if (showModal && songId) {
       const getDetails = async () => {
         setLoading(true);

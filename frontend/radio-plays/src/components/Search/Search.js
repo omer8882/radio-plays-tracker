@@ -12,7 +12,6 @@ const Search = () => {
   const textFieldRef = useRef(null);
 
   const handleSearch = async (event) => {
-    console.log("Search triggered");
     setAnchor(textFieldRef.current);
     try {
   const response = await axios.get(`${API_BASE_URL}/api/search?query=${query}`);
