@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using RadioPlaysTracker.Core.Interfaces;
 using RadioPlaysTracker.Infrastructure.Data;
@@ -10,6 +11,10 @@ builder.Services.AddControllers();
 
 // Configure PostgreSQL Database
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("Database connection string 'ConnectionStrings:DefaultConnection' is not configured.");
+}
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
@@ -23,16 +28,23 @@ builder.Services.AddScoped<IAlbumRepository, AlbumRepository>();
 // Configure CORS
 builder.Services.AddCors(options =>
 {
+    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins(
-                "https://localhost:5001",
-                "http://localhost:3000",
-                "https://mahushma.com"
-            )
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials();
+        if (allowedOrigins.Length == 0)
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        }
+        else
+        {
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials();
+        }
     });
 });
 
@@ -59,7 +71,7 @@ app.UseAuthorization();
 //Enable Swagger in all environments (you can restrict this if needed)
 app.UseSwagger(options =>
 {
-    options.RouteTemplate = "{documentName}/swagger.json";
+    options.RouteTemplate = "swagger/{documentName}/swagger.json";
 });
 
 app.UseSwaggerUI(options =>

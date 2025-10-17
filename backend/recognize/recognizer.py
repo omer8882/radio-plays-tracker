@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Tuple, Protocol
 from pydub import AudioSegment
-import os, sys, requests, time, base64
+import os, sys, requests, time, base64, json
 from datetime import datetime, timezone, timedelta
 import asyncio
 from dataclasses import dataclass
@@ -9,9 +9,10 @@ from abc import ABC, abstractmethod
 # Timezone handling with fallback
 try:
     from zoneinfo import ZoneInfo
-except ImportError:
-    # Fallback for older Python versions
-    from backports.zoneinfo import ZoneInfo
+except ImportError:  # pragma: no cover - fallback for older Python versions
+    from importlib import import_module
+
+    ZoneInfo = import_module('backports.zoneinfo').ZoneInfo
 
 #sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from helper import Helper
@@ -32,28 +33,118 @@ class ConfigManager:
     
     def __init__(self):
         self.config = Helper.load_config()
-        self.client_id = self.config.get('spotify')['client_id']
-        self.client_secret = self.config.get('spotify')['client_secret']
+        spotify_config = self.config.get('spotify', {})
+        self.client_id = spotify_config.get('client_id')
+        self.client_secret = spotify_config.get('client_secret')
+
+        if not self.client_id or not self.client_secret:
+            raise ValueError("Spotify client credentials are not configured")
+
+        self.state_path = self._resolve_state_path()
+        self.station_state = self._load_state()
     
     def get_stations(self) -> List[StationConfig]:
-        return [
-            StationConfig(
-                name=station['name'],
-                stream_url=station['stream_url'],
-                last_song_recorded=station.get(self.LAST_SONG_KEY),
-                live_intro=station.get(self.LIVE_INTRO_KEY)
+        stations_config = self.config.get('stations') or []
+        state_lookup = (self.station_state or {}).get('stations', {})
+        stations: List[StationConfig] = []
+
+        for station in stations_config:
+            name = station.get('name')
+            stream_url = station.get('stream_url')
+            if not name or not stream_url:
+                continue
+
+            state_entry = state_lookup.get(name)
+            if isinstance(state_entry, str):
+                last_song_state = state_entry
+            elif isinstance(state_entry, dict):
+                last_song_state = state_entry.get(self.LAST_SONG_KEY)
+            else:
+                last_song_state = None
+
+            stations.append(
+                StationConfig(
+                    name=name,
+                    stream_url=stream_url,
+                    last_song_recorded=last_song_state or station.get(self.LAST_SONG_KEY),
+                    live_intro=station.get(self.LIVE_INTRO_KEY)
+                )
             )
-            for station in self.config['stations']
-        ]
+
+        return stations
     
     def update_last_song_recorded(self, station_name: str, song_id: str) -> None:
         self.config['stations'] = [
-            {**station, self.LAST_SONG_KEY: song_id} 
-            if station['name'] == station_name 
-            else station 
-            for station in self.config['stations']
+            {**station, self.LAST_SONG_KEY: song_id}
+            if station.get('name') == station_name
+            else station
+            for station in (self.config.get('stations') or [])
         ]
-        Helper.save_config(self.config)
+
+        stations_state = self.station_state.setdefault('stations', {})
+        stations_state[station_name] = {self.LAST_SONG_KEY: song_id}
+        self._save_state()
+
+    def _resolve_state_path(self) -> str:
+        explicit_path = os.getenv('WORKER_STATE_PATH')
+        if explicit_path:
+            return explicit_path
+
+        config_path = os.getenv('WORKER_CONFIG_PATH')
+        if config_path:
+            base_dir = os.path.dirname(os.path.abspath(config_path)) or os.getcwd()
+            return os.path.join(base_dir, 'station_state.json')
+
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(base_dir, 'station_state.json')
+
+    def _default_state(self) -> Dict[str, Dict[str, Dict[str, Optional[str]]]]:
+        stations_config = self.config.get('stations') or []
+        return {
+            'stations': {
+                station.get('name'): {self.LAST_SONG_KEY: station.get(self.LAST_SONG_KEY)}
+                for station in stations_config
+                if station.get('name')
+            }
+        }
+
+    def _load_state(self) -> Dict[str, Dict[str, Dict[str, Optional[str]]]]:
+        default_state = self._default_state()
+        try:
+            with open(self.state_path, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+            if not isinstance(data, dict):
+                return default_state
+        except FileNotFoundError:
+            return default_state
+        except json.JSONDecodeError:
+            return default_state
+
+        stations_section = data.get('stations', {})
+        if not isinstance(stations_section, dict):
+            data['stations'] = default_state['stations']
+            return data
+
+        normalized = {}
+        for name, value in stations_section.items():
+            if isinstance(value, dict):
+                normalized[name] = value
+            else:
+                normalized[name] = {self.LAST_SONG_KEY: value}
+
+        default_map = (default_state or {}).get('stations', {})
+        for name, default_value in default_map.items():
+            normalized.setdefault(name, default_value)
+        data['stations'] = normalized
+        return data
+
+    def _save_state(self) -> None:
+        directory = os.path.dirname(self.state_path)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory, exist_ok=True)
+
+        with open(self.state_path, 'w', encoding='utf-8') as file:
+            json.dump(self.station_state, file, ensure_ascii=False, indent=2)
 
 class SpotifyClient:
     def __init__(self, client_id: str, client_secret: str):

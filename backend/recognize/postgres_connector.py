@@ -1,4 +1,5 @@
 import json
+import os
 import psycopg2
 from psycopg2.extras import Json, execute_values
 from datetime import datetime
@@ -7,7 +8,8 @@ from helper import Helper
 class PostgresConnector:
     def __init__(self, station_name='glglz'):
         self.station_name = station_name
-        self.logger = Helper.get_rotating_logger('PostgresScriptLogger', log_file='postgres_indexing.log')
+        log_path = os.getenv('WORKER_POSTGRES_LOG', 'postgres_indexing.log')
+        self.logger = Helper.get_rotating_logger('PostgresScriptLogger', log_file=log_path)
         self.conn = self._get_db_connection()
         self.station_id = self._get_or_create_station(station_name)
 

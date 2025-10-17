@@ -119,11 +119,11 @@ CREATE INDEX IF NOT EXISTS idx_plays_song_played_at ON plays(song_id, played_at 
 -- =====================================================
 
 INSERT INTO stations (name, display_name) VALUES
-    ('glglz', 'Galei Tzahal (Galglatz)'),
+    ('glglz', 'Galgalatz'),
     ('100fm', '100FM'),
     ('103fm', '103FM'),
     ('eco99', 'Eco 99FM'),
-    ('galatz', 'Galatz'),
+    ('galatz', 'Galatz (Galei tzahal)'),
     ('kan88', 'Kan 88')
 ON CONFLICT (name) DO NOTHING;
 

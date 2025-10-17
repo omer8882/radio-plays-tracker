@@ -1,7 +1,5 @@
 pydub
 fastapi
-asyncio
-datetime
 shazamio
 requests
 psycopg2-binary

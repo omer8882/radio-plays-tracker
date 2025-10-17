@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material';
 import axios from 'axios';
 import SearchBar from './SearchBar';
 import SearchResultsPopover from '../SearchResultsPopover';
+import { API_BASE_URL } from '../../config';
 
 const Search = () => {
   const [query, setQuery] = useState('');
@@ -14,7 +15,7 @@ const Search = () => {
     console.log("Search triggered");
     setAnchor(textFieldRef.current);
     try {
-      const response = await axios.get(`https://localhost:5001/api/search?query=${query}`);
+  const response = await axios.get(`${API_BASE_URL}/api/search?query=${query}`);
       setResults(response.data);
     } catch (error) {
       console.error("Error fetching search results:", error);

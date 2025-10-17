@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material';
 import axios from 'axios';
 import SearchAroundBar from './SearchAroundBar';
 import SearchResultsPopover from '../SearchResultsPopover';
+import { API_BASE_URL } from '../../config';
 
 const SearchAround = () => {
   const [results, setResults] = useState([]);
@@ -34,7 +35,7 @@ const SearchAround = () => {
     setAnchor(textFieldRef.current);
 
     try {
-      const response = await axios.get(`https://localhost:5001/api/search_around?station=${station}&timestamp=${encodeURIComponent(formattedTimestamp)}&range_minutes=40`);
+  const response = await axios.get(`${API_BASE_URL}/api/search_around?station=${station}&timestamp=${encodeURIComponent(formattedTimestamp)}&range_minutes=40`);
       if (response.data.length > 0)
         setResults(response.data);
       else

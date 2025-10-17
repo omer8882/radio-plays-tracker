@@ -1,0 +1,108 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-bookworm
+    container_name: mahushma-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-radio_plays}
+      TZ: ${TZ:-UTC}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app
+
+  api:
+    build:
+      context: ./backend/dotnet-server
+      dockerfile: Dockerfile
+    container_name: mahushma-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ConnectionStrings__DefaultConnection: Host=${POSTGRES_HOST:-postgres};Port=5432;Database=${POSTGRES_DB:-radio_plays};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
+      Cors__AllowedOrigins__0: ${CORS_ALLOWED_ORIGIN:-http://localhost:${FRONTEND_PORT:-3000}}
+      TZ: ${TZ:-UTC}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-8080}:8080"
+    networks:
+      - app
+
+  worker:
+    build:
+      context: ./backend/recognize
+      dockerfile: Dockerfile
+    container_name: mahushma-worker
+    restart: unless-stopped
+    environment:
+      SPOTIFY_CLIENT_ID: ${SPOTIFY_CLIENT_ID:?SPOTIFY_CLIENT_ID is required}
+      SPOTIFY_CLIENT_SECRET: ${SPOTIFY_CLIENT_SECRET:?SPOTIFY_CLIENT_SECRET is required}
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-radio_plays}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      WORKER_CONFIG_PATH: /data/config.json
+      WORKER_STATE_PATH: /data/state.json
+      WORKER_POSTGRES_LOG: ./postgres_indexing.log
+      TZ: ${TZ:-UTC}
+    volumes:
+      - ./ops/recognizer:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app
+
+  frontend:
+    build:
+      context: ./frontend/radio-plays
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_BASE_URL: ${FRONTEND_API_BASE_URL:-http://http:8080}
+    container_name: mahushma-frontend
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    networks:
+      - app
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: mahushma-cloudflared
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARED_TUNNEL_TOKEN:-}
+    depends_on:
+      frontend:
+        condition: service_started
+    profiles:
+      - tunnel
+    networks:
+      - app
+
+volumes:
+  postgres_data:
+
+networks:
+  app:
+    driver: bridge
