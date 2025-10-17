@@ -57,11 +57,11 @@ const SearchAround = () => {
     return (
       <Box sx={{ display: 'flex', background: backgroundColor, padding: '15px 20px', width: '100%', justifyContent: 'space-between', margin: '0', borderRadius: '0' }}>
         <Box>
-          <Typography variant="subtitle1" align="left" padding='7px 0px 0px 7px'>{song.playedAt.slice(11, 16)}</Typography>
+          <Typography variant="subtitle1" align="left" padding='7px 0px 0px 7px'>{song?.playedAt.slice(11, 16)}</Typography>
         </Box>
         <Box margin='0px 5px 0px 0px'>
-          <Typography variant="subtitle1" align="right">{song.name}</Typography>
-          <Typography variant="body2" color="textSecondary" align="right">{song.artists[0].name}</Typography>
+          <Typography variant="subtitle1" align="right">{song?.name}</Typography>
+          <Typography variant="body2" color="textSecondary" align="right">{song?.artists[0]?.name}</Typography>
         </Box>
       </Box>
     );

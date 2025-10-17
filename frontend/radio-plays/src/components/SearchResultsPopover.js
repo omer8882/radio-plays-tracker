@@ -20,8 +20,6 @@ const SearchResultsPopover = ({ id, open, anchorEl, handleClose, results, textFi
   };
 
   useEffect(() => {
-    console.log("Effect triggered with open:", open);
-  
     if (open && listRef.current) {
         const listHeight = listRef.current.scrollHeight;
         const containerHeight = listRef.current.clientHeight;
