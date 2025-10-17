@@ -12,7 +12,6 @@ temp/
 frontend/radio-plays/build/
 ops/cloudflared/config.yml
 ops/cloudflared/*.json
-backend/recognize/config.json
 ops/cloudflared/*.pem
 
 .vscode

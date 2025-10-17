@@ -60,7 +60,7 @@ public class PlayRepository : IPlayRepository
                 .ThenInclude(sa => sa.Artist)
             .Include(p => p.Song.Album)
             .Include(p => p.Station)
-            .Where(p => EF.Functions.Like(p.Station.Name, stationName))
+            .Where(p => EF.Functions.Like(p.Station.Name.ToLower(), stationName.ToLower()))
             .OrderByDescending(p => p.PlayedAt)
             .Take(limit)
             .ToListAsync();
@@ -73,7 +73,7 @@ public class PlayRepository : IPlayRepository
         // Get all songs by this artist
         var songIds = await _context.SongArtists
             .Include(sa => sa.Artist)
-            .Where(sa => sa.Artist.Name.Equals(artistName, StringComparison.CurrentCultureIgnoreCase))
+            .Where(sa => EF.Functions.Like(sa.Artist.Name.ToLower(), artistName.ToLower()))
             .Select(sa => sa.SongId)
             .ToListAsync();
 

@@ -3,6 +3,9 @@ using RadioPlaysTracker.Core.Interfaces;
 
 namespace RadioPlaysTracker.Api.Controllers;
 
+/// <summary>
+/// API endpoints for managing and querying radio play data
+/// </summary>
 [ApiController]
 [Route("api")]
 public class PlaysController : ControllerBase
@@ -16,7 +19,18 @@ public class PlaysController : ControllerBase
         _songRepository = songRepository;
     }
 
+    /// <summary>
+    /// Get the most recent plays from a specific radio station
+    /// </summary>
+    /// <param name="station">The name of the radio station</param>
+    /// <param name="limit">Maximum number of plays to return (default: 10)</param>
+    /// <returns>A list of recent plays from the specified station</returns>
+    /// <response code="200">Returns the list of recent plays</response>
+    /// <response code="500">If there was an internal server error</response>
     [HttpGet("station_last_plays")]
+    [ProducesResponseType(typeof(IEnumerable<Core.DTOs.PlayDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [EndpointSummary("Stations = ['glglz', 'eco99', '100fm', 'galatz', '103fm', 'kan88']")]
     public async Task<IActionResult> GetStationLastPlays([FromQuery] string station, [FromQuery] int limit = 10)
     {
         try
@@ -30,7 +44,17 @@ public class PlaysController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Get all plays for a specific artist
+    /// </summary>
+    /// <param name="artist">The name of the artist</param>
+    /// <param name="limit">Maximum number of plays to return (default: 100)</param>
+    /// <returns>A list of plays featuring the specified artist</returns>
+    /// <response code="200">Returns the list of artist plays</response>
+    /// <response code="500">If there was an internal server error</response>
     [HttpGet("get_artist_plays")]
+    [ProducesResponseType(typeof(IEnumerable<Core.DTOs.PlayDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetArtistPlays([FromQuery] string artist, [FromQuery] int limit = 100)
     {
         try
@@ -44,7 +68,23 @@ public class PlaysController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Get the top played songs within a specified time period
+    /// </summary>
+    /// <param name="days">Number of days to look back (default: 7)</param>
+    /// <param name="top_n">Number of top songs to return (default: 5)</param>
+    /// <returns>A list of the most played songs</returns>
+    /// <response code="200">Returns the list of top hits</response>
+    /// <response code="500">If there was an internal server error</response>
+    /// <remarks>
+    /// Example request:
+    /// 
+    ///     GET /api/top_hits?days=7&amp;top_n=10
+    /// 
+    /// </remarks>
     [HttpGet("top_hits")]
+    [ProducesResponseType(typeof(IEnumerable<Core.DTOs.TopHitDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetTopHits([FromQuery] int days = 7, [FromQuery] int top_n = 5)
     {
         try
@@ -58,7 +98,17 @@ public class PlaysController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Get play count breakdown by station for a specific song
+    /// </summary>
+    /// <param name="song_id">The unique identifier of the song</param>
+    /// <param name="days">Optional: Number of days to look back (null for all time)</param>
+    /// <returns>A dictionary with station names as keys and play counts as values</returns>
+    /// <response code="200">Returns the play count breakdown by station</response>
+    /// <response code="500">If there was an internal server error</response>
     [HttpGet("song_plays_by_station")]
+    [ProducesResponseType(typeof(Dictionary<string, int>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetSongPlaysByStation([FromQuery] string song_id, [FromQuery] int? days = null)
     {
         try
@@ -72,7 +122,29 @@ public class PlaysController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Search for songs played on a station around a specific timestamp
+    /// </summary>
+    /// <param name="station">The name of the radio station</param>
+    /// <param name="timestamp">The target timestamp in ISO format (e.g., 2024-01-15T14:30:00)</param>
+    /// <param name="range_minutes">The time range in minutes before and after the timestamp (default: 15)</param>
+    /// <returns>A list of songs played within the specified time range</returns>
+    /// <response code="200">Returns the list of songs played around the timestamp</response>
+    /// <response code="400">If the timestamp format is invalid</response>
+    /// <response code="500">If there was an internal server error</response>
+    /// <remarks>
+    /// Useful for identifying a song you heard at a specific time.
+    /// The timestamp should be in Israel timezone (database timezone).
+    /// 
+    /// Example request:
+    /// 
+    ///     GET /api/search_around?station=GalgalatzFM&amp;timestamp=2024-01-15T14:30:00&amp;range_minutes=15
+    /// 
+    /// </remarks>
     [HttpGet("search_around")]
+    [ProducesResponseType(typeof(IEnumerable<Core.DTOs.SongDetailsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> SearchAround(
         [FromQuery] string station,
         [FromQuery] string timestamp,
@@ -98,7 +170,19 @@ public class PlaysController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Search for songs by title or artist name
+    /// </summary>
+    /// <param name="query">Search query string (searches in song title and artist name)</param>
+    /// <returns>A list of songs matching the search query</returns>
+    /// <response code="200">Returns the list of matching songs</response>
+    /// <response code="500">If there was an internal server error</response>
+    /// <remarks>
+    /// The search is case-insensitive and searches across song titles and artist names.
+    /// </remarks>
     [HttpGet("search")]
+    [ProducesResponseType(typeof(IEnumerable<Core.DTOs.SearchResultDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Search([FromQuery] string query)
     {
         try
@@ -112,7 +196,18 @@ public class PlaysController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Get detailed information about a specific song
+    /// </summary>
+    /// <param name="song_id">The unique identifier of the song</param>
+    /// <returns>Detailed information about the song including artists, album, and external links</returns>
+    /// <response code="200">Returns the song details</response>
+    /// <response code="404">If the song was not found</response>
+    /// <response code="500">If there was an internal server error</response>
     [HttpGet("get_song_details")]
+    [ProducesResponseType(typeof(Core.DTOs.SongDetailsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetSongDetails([FromQuery] string song_id)
     {
         try
