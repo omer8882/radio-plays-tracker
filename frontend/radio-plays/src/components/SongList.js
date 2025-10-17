@@ -5,6 +5,7 @@ import SongDetailsPage from './SongDetailsPage';
 import axios from 'axios';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import './SongList.css';
+import { API_BASE_URL } from '../config';
 
 const SongList = ({ station }) => {
   // Placeholder data for loading and error cases
@@ -30,7 +31,7 @@ const SongList = ({ station }) => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`https://server.mahushma.com/api/station_last_plays?station=${station.name}`);
+      const response = await axios.get(`${API_BASE_URL}/api/station_last_plays?station=${station.name}`);
       setDisplayedData(response.data);
     } catch (err) {
       console.error("Error fetching songs:", err);

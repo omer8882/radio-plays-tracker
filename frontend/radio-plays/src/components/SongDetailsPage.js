@@ -4,6 +4,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
 import StationBreakdown from './StationBreakdown';
 import StreamingLinks from './StreamingLinks';
+import { API_BASE_URL } from '../config';
 
 const SongDetailsModal = ({ showModal, setShowModal, songId }) => {
   const [songDetails, setSongDetails] = useState(null);
@@ -19,8 +20,8 @@ const SongDetailsModal = ({ showModal, setShowModal, songId }) => {
         setError(null);
         try {
           const [songDetailsResponse, stationBreakdownResponse] = await Promise.all([
-            axios.get(`https://server.mahushma.com/api/get_song_details?song_id=${songId}`),
-            axios.get(`https://server.mahushma.com/api/song_plays_by_station?song_id=${songId}`)
+            axios.get(`${API_BASE_URL}/api/get_song_details?song_id=${songId}`),
+            axios.get(`${API_BASE_URL}/api/song_plays_by_station?song_id=${songId}`)
           ]);
           setSongDetails(songDetailsResponse.data);
           setStationBreakdown(stationBreakdownResponse.data);
@@ -84,7 +85,7 @@ const SongDetailsModal = ({ showModal, setShowModal, songId }) => {
           <>
             <Box sx={{ position: 'absolute', top: 12, left: 12 }}>
               <StreamingLinks 
-                streamingLinks={songDetails.external_links} 
+                streamingLinks={songDetails.externalLinks} 
                 title={songDetails.name} 
                 artist={songDetails.artists?.[0]?.name}
               />

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, ToggleButton, ToggleButtonGroup, Paper, List, ListItem, Tooltip } from '@mui/material';
 import axios from 'axios';
 import StationBreakdown from './StationBreakdown';
+import { API_BASE_URL } from '../config';
 
 const overlayColor = 'rgba(0, 0, 0, 0.07)'; // 10% opaque black
 
@@ -24,7 +25,7 @@ const TopHits = () => {
   useEffect(() => {
     const fetchTopHits = async () => {
       try {
-        const response = await axios.get(`https://server.mahushma.com/api/top_hits?days=${timeRange}`);
+  const response = await axios.get(`${API_BASE_URL}/api/top_hits?days=${timeRange}`);
         setTopHits(response.data);
         //setTopHits(timeRange === '7' ? sim_hits_7 : sim_hits_30);
       } catch (error) {
@@ -41,7 +42,7 @@ const TopHits = () => {
       const breakdowns = {};
       for (const hit of topHits) {
         try {
-          const response = await axios.get(`https://server.mahushma.com/api/song_plays_by_station?song_id=${hit.id}&days=${timeRange}`);
+          const response = await axios.get(`${API_BASE_URL}/api/song_plays_by_station?song_id=${hit.id}&days=${timeRange}`);
           breakdowns[hit.id] = response.data;
         } catch (error) {
           console.error(`Error fetching station breakdown for song ${hit.id}:`, error);

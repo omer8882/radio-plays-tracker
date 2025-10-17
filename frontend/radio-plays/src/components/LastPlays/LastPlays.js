@@ -13,7 +13,7 @@ const stationsInfo = [
     { name: 'galatz', logo: galatzLogo, bgColor: '#dbd944' }, //5f5f5
     { name: '103fm', logo: fm103Logo, bgColor: '#64D1DE' },
     { name: 'kan88', logo: kan88Logo, bgColor: '#b38bae' },
-    { name: 'radius100', logo: fm100Logo, bgColor: '#cccc31' },
+    { name: '100fm', logo: fm100Logo, bgColor: '#cccc31' },
     { name: 'eco99', logo: eco99Logo, bgColor: '#BBDEFB' },
     { name: 'glglz', logo: glglzLogo, bgColor: '#D1C4E9' }, //# 
 ];
