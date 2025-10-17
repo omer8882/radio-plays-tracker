@@ -118,7 +118,7 @@ npm start
 - Spotify Web API
 - ShazamIO (song recognition)
 
-> **Why so many technologies?** This project is a playground for learning and experimentation! Mixing .NET, Python, PostgreSQL, and React in one stack might seem like overkill, but it's all about embracing challenges and exploring different tools. Each tech was chosen to solve specific problems—and honestly, because learning new things is fun! 🚀
+> **Why so many technologies???** Mixing .NET, Python, PostgreSQL, and React all for one small website justifyingly seems like an overkill, but it's all about embracing challenges and exploring different tools. Each tech was chosen to solve specific problems and honestly - because learning new things is fun.
 
 ## 🤝 Contributing
 

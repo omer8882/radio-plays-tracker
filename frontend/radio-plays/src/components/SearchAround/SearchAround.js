@@ -12,8 +12,6 @@ const SearchAround = () => {
   const textFieldRef = useRef(null);
 
   const handleSearch = async ({ date, time, station }) => {
-    console.log(`SearchAround triggered: ${date}, ${time}, ${station}`);
-
     // Combine date and time into a single timestamp
     const timestamp = new Date(date);
     timestamp.setHours(time.getHours());

@@ -5,6 +5,10 @@ from datetime import datetime, timezone, timedelta
 import asyncio
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
+#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from helper import Helper
+from postgres_connector import PostgresConnector
+from shazamio import Shazam
 
 # Timezone handling with fallback
 try:
@@ -13,11 +17,6 @@ except ImportError:  # pragma: no cover - fallback for older Python versions
     from importlib import import_module
 
     ZoneInfo = import_module('backports.zoneinfo').ZoneInfo
-
-#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from helper import Helper
-from postgres_connector import PostgresConnector
-from shazamio import Shazam
 
 @dataclass
 class StationConfig:
