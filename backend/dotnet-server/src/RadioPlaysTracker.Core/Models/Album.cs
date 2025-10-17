@@ -1,5 +1,8 @@
+using System.Diagnostics;
+
 namespace RadioPlaysTracker.Core.Models;
 
+[DebuggerDisplay("{Name} ({ReleaseDate})")]
 public class Album
 {
     public string Id { get; set; } = string.Empty;

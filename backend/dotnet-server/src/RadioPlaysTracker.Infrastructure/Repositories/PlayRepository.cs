@@ -60,7 +60,7 @@ public class PlayRepository : IPlayRepository
                 .ThenInclude(sa => sa.Artist)
             .Include(p => p.Song.Album)
             .Include(p => p.Station)
-            .Where(p => p.Station.Name == stationName)
+            .Where(p => EF.Functions.Like(p.Station.Name, stationName))
             .OrderByDescending(p => p.PlayedAt)
             .Take(limit)
             .ToListAsync();

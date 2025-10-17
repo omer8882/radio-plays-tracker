@@ -1,8 +1,11 @@
+using System.Diagnostics;
+
 namespace RadioPlaysTracker.Core.DTOs;
 
 /// <summary>
 /// DTO for song details - matches Elasticsearch document structure
 /// </summary>
+[DebuggerDisplay("{Name} played {PlayedAt}")]
 public class SongDetailsDto
 {
     public string Id { get; set; } = string.Empty;
@@ -15,12 +18,14 @@ public class SongDetailsDto
     public DateTime? PlayedAt { get; set; }  // Optional
 }
 
+[DebuggerDisplay("{Name}")]
 public class ArtistInfoDto
 {
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
 }
 
+[DebuggerDisplay("{Name} ({ReleaseDate})")]
 public class AlbumInfoDto
 {
     public string Id { get; set; } = string.Empty;

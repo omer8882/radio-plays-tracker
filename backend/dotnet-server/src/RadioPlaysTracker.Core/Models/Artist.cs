@@ -1,5 +1,8 @@
+using System.Diagnostics;
+
 namespace RadioPlaysTracker.Core.Models;
 
+[DebuggerDisplay("{Name}")]
 public class Artist
 {
     public string Id { get; set; } = string.Empty;

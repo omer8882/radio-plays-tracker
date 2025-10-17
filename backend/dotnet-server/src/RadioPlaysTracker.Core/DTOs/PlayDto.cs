@@ -1,8 +1,11 @@
+using System.Diagnostics;
+
 namespace RadioPlaysTracker.Core.DTOs;
 
 /// <summary>
 /// DTO for play records - matches Python API format
 /// </summary>
+[DebuggerDisplay("{Title} by {Artist}")]
 public class PlayDto
 {
     public string Id { get; set; } = string.Empty;

@@ -1,5 +1,8 @@
+using System.Diagnostics;
+
 namespace RadioPlaysTracker.Core.Models;
 
+[DebuggerDisplay("{Song} {Station}")]
 public class Play
 {
     public long Id { get; set; }

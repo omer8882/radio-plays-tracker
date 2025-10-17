@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using System.Text.Json;
 
 namespace RadioPlaysTracker.Core.Models;
 
+[DebuggerDisplay("{Name}")]
 public class Song
 {
     public string Id { get; set; } = string.Empty;
