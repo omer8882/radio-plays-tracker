@@ -30,6 +30,7 @@ STATION_ALIASES = {
 }
 
 DEFAULT_BATCH_SIZE = 500
+DEFAULT_PREVIEW_SIZE = 5
 
 
 @dataclass
@@ -39,6 +40,8 @@ class MigrationArgs:
     station: Optional[List[str]]
     limit_songs: Optional[int]
     limit_plays: Optional[int]
+    preview: bool
+    preview_size: int
 
 
 @dataclass
@@ -176,6 +179,8 @@ class Migrator:
             if not song_models:
                 continue
             if self.args.dry_run:
+                if self.args.preview:
+                    self._preview_song_batch(song_models)
                 self.logger.info("Dry run enabled: skipping song writes for this batch")
                 continue
             albums = self._prepare_album_rows(song_models)
@@ -229,6 +234,8 @@ class Migrator:
                 )
                 if self.args.dry_run or not rows:
                     if self.args.dry_run and rows:
+                        if self.args.preview:
+                            self._preview_play_batch(rows)
                         self.logger.info("Dry run enabled: skipping play writes for this batch")
                     continue
                 with self.pg_conn:
@@ -316,6 +323,29 @@ class Migrator:
             for order, artist in enumerate(song.artists):
                 rows.append((song.song_id, str(artist["id"]), order))
         return rows
+
+    def _preview_song_batch(self, songs: Sequence[ElasticSong]) -> None:
+        size = max(1, min(self.args.preview_size, len(songs)))
+        albums = self._prepare_album_rows(songs)[:size]
+        artists = self._prepare_artist_rows(songs)[:size]
+        song_rows = self._prepare_song_rows(songs)[:size]
+        song_artists = self._prepare_song_artist_rows(songs)[:size]
+        self.logger.info("Preview albums: %s", json.dumps(albums, default=str))
+        self.logger.info("Preview artists: %s", json.dumps(artists, default=str))
+        self.logger.info("Preview songs: %s", json.dumps(song_rows, default=str))
+        self.logger.info("Preview song_artists: %s", json.dumps(song_artists, default=str))
+
+    def _preview_play_batch(self, rows: Sequence[Tuple[str, int, datetime]]) -> None:
+        size = max(1, min(self.args.preview_size, len(rows)))
+        subset = [
+            {
+                "song_id": row[0],
+                "station_id": row[1],
+                "played_at": row[2].isoformat(sep=" "),
+            }
+            for row in rows[:size]
+        ]
+        self.logger.info("Preview plays: %s", json.dumps(subset, default=str))
 
     @staticmethod
     def _parse_release_date(raw: str) -> Optional[date]:
@@ -438,6 +468,13 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> MigrationArgs:
     parser.add_argument("--station", action="append", help="Limit migration to specific station slugs")
     parser.add_argument("--limit-songs", type=int, help="Process only the first N songs")
     parser.add_argument("--limit-plays", type=int, help="Process only the first N plays per index")
+    parser.add_argument("--preview", action="store_true", help="Log transformed rows during dry run")
+    parser.add_argument(
+        "--preview-size",
+        type=int,
+        default=DEFAULT_PREVIEW_SIZE,
+        help="Maximum number of records to include per preview list",
+    )
     parsed = parser.parse_args(argv)
     return MigrationArgs(
         dry_run=parsed.dry_run,
@@ -445,6 +482,8 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> MigrationArgs:
         station=parsed.station,
         limit_songs=parsed.limit_songs,
         limit_plays=parsed.limit_plays,
+        preview=parsed.preview,
+        preview_size=max(1, parsed.preview_size),
     )
 
 
