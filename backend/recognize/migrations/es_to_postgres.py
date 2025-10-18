@@ -6,7 +6,7 @@ import sys
 from dataclasses import dataclass
 from datetime import datetime, date
 from pathlib import Path
-from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
+from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Set, Tuple
 
 try:
     from elasticsearch import Elasticsearch, helpers  # type: ignore
@@ -53,12 +53,16 @@ class MigrationStats:
 
 
 class ElasticSong:
-    def __init__(self, payload: Dict[str, object]):
+    def __init__(self, payload: Dict[str, object], fallback_id: Optional[str] = None):
         self.payload = payload
+        self._fallback_id = fallback_id
 
     @property
     def song_id(self) -> str:
-        return str(self.payload.get("id"))
+        value = self.payload.get("id")
+        if not value and self._fallback_id:
+            value = self._fallback_id
+        return str(value).strip() if value else ""
 
     @property
     def name(self) -> str:
@@ -168,7 +172,15 @@ class Migrator:
         iterator = helpers.scan(self.es, index="songs_index", preserve_order=True)
         iterator = self._limit(iterator, self.args.limit_songs)
         for batch in self._chunk(iterator, self.args.batch_size):
-            song_models = [ElasticSong(hit["_source"]) for hit in batch]
+            song_models = []
+            for hit in batch:
+                source = hit.get("_source")
+                if not isinstance(source, dict):
+                    continue
+                fallback_id = hit.get("_id")
+                song_models.append(
+                    ElasticSong(source, fallback_id=str(fallback_id) if fallback_id else None)
+                )
             self.stats.songs_processed += len(song_models)
             self.logger.info(
                 "Songs batch processed | batch_size=%s | processed_total=%s",
@@ -237,7 +249,18 @@ class Migrator:
                             self._preview_play_batch(rows)
                         self.logger.info("Dry run enabled: skipping play writes for this batch")
                     continue
-                self._ensure_songs_exist([row[0] for row in rows])
+                missing_ids = self._ensure_songs_exist([row[0] for row in rows])
+                if missing_ids:
+                    skipped_rows = [row for row in rows if row[0] in missing_ids]
+                    if skipped_rows:
+                        rows = [row for row in rows if row[0] not in missing_ids]
+                        self.logger.warning(
+                            "Skipping %s plays referencing songs missing from all sources: %s",
+                            len(skipped_rows),
+                            list(missing_ids)[:5],
+                        )
+                if not rows:
+                    continue
                 with self.pg_conn:
                     with self.pg_conn.cursor() as cur:
                         self._insert_plays(cur, rows)
@@ -303,11 +326,14 @@ class Migrator:
     def _prepare_song_rows(self, songs: Sequence[ElasticSong]) -> List[Tuple[str, str, Optional[str], int, int, Json]]:
         rows: List[Tuple[str, str, Optional[str], int, int, Json]] = []
         for song in songs:
+            song_id = song.song_id
+            if not song_id:
+                continue
             album = song.album
             album_id = str(album["id"]) if album and album.get("id") else None
             rows.append(
                 (
-                    song.song_id,
+                    song_id,
                     song.name,
                     album_id,
                     song.duration_ms,
@@ -320,8 +346,11 @@ class Migrator:
     def _prepare_song_artist_rows(self, songs: Sequence[ElasticSong]) -> List[Tuple[str, str, int]]:
         rows: List[Tuple[str, str, int]] = []
         for song in songs:
+            song_id = song.song_id
+            if not song_id:
+                continue
             for order, artist in enumerate(song.artists):
-                rows.append((song.song_id, str(artist["id"]), order))
+                rows.append((song_id, str(artist["id"]), order))
         return rows
 
     def _preview_song_batch(self, songs: Sequence[ElasticSong]) -> None:
@@ -347,48 +376,72 @@ class Migrator:
         ]
         self.logger.info("Preview plays: %s", json.dumps(subset, default=str))
 
-    def _ensure_songs_exist(self, song_ids: Sequence[str]) -> None:
-        unique_ids = list({sid for sid in song_ids if sid})
+    def _ensure_songs_exist(self, song_ids: Sequence[str]) -> Set[str]:
+        unique_ids = {sid.strip() for sid in song_ids if sid}
         if not unique_ids:
-            return
+            return set()
 
+        ids_list = list(unique_ids)
         with self.pg_conn.cursor() as cur:
-            cur.execute("SELECT id FROM songs WHERE id = ANY(%s)", (unique_ids,))
+            cur.execute("SELECT id FROM songs WHERE id = ANY(%s)", (ids_list,))
             existing = {row[0] for row in cur.fetchall()}
 
-        missing = [sid for sid in unique_ids if sid not in existing]
+        missing: Set[str] = {sid for sid in unique_ids if sid not in existing}
         if not missing:
-            return
+            return set()
 
-        response = self.es.mget(index="songs_index", ids=missing)
+        response = self.es.mget(index="songs_index", ids=list(missing))
         docs = response.get("docs", []) if isinstance(response, dict) else []
-        song_models = [ElasticSong(doc["_source"]) for doc in docs if doc.get("found") and doc.get("_source")]
+        song_models: List[ElasticSong] = []
+        found_ids: Set[str] = set()
+        for doc in docs:
+            if not doc.get("found") or not doc.get("_source"):
+                continue
+            fallback_id = doc.get("_id")
+            model = ElasticSong(
+                doc["_source"], fallback_id=str(fallback_id) if fallback_id else None
+            )
+            song_id = model.song_id
+            if not song_id:
+                continue
+            song_models.append(model)
+            found_ids.add(song_id)
 
         missing_not_found = [doc.get("_id") for doc in docs if not doc.get("found")]
         if missing_not_found:
             self.logger.warning("Songs missing in Elasticsearch: %s", missing_not_found)
-
-        if not song_models:
-            return
 
         albums = self._prepare_album_rows(song_models)
         artists = self._prepare_artist_rows(song_models)
         song_rows = self._prepare_song_rows(song_models)
         song_artist_rows = self._prepare_song_artist_rows(song_models)
 
-        with self.pg_conn:
-            with self.pg_conn.cursor() as cur:
-                if albums:
-                    self._upsert_albums(cur, albums)
-                if artists:
-                    self._upsert_artists(cur, artists)
-                if song_rows:
-                    self._upsert_songs(cur, song_rows)
-                if song_artist_rows:
-                    self._insert_song_artists(cur, song_artist_rows)
+        inserted_ids: Set[str] = {row[0] for row in song_rows}
 
-        self.stats.songs_written += len(song_rows)
-        self.logger.info("Backfilled %s songs referenced by plays", len(song_rows))
+        if song_rows:
+            with self.pg_conn:
+                with self.pg_conn.cursor() as cur:
+                    if albums:
+                        self._upsert_albums(cur, albums)
+                    if artists:
+                        self._upsert_artists(cur, artists)
+                    if song_rows:
+                        self._upsert_songs(cur, song_rows)
+                    if song_artist_rows:
+                        self._insert_song_artists(cur, song_artist_rows)
+
+            self.stats.songs_written += len(song_rows)
+            self.logger.info("Backfilled %s songs referenced by plays", len(song_rows))
+
+        missing_after_fetch = missing - inserted_ids
+        if missing_after_fetch:
+            self.logger.warning(
+                "Unable to backfill %s songs; skipping related plays. ids=%s",
+                len(missing_after_fetch),
+                list(missing_after_fetch)[:5],
+            )
+
+        return missing_after_fetch
 
     @staticmethod
     def _parse_release_date(raw: str) -> Optional[date]:
