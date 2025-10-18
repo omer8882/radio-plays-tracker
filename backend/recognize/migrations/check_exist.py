@@ -2,7 +2,6 @@ import json
 import os
 from typing import Dict
 from elasticsearch import Elasticsearch
-from helper import Helper
 
 ids = [
     "5e4PVtYVBu9BpJVhmQhIvS",
@@ -13,9 +12,8 @@ ids = [
 ]
 
 def _create_elastic_client() -> Elasticsearch:
-        config = Helper.load_config().get("elastic", {})
         url = os.getenv("ELASTIC_URL", "http://localhost:9200")
-        user = config.get("user") or os.getenv("ELASTIC_USER")
+        user = os.getenv("ELASTIC_USER")
         password = os.getenv("ELASTIC_PASSWORD")
         kwargs: Dict[str, object] = {"hosts": [url]}
         if user and password:
