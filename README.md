@@ -46,54 +46,103 @@ PostgreSQL with normalized schema optimized for time-series queries:
 - **Indexes**: Optimized for timestamp-based queries and fuzzy text search (pg_trgm)
 - **Timezone**: All timestamps stored in (Asia/Jerusalem) time 
 
-
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- PostgreSQL 14+ (with timezone set to `Asia/Jerusalem`)
-- .NET 8+ SDK
-- Python 3.8+
-- Node.js 16+ and npm
-- Spotify API credentials ([Get them here](https://developer.spotify.com/dashboard))
+- Docker Desktop 4.25+ (includes Docker Compose v2)
+- Spotify API credentials ([get them here](https://developer.spotify.com/dashboard))
 
-### 1. Database Setup
+> **Manual setup?** You can still run each service without Docker, but you'll also need PostgreSQL 14+, .NET 8, Python 3.11, and Node.js 18. Those steps are documented below.
+
+### Option A: Docker Compose (recommended)
+
+1. **Copy the environment template**
+
+    ```bash
+    cp .env.example .env
+    # Windows PowerShell
+    # copy .env.example .env
+    ```
+
+    Fill in at least `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, and override ports or CORS origins if needed.
+
+2. **Provide recognizer configuration**
+
+    ```bash
+    cp backend/recognize/config.template.json backend/recognize/config.json
+    ```
+
+    Update the new `config.json` with your Spotify credentials (or rely on environment variables) and any station tweaks. See [CONFIG_MANAGEMENT.md](CONFIG_MANAGEMENT.md) for guidance.
+
+3. **Build and run the stack**
+
+    ```bash
+    docker compose up --build
+    ```
+
+    Add `-d` once everything looks good to run detached.
+
+    - API: `http://localhost:${API_PORT:-8080}`
+    - Frontend: `http://localhost:${FRONTEND_PORT:-3000}`
+    - PostgreSQL: `localhost:${POSTGRES_PORT:-5432}`
+
+4. **Optional: expose via Cloudflare Tunnel**
+
+    Populate `CLOUDFLARED_TUNNEL_TOKEN` in `.env` and start with:
+
+    ```bash
+    docker compose --profile tunnel up -d
+    ```
+
+5. **Stop everything**
+
+    ```bash
+    docker compose down
+    # Remove named volumes if you need a clean database
+    docker compose down -v
+    ```
+
+### Option B: Manual setup (advanced)
+
+#### 1. Database
 
 ```bash
-# Create database and initialize schema
+# Create the database and schema
 cd backend/dotnet-server
 psql -U postgres -f scripts/init-db.sql
 ```
 
-### 2. Configuration
+#### 2. Configuration
 
 ```bash
-# Copy template and add your credentials
 cd backend/recognize
 cp config.template.json config.json
 # Edit config.json with your Spotify API keys and PostgreSQL password
 ```
 
-See [CONFIG_MANAGEMENT.md](CONFIG_MANAGEMENT.md) for details on managing secrets.
+See [CONFIG_MANAGEMENT.md](CONFIG_MANAGEMENT.md) for details on managing secrets and environment overrides.
 
-### 3. Backend Services
+#### 3. Run backend services locally
 
-#### .NET API Server
+**.NET API Server**
+
 ```bash
 cd backend/dotnet-server/src/RadioPlaysTracker.Api
 dotnet restore
 dotnet run
-# API runs on https://localhost:5001
+# API runs on https://localhost:5001 by default
 ```
 
-#### Python Song Recognizer
+**Python Song Recognizer**
+
 ```bash
 cd backend/recognize
 pip install -r requirements.txt
 python recognizer.py
 ```
 
-### 4. Frontend
+#### 4. Frontend
 
 ```bash
 cd frontend/radio-plays
@@ -101,7 +150,6 @@ npm install
 npm start
 # Web UI runs on http://localhost:3000
 ```
-
 ## 🛠️ Tech Stack
 
 **Backend**
