@@ -18,8 +18,7 @@ except ImportError as exc:  # pragma: no cover
 import psycopg2
 from psycopg2.extras import Json, execute_values
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-BACKEND_RECOGNIZE = REPO_ROOT / "backend" / "recognize"
+BACKEND_RECOGNIZE = Path(__file__).resolve().parents[1]
 if str(BACKEND_RECOGNIZE) not in sys.path:
     sys.path.append(str(BACKEND_RECOGNIZE))
 
