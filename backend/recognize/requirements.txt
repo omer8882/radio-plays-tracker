@@ -5,3 +5,4 @@ requests
 psycopg2-binary
 tqdm
 tzdata
+elasticsearch>=8.12,<9
