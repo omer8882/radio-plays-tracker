@@ -107,9 +107,9 @@ class Migrator:
 
     def _create_elastic_client(self) -> Elasticsearch:
         config = Helper.load_config().get("elastic", {})
-        url = config.get("url") or os.getenv("ELASTIC_URL", "http://localhost:9200")
+        url = os.getenv("ELASTIC_URL", "http://localhost:9200")
         user = config.get("user") or os.getenv("ELASTIC_USER")
-        password = config.get("password") or os.getenv("ELASTIC_PASSWORD")
+        password = os.getenv("ELASTIC_PASSWORD")
         kwargs: Dict[str, object] = {"hosts": [url]}
         if user and password:
             kwargs["basic_auth"] = (user, password)
