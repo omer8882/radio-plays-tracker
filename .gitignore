@@ -13,6 +13,7 @@ ops/cloudflared/config.yml
 ops/cloudflared/*.json
 ops/cloudflared/*.pem
 ops/recognizer/state.json
+.personal/
 
 .vscode
 
