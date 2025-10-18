@@ -113,6 +113,7 @@ class Migrator:
         kwargs: Dict[str, object] = {"hosts": [url]}
         if user and password:
             kwargs["basic_auth"] = (user, password)
+        print("Elasticsearch client created with credentials: ", kwargs)
         return Elasticsearch(**kwargs)
 
     def _create_pg_connection(self) -> psycopg2.extensions.connection:
