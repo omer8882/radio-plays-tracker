@@ -116,7 +116,6 @@ class Migrator:
         kwargs: Dict[str, object] = {"hosts": [url]}
         if user and password:
             kwargs["basic_auth"] = (user, password)
-        print("Elasticsearch client created with credentials: ", kwargs)
         return Elasticsearch(**kwargs)
 
     def _create_pg_connection(self) -> psycopg2.extensions.connection:
@@ -238,6 +237,7 @@ class Migrator:
                             self._preview_play_batch(rows)
                         self.logger.info("Dry run enabled: skipping play writes for this batch")
                     continue
+                self._ensure_songs_exist([row[0] for row in rows])
                 with self.pg_conn:
                     with self.pg_conn.cursor() as cur:
                         self._insert_plays(cur, rows)
@@ -346,6 +346,49 @@ class Migrator:
             for row in rows[:size]
         ]
         self.logger.info("Preview plays: %s", json.dumps(subset, default=str))
+
+    def _ensure_songs_exist(self, song_ids: Sequence[str]) -> None:
+        unique_ids = list({sid for sid in song_ids if sid})
+        if not unique_ids:
+            return
+
+        with self.pg_conn.cursor() as cur:
+            cur.execute("SELECT id FROM songs WHERE id = ANY(%s)", (unique_ids,))
+            existing = {row[0] for row in cur.fetchall()}
+
+        missing = [sid for sid in unique_ids if sid not in existing]
+        if not missing:
+            return
+
+        response = self.es.mget(index="songs_index", ids=missing)
+        docs = response.get("docs", []) if isinstance(response, dict) else []
+        song_models = [ElasticSong(doc["_source"]) for doc in docs if doc.get("found") and doc.get("_source")]
+
+        missing_not_found = [doc.get("_id") for doc in docs if not doc.get("found")]
+        if missing_not_found:
+            self.logger.warning("Songs missing in Elasticsearch: %s", missing_not_found)
+
+        if not song_models:
+            return
+
+        albums = self._prepare_album_rows(song_models)
+        artists = self._prepare_artist_rows(song_models)
+        song_rows = self._prepare_song_rows(song_models)
+        song_artist_rows = self._prepare_song_artist_rows(song_models)
+
+        with self.pg_conn:
+            with self.pg_conn.cursor() as cur:
+                if albums:
+                    self._upsert_albums(cur, albums)
+                if artists:
+                    self._upsert_artists(cur, artists)
+                if song_rows:
+                    self._upsert_songs(cur, song_rows)
+                if song_artist_rows:
+                    self._insert_song_artists(cur, song_artist_rows)
+
+        self.stats.songs_written += len(song_rows)
+        self.logger.info("Backfilled %s songs referenced by plays", len(song_rows))
 
     @staticmethod
     def _parse_release_date(raw: str) -> Optional[date]:
