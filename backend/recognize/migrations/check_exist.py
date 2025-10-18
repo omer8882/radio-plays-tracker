@@ -21,6 +21,13 @@ def _create_elastic_client() -> Elasticsearch:
         return Elasticsearch(**kwargs)
 
 es = _create_elastic_client()
-docs = es.mget(index="songs_index", ids=ids)
-for doc in docs["docs"]:
-    print(doc["_id"], "found=", doc.get("found"), "source keys=", list((doc.get("_source") or {}).keys()))
+
+song_id = "5e4PVtYVBu9BpJVhmQhIvS"
+
+doc = es.get(index="songs_index", id=song_id, ignore=[404])
+print("lookup by bare id:", doc)
+if not doc or not doc.get("found"):
+    doc = es.search(index="songs_index", query={"term": {"id.keyword": song_id}}, size=1)
+    print("search by term:", doc)
+doc = es.get(index="songs_index", id=f"spotify:track:{song_id}", ignore=[404])
+print("lookup by prefixed id:", doc)
