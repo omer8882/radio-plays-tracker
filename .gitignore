@@ -12,8 +12,9 @@ frontend/radio-plays/build/
 ops/cloudflared/config.yml
 ops/cloudflared/*.json
 ops/cloudflared/*.pem
-ops/recognizer/state.json
+ops/recognizer/station_state.json
 .personal/
+
 
 .vscode
 
