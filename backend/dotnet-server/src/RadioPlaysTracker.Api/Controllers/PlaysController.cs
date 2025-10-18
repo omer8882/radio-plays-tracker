@@ -69,6 +69,44 @@ public class PlaysController : ControllerBase
     }
 
     /// <summary>
+    /// Get the top played songs for a specific artist, ranked by play count
+    /// </summary>
+    /// <param name="artist">The name of the artist</param>
+    /// <param name="days">Optional: Number of days to look back (null for all time)</param>
+    /// <param name="limit">Maximum number of top songs to return (default: 10)</param>
+    /// <returns>A list of the artist's most played songs ordered by hit count</returns>
+    /// <response code="200">Returns the list of artist's top hits</response>
+    /// <response code="500">If there was an internal server error</response>
+    /// <remarks>
+    /// This endpoint returns songs by the specified artist ordered by their play count.
+    /// Use the days parameter to limit results to a specific time period, or omit it to get all-time statistics.
+    /// 
+    /// Example requests:
+    /// 
+    ///     GET /api/artist_top_hits?artist=Radiohead&amp;limit=20
+    ///     GET /api/artist_top_hits?artist=Radiohead&amp;days=30&amp;limit=10
+    /// 
+    /// </remarks>
+    [HttpGet("artist_top_hits")]
+    [ProducesResponseType(typeof(IEnumerable<Core.DTOs.TopHitDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetArtistTopHits(
+        [FromQuery] string artist, 
+        [FromQuery] int? days = null, 
+        [FromQuery] int limit = 10)
+    {
+        try
+        {
+            var topHits = await _playRepository.GetArtistTopHitsAsync(artist, days, limit);
+            return Ok(topHits);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { detail = $"Server Error: {ex.Message}" });
+        }
+    }
+
+    /// <summary>
     /// Get the top played songs within a specified time period
     /// </summary>
     /// <param name="days">Number of days to look back (default: 7)</param>

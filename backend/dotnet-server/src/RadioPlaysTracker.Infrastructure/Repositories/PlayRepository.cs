@@ -134,6 +134,61 @@ public class PlayRepository : IPlayRepository
         }).ToList();
     }
 
+    public async Task<List<TopHitDto>> GetArtistTopHitsAsync(string artistName, int? days = null, int limit = 10)
+    {
+        // Get all songs by this artist
+        var songIds = await _context.SongArtists
+            .Include(sa => sa.Artist)
+            .Where(sa => EF.Functions.Like(sa.Artist.Name.ToLower(), artistName.ToLower()))
+            .Select(sa => sa.SongId)
+            .ToListAsync();
+
+        if (!songIds.Any())
+            return [];
+
+        // Build the plays query
+        var query = _context.Plays.Where(p => songIds.Contains(p.SongId));
+
+        // Apply date filter if specified
+        if (days.HasValue)
+        {
+            var startDate = Now.AddDays(-days.Value);
+            query = query.Where(p => p.PlayedAt >= startDate);
+        }
+
+        // Get top songs by play count
+        var topSongs = await query
+            .GroupBy(p => p.SongId)
+            .Select(g => new { SongId = g.Key, Count = g.Count() })
+            .OrderByDescending(x => x.Count)
+            .Take(limit)
+            .ToListAsync();
+
+        if (topSongs.Count == 0)
+            return [];
+
+        // Get song details
+        var topSongIds = topSongs.Select(x => x.SongId).ToList();
+        var songs = await _context.Songs
+            .Include(s => s.SongArtists.OrderBy(sa => sa.ArtistOrder))
+                .ThenInclude(sa => sa.Artist)
+            .Where(s => topSongIds.Contains(s.Id))
+            .ToListAsync();
+
+        // Combine and return, maintaining the order from topSongs
+        return topSongs.Select(ts =>
+        {
+            var song = songs.First(s => s.Id == ts.SongId);
+            return new TopHitDto
+            {
+                Id = song.Id,
+                Title = song.Name,
+                Artist = string.Join(", ", song.SongArtists.Select(sa => sa.Artist.Name)),
+                Hits = ts.Count
+            };
+        }).ToList();
+    }
+
     public async Task<Dictionary<string, int>> GetSongPlaysByStationAsync(string songId, int? days = null)
     {
         var query = _context.Plays
