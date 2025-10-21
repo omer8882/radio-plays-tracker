@@ -20,22 +20,42 @@ public class PlaysController : ControllerBase
     }
 
     /// <summary>
-    /// Get the most recent plays from a specific radio station
+    /// Get paginated recent plays from a specific radio station
     /// </summary>
     /// <param name="station">The name of the radio station</param>
     /// <param name="limit">Maximum number of plays to return (default: 10)</param>
+    /// <param name="page">Zero-based page index (default: 0)</param>
     /// <returns>A list of recent plays from the specified station</returns>
     /// <response code="200">Returns the list of recent plays</response>
     /// <response code="500">If there was an internal server error</response>
     [HttpGet("station_last_plays")]
-    [ProducesResponseType(typeof(IEnumerable<Core.DTOs.PlayDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Core.DTOs.PaginatedResult<Core.DTOs.PlayDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [EndpointSummary("Stations = ['glglz', 'eco99', '100fm', 'galatz', '103fm', 'kan88']")]
-    public async Task<IActionResult> GetStationLastPlays([FromQuery] string station, [FromQuery] int limit = 10)
+    public async Task<IActionResult> GetStationLastPlays(
+        [FromQuery] string station,
+        [FromQuery] int limit = 10,
+        [FromQuery] int page = 0)
     {
         try
         {
-            var plays = await _playRepository.GetLastPlaysFromStationAsync(station, limit);
+            if (string.IsNullOrWhiteSpace(station))
+            {
+                return BadRequest(new { detail = "Station query parameter is required" });
+            }
+
+            if (page < 0)
+            {
+                return BadRequest(new { detail = "Page must be zero or greater" });
+            }
+
+            if (limit <= 0)
+            {
+                return BadRequest(new { detail = "Limit must be greater than zero" });
+            }
+
+            var pageSize = System.Math.Min(limit, 25);
+            var plays = await _playRepository.GetStationPlaysAsync(station, page, pageSize);
             return Ok(plays);
         }
         catch (Exception ex)

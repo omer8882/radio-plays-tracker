@@ -52,9 +52,12 @@ public class PlayRepository : IPlayRepository
         }
     }
 
-    public async Task<List<PlayDto>> GetLastPlaysFromStationAsync(string stationName, int limit = 10)
+    public async Task<PaginatedResult<PlayDto>> GetStationPlaysAsync(string stationName, int page, int pageSize)
     {
+        var skip = page * pageSize;
+
         var plays = await _context.Plays
+            .AsNoTracking()
             .Include(p => p.Song)
                 .ThenInclude(s => s.SongArtists)
                 .ThenInclude(sa => sa.Artist)
@@ -62,10 +65,25 @@ public class PlayRepository : IPlayRepository
             .Include(p => p.Station)
             .Where(p => EF.Functions.Like(p.Station.Name.ToLower(), stationName.ToLower()))
             .OrderByDescending(p => p.PlayedAt)
-            .Take(limit)
+            .Skip(skip)
+            .Take(pageSize + 1)
             .ToListAsync();
 
-        return plays.Select(p => ToPlayDto(p, TimeFormat)).ToList();
+        var hasMore = plays.Count > pageSize;
+        if (hasMore)
+        {
+            plays.RemoveAt(plays.Count - 1);
+        }
+
+        var items = plays.Select(p => ToPlayDto(p, TimeFormat)).ToList();
+
+        return new PaginatedResult<PlayDto>
+        {
+            Items = items,
+            Page = page,
+            PageSize = pageSize,
+            HasMore = hasMore
+        };
     }
 
     public async Task<List<PlayDto>> GetArtistPlaysAsync(string artistName, int limit = 100)
