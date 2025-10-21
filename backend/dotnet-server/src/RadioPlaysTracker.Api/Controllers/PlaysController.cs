@@ -64,7 +64,16 @@ public class PlaysController : ControllerBase
 
             var pageSize = System.Math.Min(limit, MaxPageSize);
             var plays = await _playRepository.GetStationPlaysAsync(station, page, pageSize);
-            if (page == MaxPageNumber) plays.HasMore = false;
+            if (page == MaxPageNumber && plays.HasMore)
+            {
+                plays = new Core.DTOs.PaginatedResult<Core.DTOs.PlayDto>
+                {
+                    Items = plays.Items,
+                    Page = plays.Page,
+                    PageSize = plays.PageSize,
+                    HasMore = false
+                };
+            }
             return Ok(plays);
         }
         catch (Exception ex)
