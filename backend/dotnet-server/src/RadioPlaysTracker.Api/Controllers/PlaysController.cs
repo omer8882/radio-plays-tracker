@@ -13,6 +13,9 @@ public class PlaysController : ControllerBase
     private readonly IPlayRepository _playRepository;
     private readonly ISongRepository _songRepository;
 
+    private const int MaxPageSize = 25;
+    private const int MaxPageNumber = 30;
+
     public PlaysController(IPlayRepository playRepository, ISongRepository songRepository)
     {
         _playRepository = playRepository;
@@ -49,13 +52,19 @@ public class PlaysController : ControllerBase
                 return BadRequest(new { detail = "Page must be zero or greater" });
             }
 
+            if (page > MaxPageNumber)
+            {
+                return BadRequest(new { detail = $"Page doesn't exist" });
+            }
+
             if (limit <= 0)
             {
                 return BadRequest(new { detail = "Limit must be greater than zero" });
             }
 
-            var pageSize = System.Math.Min(limit, 25);
+            var pageSize = System.Math.Min(limit, MaxPageSize);
             var plays = await _playRepository.GetStationPlaysAsync(station, page, pageSize);
+            if (page == MaxPageNumber) plays.HasMore = false;
             return Ok(plays);
         }
         catch (Exception ex)
@@ -214,6 +223,14 @@ public class PlaysController : ControllerBase
             {
                 return BadRequest(new { detail = "Invalid timestamp format. Please use ISO format." });
             }
+
+            if (range_minutes < 0)
+            {
+                return BadRequest(new { detail = "Range minutes must be zero or greater." });
+            }
+            
+            if(range_minutes > 100) range_minutes = 100;
+
             
             // Database stores timestamp without timezone (Israel time).
             // Use Unspecified to match directly with database values.
