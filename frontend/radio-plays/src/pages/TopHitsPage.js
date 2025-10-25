@@ -141,10 +141,10 @@ const TopHitsPage = () => {
     <Box sx={{ width: '90%', mx: 'auto' }}>
       <Box dir="rtl" sx={{ mb: 4 }}>
         <Typography variant="h4" gutterBottom>
-          להיטים חמים
+          הלהיטים
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          הצצה מעמיקה לשירים ולאמנים המושמעים ביותר בתחנות. בחרו טווח זמן ותחנה כדי לגלות מי מככב באוויר.
+          השירים הכי מושמעים ברדיו. בשבוע האחרון או בחודש האחרון. האמנים הכי מושמעים ברדיו.
         </Typography>
       </Box>
 
@@ -155,9 +155,6 @@ const TopHitsPage = () => {
         dir="rtl"
       >
         <Box>
-          <Typography variant="subtitle2" gutterBottom>
-            טווח ימים
-          </Typography>
           <ToggleButtonGroup
             value={days}
             exclusive
@@ -207,6 +204,9 @@ const TopHitsPage = () => {
             value={station}
             label="תחנה"
             onChange={handleStationChange}
+            sx={{
+            marginRight: { xs: 2, sm: 2 },
+          }}
           >
             {STATION_FILTER_OPTIONS.map((option) => (
               <MenuItem key={option.value} value={option.value}>

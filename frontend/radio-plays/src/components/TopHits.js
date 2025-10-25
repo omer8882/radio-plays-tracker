@@ -58,7 +58,7 @@ const TopHits = () => {
     fetchStationBreakdowns();
   }, [topHits, timeRange]);
   return (
-    <Paper style={{ backgroundColor: '#dedadc', padding: '0px', borderRadius: '15px', margin: '10px 2px 5px 2px', width: '100%', border: '1px solid', borderColor: '#c0c0c0',}} sx={{ boxShadow: 6 }}>
+    <Paper style={{ backgroundColor: '#dedadc', padding: '0px', borderRadius: '15px', margin: '10px 2px 5px 2px', width: '100%', minWidth: '275px', border: '1px solid', borderColor: '#c0c0c0',}} sx={{ boxShadow: 6 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" style={{ padding: '6px' }}>
         <ToggleButtonGroup
           value={timeRange}
@@ -70,23 +70,8 @@ const TopHits = () => {
           }}
           aria-label="time range"
           sx={{
-            margin: '8px 0px 0px 10px',
+            margin: '8px 5px 0px 10px',
             display: 'inline-flex',
-            flexDirection: 'row-reverse',
-            '& .MuiToggleButtonGroup-grouped': {
-              borderRadius: 0,
-              border: '1px solid',
-              borderColor: 'divider',
-              '&:not(:first-of-type)': {
-                borderLeft: 0,
-              }
-            },
-            '& .MuiToggleButtonGroup-grouped:first-of-type': {
-              borderRadius: '0 10px 10px 0',
-            },
-            '& .MuiToggleButtonGroup-grouped:last-of-type': {
-              borderRadius: '10px 0 0 10px',
-            }
           }}
         >
           <ToggleButton value="7" aria-label="7 days">7</ToggleButton>

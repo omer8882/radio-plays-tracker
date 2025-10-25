@@ -30,15 +30,15 @@ const TopToolbar = () => {
             component={RouterLink}
             to="/"
             color={isActive('/') ? 'inherit' : 'info'}
-            sx={{ color: isActive('/') ? '#2E2E2E' : '#FFFFFF' }}
+            sx={{ color: isActive('/') ? '#FFFFFF' : '#FFFFFF', backgroundColor: isActive('/') ? '#c0b9bc' : 'transparent' }}
           >
-            בית
+            לאחרונה
           </Button>
           <Button
             component={RouterLink}
             to="/top-hits"
             color={isActive('/top-hits') ? 'inherit' : 'info'}
-            sx={{ color: isActive('/top-hits') ? '#2E2E2E' : '#FFFFFF' }}
+            sx={{ color: isActive('/top-hits') ? '#FFFFFF' : '#FFFFFF', backgroundColor: isActive('/top-hits') ? '#c0b9bc' : 'transparent' }}
           >
             להיטים
           </Button>
