@@ -1,25 +1,10 @@
 import React, { useState } from 'react';
 import SongList from '../SongList';
 import { Box, ToggleButton, ToggleButtonGroup, Typography} from '@mui/material';
-
-import eco99Logo from '../../assets/eco99_logo.png';
-import glglzLogo from '../../assets/glglz_logo.png';
-import fm100Logo from '../../assets/100fm_logo.png';
-import kan88Logo from '../../assets/kan88_logo.png';
-import fm103Logo from '../../assets/103fm_logo.png';
-import galatzLogo from '../../assets/galatz_logo.png';
-
-const stationsInfo = [
-    { name: 'galatz', logo: galatzLogo, bgColor: '#dbd944' }, //5f5f5
-    { name: '103fm', logo: fm103Logo, bgColor: '#64D1DE' },
-    { name: 'kan88', logo: kan88Logo, bgColor: '#b38bae' },
-    { name: '100fm', logo: fm100Logo, bgColor: '#cccc31' },
-    { name: 'eco99', logo: eco99Logo, bgColor: '#BBDEFB' },
-    { name: 'glglz', logo: glglzLogo, bgColor: '#D1C4E9' }, //# 
-];
+import { STATIONS } from '../../constants/stations';
 
 const LastPlays = () => {
-    const [selectedStation, setSelectedStation] = useState(stationsInfo[stationsInfo.length-1]);
+    const [selectedStation, setSelectedStation] = useState(STATIONS[STATIONS.length - 1]);
 
     const handleStationChange = (event, newStation) => {
         if (newStation !== null) {
@@ -33,7 +18,7 @@ const LastPlays = () => {
 
             <ToggleButtonGroup value={selectedStation} exclusive onChange={handleStationChange} aria-label="station selection" dir="ltr" 
                 sx={{ width: '100%' }}>
-                {stationsInfo.map((station) => (
+                {STATIONS.map((station) => (
                     <ToggleButton
                         key={station.name}
                         value={station}

@@ -7,27 +7,27 @@ import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import './SongList.css';
 import { API_BASE_URL } from '../config';
 
+const GHOST_DATA = [
+  { time: ' ', title: ' ', artist: ' ' },
+  { time: ' ', title: ' ', artist: ' ' },
+  { time: ' ', title: ' ', artist: ' ' },
+  { time: ' ', title: ' ', artist: ' ' },
+  { time: ' ', title: ' ', artist: ' ' },
+  { time: ' ', title: ' ', artist: ' ' },
+  { time: ' ', title: ' ', artist: ' ' },
+  { time: ' ', title: ' ', artist: ' ' },
+  { time: ' ', title: ' ', artist: ' ' },
+  { time: ' ', title: ' ', artist: ' ' }
+];
+
+const ERROR_SONGS = [
+  { time: '00:00', title: 'server error', artist: '' }
+];
+
 const SongList = ({ station }) => {
-  // Placeholder data for loading and error cases
-  const ghost_data = [
-    {time: " ", title: " ", artist: " "},
-    {time: " ", title: " ", artist: " "},
-    {time: " ", title: " ", artist: " "},
-    {time: " ", title: " ", artist: " "},
-    {time: " ", title: " ", artist: " "},
-    {time: " ", title: " ", artist: " "},
-    {time: " ", title: " ", artist: " "},
-    {time: " ", title: " ", artist: " "},
-    {time: " ", title: " ", artist: " "},
-    {time: " ", title: " ", artist: " "},
-  ];
-  const error_songs = [
-    { time: "00:00", title: "server error", artist: "" }
-  ];
-  
   const PAGE_SIZE = 10;
 
-  const [displayedSongs, setDisplayedData] = useState(ghost_data);
+  const [displayedSongs, setDisplayedData] = useState(GHOST_DATA);
   const [showModal, setShowModal] = useState(false);
   const [selectedSong, setSelectedSong] = useState(null);
   const [page, setPage] = useState(0);
@@ -74,7 +74,7 @@ const SongList = ({ station }) => {
         if (!isSubscribed) {
           return;
         }
-        setDisplayedData(error_songs);
+        setDisplayedData(ERROR_SONGS);
         setHasMore(false);
         setErrorMessage('הייתה בעיה בטעינת הנתונים, נסו שוב בעוד רגע.');
       } finally {
@@ -122,10 +122,12 @@ const SongList = ({ station }) => {
           borderTop: '0px',
         }}
       >
-  <List>
+        <List>
           <TransitionGroup component={null}>
             {displayedSongs.map((song, index) => (
+              <CSSTransition key={song.id || index} timeout={500} classNames="fade-slide">
                 <SongListItem song={song} onClick={() => handleSongClick(song)} />
+              </CSSTransition>
             ))}
           </TransitionGroup>
         </List>

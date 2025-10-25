@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, List, ListItem, Popover, Typography } from '@mui/material';
-import axios from 'axios';
 import SongDetailsPage from './SongDetailsPage';
 
 const overlayColor = 'rgba(0, 0, 0, 0.07)';

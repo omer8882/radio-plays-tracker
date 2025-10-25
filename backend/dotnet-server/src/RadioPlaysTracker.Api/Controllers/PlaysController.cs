@@ -15,6 +15,8 @@ public class PlaysController : ControllerBase
 
     private const int MaxPageSize = 25;
     private const int MaxPageNumber = 30;
+    private const int MaxTopSongsPageSize = 50;
+    private const int MaxTopArtistsPageSize = 50;
 
     public PlaysController(IPlayRepository playRepository, ISongRepository songRepository)
     {
@@ -167,6 +169,102 @@ public class PlaysController : ControllerBase
         {
             var topHits = await _playRepository.GetTopHitsAsync(days, top_n);
             return Ok(topHits);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { detail = $"Server Error: {ex.Message}" });
+        }
+    }
+
+    /// <summary>
+    /// Get the top played songs over a period, with pagination
+    /// </summary>
+    /// <param name="days">Number of days to look back (default: 7)</param>
+    /// <param name="station">Optional station filter (default: all stations)</param>
+    /// <param name="limit">Page size for results (default: 25)</param>
+    /// <param name="page">Zero-based page index (default: 0)</param>
+    /// <returns>Paginated list of top songs with station breakdowns</returns>
+    /// <response code="200">Returns the list of top songs</response>
+    /// <response code="400">If the request parameters are invalid</response>
+    /// <response code="500">If there was an internal server error</response>
+    [HttpGet("top_songs")]
+    [ProducesResponseType(typeof(Core.DTOs.PaginatedResult<Core.DTOs.TopSongDetailDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetTopSongs(
+        [FromQuery] int days = 7,
+        [FromQuery] string? station = null,
+        [FromQuery] int limit = 25,
+        [FromQuery] int page = 0)
+    {
+        try
+        {
+            if (days <= 0)
+            {
+                return BadRequest(new { detail = "Days must be greater than zero" });
+            }
+
+            if (page < 0)
+            {
+                return BadRequest(new { detail = "Page must be zero or greater" });
+            }
+
+            if (limit <= 0)
+            {
+                return BadRequest(new { detail = "Limit must be greater than zero" });
+            }
+
+            var pageSize = System.Math.Min(limit, MaxTopSongsPageSize);
+            var results = await _playRepository.GetTopSongsAsync(days, station, page, pageSize);
+            return Ok(results);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { detail = $"Server Error: {ex.Message}" });
+        }
+    }
+
+    /// <summary>
+    /// Get the top played artists over a period, with pagination
+    /// </summary>
+    /// <param name="days">Number of days to look back (default: 7)</param>
+    /// <param name="station">Optional station filter (default: all stations)</param>
+    /// <param name="limit">Page size for results (default: 20)</param>
+    /// <param name="page">Zero-based page index (default: 0)</param>
+    /// <returns>Paginated list of top artists</returns>
+    /// <response code="200">Returns the list of top artists</response>
+    /// <response code="400">If the request parameters are invalid</response>
+    /// <response code="500">If there was an internal server error</response>
+    [HttpGet("top_artists")]
+    [ProducesResponseType(typeof(Core.DTOs.PaginatedResult<Core.DTOs.TopArtistDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetTopArtists(
+        [FromQuery] int days = 7,
+        [FromQuery] string? station = null,
+        [FromQuery] int limit = 20,
+        [FromQuery] int page = 0)
+    {
+        try
+        {
+            if (days <= 0)
+            {
+                return BadRequest(new { detail = "Days must be greater than zero" });
+            }
+
+            if (page < 0)
+            {
+                return BadRequest(new { detail = "Page must be zero or greater" });
+            }
+
+            if (limit <= 0)
+            {
+                return BadRequest(new { detail = "Limit must be greater than zero" });
+            }
+
+            var pageSize = System.Math.Min(limit, MaxTopArtistsPageSize);
+            var results = await _playRepository.GetTopArtistsAsync(days, station, page, pageSize);
+            return Ok(results);
         }
         catch (Exception ex)
         {

@@ -6,6 +6,8 @@ namespace RadioPlaysTracker.Core.Interfaces;
 public interface IPlayRepository
 {
     Task<PaginatedResult<PlayDto>> GetStationPlaysAsync(string stationName, int page, int pageSize);
+    Task<PaginatedResult<TopSongDetailDto>> GetTopSongsAsync(int days, string? stationName, int page, int pageSize);
+    Task<PaginatedResult<TopArtistDto>> GetTopArtistsAsync(int days, string? stationName, int page, int pageSize);
     Task<List<PlayDto>> GetArtistPlaysAsync(string artistName, int limit = 100);
     Task<List<TopHitDto>> GetTopHitsAsync(int days = 7, int topN = 5);
     Task<List<TopHitDto>> GetArtistTopHitsAsync(string artistName, int? days = null, int limit = 10);

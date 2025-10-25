@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, ToggleButton, ToggleButtonGroup, Paper, List, ListItem, Tooltip } from '@mui/material';
+import { Box, Typography, ToggleButton, ToggleButtonGroup, Paper, List, ListItem, Tooltip, Button } from '@mui/material';
 import axios from 'axios';
 import StationBreakdown from './StationBreakdown';
 import { API_BASE_URL } from '../config';
+import { Link as RouterLink } from 'react-router-dom';
 
 const overlayColor = 'rgba(0, 0, 0, 0.07)'; // 10% opaque black
 
@@ -62,9 +63,31 @@ const TopHits = () => {
         <ToggleButtonGroup
           value={timeRange}
           exclusive
-          onChange={(event, newValue) => setTimeRange(newValue)}
+          onChange={(event, newValue) => {
+            if (newValue !== null) {
+              setTimeRange(newValue);
+            }
+          }}
           aria-label="time range"
-          style={{ margin: '8px 0px 0px 10px' }}
+          sx={{
+            margin: '8px 0px 0px 10px',
+            display: 'inline-flex',
+            flexDirection: 'row-reverse',
+            '& .MuiToggleButtonGroup-grouped': {
+              borderRadius: 0,
+              border: '1px solid',
+              borderColor: 'divider',
+              '&:not(:first-of-type)': {
+                borderLeft: 0,
+              }
+            },
+            '& .MuiToggleButtonGroup-grouped:first-of-type': {
+              borderRadius: '0 10px 10px 0',
+            },
+            '& .MuiToggleButtonGroup-grouped:last-of-type': {
+              borderRadius: '10px 0 0 10px',
+            }
+          }}
         >
           <ToggleButton value="7" aria-label="7 days">7</ToggleButton>
           <ToggleButton value="30" aria-label="30 days">30</ToggleButton>
@@ -121,6 +144,16 @@ const TopHits = () => {
           </ListItem>
         ))}
       </List>
+      <Box display="flex" justifyContent="center" sx={{ p: 1 }}>
+        <Button
+          component={RouterLink}
+          to="/top-hits"
+          size="small"
+          variant="text"
+        >
+          מעבר לכל הלהיטים
+        </Button>
+      </Box>
     </Paper>
   );
 };
