@@ -36,6 +36,10 @@ public class SongConfiguration : IEntityTypeConfiguration<Song>
             .HasColumnName("external_links")
             .HasColumnType("jsonb");
 
+        builder.Property(s => s.ImageUrl)
+            .HasColumnName("image_url")
+            .HasMaxLength(1000);
+
         builder.Property(s => s.CreatedAt)
             .HasColumnName("created_at")
             .HasColumnType("timestamp without time zone")

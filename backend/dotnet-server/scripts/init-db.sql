@@ -15,6 +15,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;  -- For fuzzy text search
 CREATE TABLE IF NOT EXISTS artists (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(500) NOT NULL,
+    image_url VARCHAR(1000),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -24,6 +25,7 @@ CREATE TABLE IF NOT EXISTS albums (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(500) NOT NULL,
     release_date DATE,
+    image_url VARCHAR(1000),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -36,6 +38,7 @@ CREATE TABLE IF NOT EXISTS songs (
     duration_ms INTEGER,
     popularity INTEGER,
     external_links JSONB,  -- {spotify, youtube, apple_music, etc.}
+    image_url VARCHAR(1000),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_songs_album FOREIGN KEY (album_id) REFERENCES albums(id) ON DELETE SET NULL

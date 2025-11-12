@@ -12,6 +12,7 @@ public class Song
     public int DurationMs { get; set; }
     public int Popularity { get; set; }
     public JsonDocument? ExternalLinks { get; set; }  // Stores JSON: {spotify, youtube, apple_music}
+    public string? ImageUrl { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

@@ -259,36 +259,66 @@ class TrackProcessor:
         self.db_connector = db_connector
     
     def process_track(self, track: Dict[str, Any], shazam_track: Dict[str, Any], spotify_track: Dict[str, Any], station: str) -> None:
-        simplified = self._simplify_spotify_data(spotify_track)
+        simplified = self._simplify_spotify_data(spotify_track, shazam_track)
         self._add_external_links(simplified, shazam_track, spotify_track)
         self.db_connector.index_song_if_needed(simplified)
         self.db_connector.index_play(simplified, station)
     
-    def _simplify_spotify_data(self, raw: Dict[str, Any]) -> Dict[str, Any]:
+    def _simplify_spotify_data(self, raw: Dict[str, Any], shazam_track: Dict[str, Any]) -> Dict[str, Any]:
         # Always use Israel timezone regardless of server location
         israel_tz = ZoneInfo('Asia/Jerusalem')
         israel_now = datetime.now(timezone.utc).astimezone(israel_tz)
+
+        album = raw.get("album", {})
+        album_images = album.get("images") or []
+        album_image_url = self._select_primary_image(album_images)
+
+        shazam_images = (shazam_track or {}).get("images", {}) if shazam_track else {}
+        shazam_song_image = shazam_images.get("coverarthq") or shazam_images.get("coverart")
+        shazam_artist_image = shazam_images.get("background")
+
+        song_image_url = album_image_url or shazam_song_image
         
         return {
             "played_at": israel_now.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "id": raw.get("id"),
             "name": raw.get("name"),
             "artists": [
-                {"id": artist.get("id"), "name": artist.get("name")}
-                for artist in raw["artists"]
+                {
+                    "id": artist.get("id"),
+                    "name": artist.get("name"),
+                    "image_url": shazam_artist_image if index == 0 else None
+                }
+                for index, artist in enumerate(raw["artists"])
             ],
             "album": {
-                "id": raw["album"].get("id"),
-                "name": raw["album"].get("name"),
+                "id": album.get("id"),
+                "name": album.get("name"),
                 "artists": [
-                    {"id": artist.get("id"), "name": artist.get("name")}
-                    for artist in raw["album"]["artists"]
+                    {
+                        "id": artist.get("id"),
+                        "name": artist.get("name"),
+                        "image_url": shazam_artist_image if index == 0 else None
+                    }
+                    for index, artist in enumerate(album.get("artists", []))
                 ],
-                "release_date": raw["album"].get("release_date")
+                "release_date": album.get("release_date"),
+                "image_url": album_image_url or shazam_song_image
             },
             "duration_ms": raw.get("duration_ms"),
-            "popularity": raw.get("popularity")
+            "popularity": raw.get("popularity"),
+            "image_url": song_image_url
         }
+
+    def _select_primary_image(self, images: List[Dict[str, Any]]) -> Optional[str]:
+        if not images:
+            return None
+
+        def image_width(image: Dict[str, Any]) -> int:
+            return int(image.get("width") or 0)
+
+        primary = max(images, key=image_width)
+        return primary.get("url")
     
     def _add_external_links(self, track: Dict[str, Any], shazam_track: Dict[str, Any], spotify_track: Dict[str, Any]) -> None:
         apple_music_link = self._extract_applemusic_link(shazam_track)

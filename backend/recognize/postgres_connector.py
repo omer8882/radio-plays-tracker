@@ -55,35 +55,20 @@ class PostgresConnector:
             self.logger.error(f"Error getting/creating station: {e}")
             raise
 
-    def _artist_exists(self, artist_id):
-        """Check if artist exists in database"""
-        with self.conn.cursor() as cur:
-            cur.execute("SELECT 1 FROM artists WHERE id = %s", (artist_id,))
-            return cur.fetchone() is not None
-
-    def _album_exists(self, album_id):
-        """Check if album exists in database"""
-        with self.conn.cursor() as cur:
-            cur.execute("SELECT 1 FROM albums WHERE id = %s", (album_id,))
-            return cur.fetchone() is not None
-
-    def _song_exists(self, song_id):
-        """Check if song exists in database"""
-        with self.conn.cursor() as cur:
-            cur.execute("SELECT 1 FROM songs WHERE id = %s", (song_id,))
-            return cur.fetchone() is not None
-
     def index_artists(self, artists):
         """Insert artists if they don't exist"""
         try:
             with self.conn.cursor() as cur:
                 for artist in artists:
-                    if not self._artist_exists(artist['id']):
-                        cur.execute(
-                            """INSERT INTO artists (id, name) VALUES (%s, %s)
-                               ON CONFLICT (id) DO NOTHING""",
-                            (artist['id'], artist['name'])
-                        )
+                    cur.execute(
+                        """INSERT INTO artists (id, name, image_url)
+                               VALUES (%s, %s, %s)
+                               ON CONFLICT (id) DO UPDATE SET
+                                   name = EXCLUDED.name,
+                                   image_url = COALESCE(artists.image_url, EXCLUDED.image_url),
+                                   updated_at = CURRENT_TIMESTAMP""",
+                        (artist['id'], artist['name'], artist.get('image_url'))
+                    )
                 self.conn.commit()
         except Exception as e:
             self.conn.rollback()
@@ -99,38 +84,47 @@ class PostgresConnector:
                     self.index_artists(album['artists'])
 
                 # Insert album if it doesn't exist
-                if not self._album_exists(album['id']):
-                    release_date = None
-                    if album.get('release_date'):
-                        try:
-                            release_date = datetime.strptime(album['release_date'], "%Y-%m-%d").date()
-                        except:
-                            pass
+                release_date = None
+                if album.get('release_date'):
+                    try:
+                        release_date = datetime.strptime(album['release_date'], "%Y-%m-%d").date()
+                    except:
+                        pass
 
-                    cur.execute(
-                        """INSERT INTO albums (id, name, release_date) 
-                           VALUES (%s, %s, %s)
-                           ON CONFLICT (id) DO NOTHING""",
-                        (album['id'], album['name'], release_date)
-                    )
+                cur.execute(
+                    """INSERT INTO albums (id, name, release_date, image_url) 
+                       VALUES (%s, %s, %s, %s)
+                       ON CONFLICT (id) DO UPDATE SET
+                           name = EXCLUDED.name,
+                           release_date = EXCLUDED.release_date,
+                           image_url = COALESCE(albums.image_url, EXCLUDED.image_url),
+                           updated_at = CURRENT_TIMESTAMP""",
+                    (album['id'], album['name'], release_date, album.get('image_url'))
+                )
 
-                    # Insert album-artist relationships
-                    if 'artists' in album:
-                        for idx, artist in enumerate(album['artists']):
-                            cur.execute(
-                                """INSERT INTO album_artists (album_id, artist_id, artist_order) 
-                                   VALUES (%s, %s, %s)
-                                   ON CONFLICT (album_id, artist_id) DO NOTHING""",
-                                (album['id'], artist['id'], idx)
-                            )
+                # Insert album-artist relationships
+                if 'artists' in album:
+                    for idx, artist in enumerate(album['artists']):
+                        cur.execute(
+                            """INSERT INTO album_artists (album_id, artist_id, artist_order) 
+                               VALUES (%s, %s, %s)
+                               ON CONFLICT (album_id, artist_id) DO NOTHING""",
+                            (album['id'], artist['id'], idx)
+                        )
                 self.conn.commit()
         except Exception as e:
             self.conn.rollback()
             self.logger.error(f"Error indexing album: {e}")
             raise
 
+    def _song_exists(self, song_id):
+        """Check if song exists in database"""
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT 1 FROM songs WHERE id = %s", (song_id,))
+            return cur.fetchone() is not None
+
     def index_song_if_needed(self, song):
-        """Insert song with all relationships if it doesn't exist"""
+        """Insert or update song with all relationships"""
         try:
             with self.conn.cursor() as cur:
                 # Insert artists first
@@ -141,38 +135,45 @@ class PostgresConnector:
                 if 'album' in song:
                     self.index_album(song['album'])
 
-                # Check if song exists
-                if not self._song_exists(song['id']):
-                    # Convert external_links to JSON
-                    external_links = Json(song.get('external_links', {}))
+                was_existing = self._song_exists(song['id'])
 
-                    # Insert song
-                    cur.execute(
-                        """INSERT INTO songs (id, name, album_id, duration_ms, popularity, external_links) 
-                           VALUES (%s, %s, %s, %s, %s, %s)
-                           ON CONFLICT (id) DO UPDATE SET
-                               external_links = EXCLUDED.external_links,
-                               updated_at = CURRENT_TIMESTAMP""",
-                        (
-                            song['id'],
-                            song['name'],
-                            song['album']['id'] if 'album' in song else None,
-                            song.get('duration_ms', 0),
-                            song.get('popularity', 0),
-                            external_links
-                        )
+                # Convert external_links to JSON
+                external_links = Json(song.get('external_links', {}))
+
+                # Insert or update song
+                cur.execute(
+                    """INSERT INTO songs (id, name, album_id, duration_ms, popularity, external_links, image_url) 
+                       VALUES (%s, %s, %s, %s, %s, %s, %s)
+                       ON CONFLICT (id) DO UPDATE SET
+                           name = EXCLUDED.name,
+                           album_id = EXCLUDED.album_id,
+                           duration_ms = EXCLUDED.duration_ms,
+                           popularity = EXCLUDED.popularity,
+                           external_links = EXCLUDED.external_links,
+                           image_url = COALESCE(songs.image_url, EXCLUDED.image_url),
+                           updated_at = CURRENT_TIMESTAMP""",
+                    (
+                        song['id'],
+                        song['name'],
+                        song['album']['id'] if 'album' in song else None,
+                        song.get('duration_ms', 0),
+                        song.get('popularity', 0),
+                        external_links,
+                        song.get('image_url')
                     )
+                )
 
-                    # Insert song-artist relationships
-                    if 'artists' in song:
-                        for idx, artist in enumerate(song['artists']):
-                            cur.execute(
-                                """INSERT INTO song_artists (song_id, artist_id, artist_order) 
-                                   VALUES (%s, %s, %s)
-                                   ON CONFLICT (song_id, artist_id) DO NOTHING""",
-                                (song['id'], artist['id'], idx)
-                            )
+                # Insert song-artist relationships
+                if 'artists' in song:
+                    for idx, artist in enumerate(song['artists']):
+                        cur.execute(
+                            """INSERT INTO song_artists (song_id, artist_id, artist_order) 
+                               VALUES (%s, %s, %s)
+                               ON CONFLICT (song_id, artist_id) DO NOTHING""",
+                            (song['id'], artist['id'], idx)
+                        )
 
+                if not was_existing and 'artists' in song:
                     artist_names = ', '.join([artist['name'] for artist in song['artists']])
                     album_year = song['album'].get('release_date', '')[:4] if 'album' in song else ''
                     self.logger.info(f"Indexed: {artist_names} - {song['name']} ({album_year})")

@@ -12,4 +12,5 @@ public class SearchResultDto
     public int DurationMs { get; set; }
     public int Popularity { get; set; }
     public Dictionary<string, string>? ExternalLinks { get; set; }
+    public string? ImageUrl { get; set; }
 }

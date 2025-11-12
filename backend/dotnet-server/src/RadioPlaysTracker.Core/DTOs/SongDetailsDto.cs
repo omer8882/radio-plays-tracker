@@ -15,6 +15,7 @@ public class SongDetailsDto
     public int DurationMs { get; set; }
     public int Popularity { get; set; }
     public Dictionary<string, string>? ExternalLinks { get; set; }
+    public string? ImageUrl { get; set; }
     public DateTime? PlayedAt { get; set; }  // Optional
 }
 
@@ -23,6 +24,7 @@ public class ArtistInfoDto
 {
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
+    public string? ImageUrl { get; set; }
 }
 
 [DebuggerDisplay("{Name} ({ReleaseDate})")]
@@ -32,4 +34,5 @@ public class AlbumInfoDto
     public string Name { get; set; } = string.Empty;
     public List<ArtistInfoDto> Artists { get; set; } = new();
     public string ReleaseDate { get; set; } = string.Empty;  // yyyy-MM-dd format
+    public string? ImageUrl { get; set; }
 }

@@ -22,6 +22,10 @@ public class ArtistConfiguration : IEntityTypeConfiguration<Artist>
             .HasMaxLength(500)
             .IsRequired();
 
+        builder.Property(a => a.ImageUrl)
+            .HasColumnName("image_url")
+            .HasMaxLength(1000);
+
         builder.Property(a => a.CreatedAt)
             .HasColumnName("created_at")
             .HasColumnType("timestamp without time zone")

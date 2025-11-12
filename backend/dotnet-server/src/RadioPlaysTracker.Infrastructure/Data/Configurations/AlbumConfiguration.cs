@@ -26,6 +26,10 @@ public class AlbumConfiguration : IEntityTypeConfiguration<Album>
             .HasColumnName("release_date")
             .HasColumnType("date");
 
+        builder.Property(a => a.ImageUrl)
+            .HasColumnName("image_url")
+            .HasMaxLength(1000);
+
         builder.Property(a => a.CreatedAt)
             .HasColumnName("created_at")
             .HasColumnType("timestamp without time zone")

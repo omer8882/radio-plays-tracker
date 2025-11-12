@@ -39,18 +39,30 @@ public class SongRepository : ISongRepository
             Name = song.Name,
             DurationMs = song.DurationMs,
             Popularity = song.Popularity,
+               ImageUrl = song.ImageUrl,
             Artists = song.SongArtists
                 .OrderBy(sa => sa.ArtistOrder)
-                .Select(sa => new ArtistInfoDto { Id = sa.Artist.Id, Name = sa.Artist.Name })
+                   .Select(sa => new ArtistInfoDto
+                   {
+                       Id = sa.Artist.Id,
+                       Name = sa.Artist.Name,
+                       ImageUrl = sa.Artist.ImageUrl
+                   })
                 .ToList(),
             Album = song.Album != null ? new AlbumInfoDto
             {
                 Id = song.Album.Id,
                 Name = song.Album.Name,
                 ReleaseDate = song.Album.ReleaseDate?.ToString("yyyy-MM-dd") ?? "",
+                   ImageUrl = song.Album.ImageUrl,
                 Artists = song.Album.AlbumArtists
                     .OrderBy(aa => aa.ArtistOrder)
-                    .Select(aa => new ArtistInfoDto { Id = aa.Artist.Id, Name = aa.Artist.Name })
+                       .Select(aa => new ArtistInfoDto
+                       {
+                           Id = aa.Artist.Id,
+                           Name = aa.Artist.Name,
+                           ImageUrl = aa.Artist.ImageUrl
+                       })
                     .ToList()
             } : new AlbumInfoDto()
         };
@@ -87,16 +99,28 @@ public class SongRepository : ISongRepository
             Name = song.Name,
             DurationMs = song.DurationMs,
             Popularity = song.Popularity,
+               ImageUrl = song.ImageUrl,
             Artists = song.SongArtists
-                .Select(sa => new ArtistInfoDto { Id = sa.Artist.Id, Name = sa.Artist.Name })
+                   .Select(sa => new ArtistInfoDto
+                   {
+                       Id = sa.Artist.Id,
+                       Name = sa.Artist.Name,
+                       ImageUrl = sa.Artist.ImageUrl
+                   })
                 .ToList(),
             Album = song.Album != null ? new AlbumInfoDto
             {
                 Id = song.Album.Id,
                 Name = song.Album.Name,
                 ReleaseDate = song.Album.ReleaseDate?.ToString("yyyy-MM-dd") ?? "",
+                   ImageUrl = song.Album.ImageUrl,
                 Artists = song.Album.AlbumArtists
-                    .Select(aa => new ArtistInfoDto { Id = aa.Artist.Id, Name = aa.Artist.Name })
+                       .Select(aa => new ArtistInfoDto
+                       {
+                           Id = aa.Artist.Id,
+                           Name = aa.Artist.Name,
+                           ImageUrl = aa.Artist.ImageUrl
+                       })
                     .ToList()
             } : new AlbumInfoDto(),
             ExternalLinks = song.ExternalLinks != null 
