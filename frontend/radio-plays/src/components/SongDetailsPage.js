@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Modal, IconButton, Typography, CircularProgress } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { Box, Modal, IconButton, Typography, CircularProgress, Link } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
 import StationBreakdown from './StationBreakdown';
@@ -7,6 +8,7 @@ import StreamingLinks from './StreamingLinks';
 import { API_BASE_URL } from '../config';
 
 const SongDetailsModal = ({ showModal, setShowModal, songId }) => {
+  const navigate = useNavigate();
   const [songDetails, setSongDetails] = useState(null);
   const [stationBreakdown, setStationBreakdown] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -41,6 +43,11 @@ const SongDetailsModal = ({ showModal, setShowModal, songId }) => {
     setStationBreakdown(null);
     setError(null);
     setShowModal(false);
+  };
+
+  const handleArtistClick = (artistName) => {
+    handleClose();
+    navigate(`/artist?name=${encodeURIComponent(artistName)}`);
   };
 
   return (
@@ -94,7 +101,19 @@ const SongDetailsModal = ({ showModal, setShowModal, songId }) => {
             </Typography>
             <Typography id="song-details-description" sx={{ mt: 2, textAlign: 'right' }}>
               <p>
-                {songDetails.artists?.[0]?.name} <strong>:אמן</strong>
+                <Link
+                  component="button"
+                  variant="body1"
+                  onClick={() => handleArtistClick(songDetails.artists?.[0]?.name)}
+                  sx={{ 
+                    cursor: 'pointer',
+                    textDecoration: 'none',
+                    '&:hover': { textDecoration: 'underline' }
+                  }}
+                >
+                  {songDetails.artists?.[0]?.name}
+                </Link>
+                {' '}<strong>:אמן</strong>
               </p>
               <p>
                 {songDetails.album?.name} <strong>:אלבום</strong>

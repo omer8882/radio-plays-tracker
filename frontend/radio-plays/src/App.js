@@ -4,6 +4,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import TopToolbar from './components/AppBar';
 import HomePage from './pages/HomePage';
 import TopHitsPage from './pages/TopHitsPage';
+import ArtistPage from './pages/ArtistPage';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/top-hits" element={<TopHitsPage />} />
+          <Route path="/artist" element={<ArtistPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Box>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Alert,
   Box,
@@ -23,12 +24,19 @@ const TopArtistsTable = ({
   isLoading,
   errorMessage,
   stationLabels
-}) => (
-  <Paper elevation={3} sx={{ p: 3, width: '100%', boxSizing: 'border-box' }}>
-    <Box dir="rtl">
-      <Typography variant="h5" component="h2" gutterBottom>
-        האמנים המושמעים ביותר
-      </Typography>
+}) => {
+  const navigate = useNavigate();
+
+  const handleArtistClick = (artistName) => {
+    navigate(`/artist?name=${encodeURIComponent(artistName)}`);
+  };
+
+  return (
+    <Paper elevation={3} sx={{ p: 3, width: '100%', boxSizing: 'border-box' }}>
+      <Box dir="rtl">
+        <Typography variant="h5" component="h2" gutterBottom>
+          האמנים המושמעים ביותר
+        </Typography>
 
       {isLoading && <LinearProgress sx={{ mb: 2 }} />}
       {errorMessage && (
@@ -63,7 +71,12 @@ const TopArtistsTable = ({
               ? stationLabels?.[artist.topStation] ?? stationLabels?.[normalizedStation] ?? artist.topStation
               : null;
             return (
-              <TableRow key={artist.id} hover>
+              <TableRow
+                key={artist.id}
+                hover
+                onClick={() => handleArtistClick(artist.name)}
+                sx={{ cursor: 'pointer' }}
+              >
                 <TableCell align="center">{rank}</TableCell>
                 <TableCell align="right">
                   <Typography variant="subtitle1">{artist.name}</Typography>
@@ -90,6 +103,7 @@ const TopArtistsTable = ({
       </Box>
     </Box>
   </Paper>
-);
+  );
+};
 
 export default TopArtistsTable;
