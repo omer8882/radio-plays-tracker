@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple, Protocol
+from typing import Any, Dict, List, Optional, Tuple, Protocol, Set
 from pydub import AudioSegment
 import os, sys, requests, time, base64, json
 from datetime import datetime, timezone, timedelta
@@ -184,6 +184,51 @@ class SpotifyClient:
             return response.status_code == 200
         except requests.exceptions.RequestException:
             return False
+
+    def get_artist_images(self, artist_ids: List[str]) -> Dict[str, Optional[str]]:
+        """Fetch primary image URLs for the supplied Spotify artist IDs."""
+        if not artist_ids:
+            return {}
+
+        unique_ids: List[str] = []
+        seen: Set[str] = set()
+        for artist_id in artist_ids:
+            if artist_id and artist_id not in seen:
+                unique_ids.append(artist_id)
+                seen.add(artist_id)
+
+        images: Dict[str, Optional[str]] = {}
+        for start in range(0, len(unique_ids), 50):  # Spotify caps at 50 IDs per request
+            chunk = unique_ids[start:start + 50]
+            try:
+                response = requests.get(
+                    "https://api.spotify.com/v1/artists",
+                    headers={'Authorization': f'Bearer {self.get_token()}'},
+                    params={'ids': ','.join(chunk)}
+                )
+                response.raise_for_status()
+            except requests.exceptions.RequestException as exc:
+                raise ConnectionError(f"Error fetching artist metadata from Spotify: {exc}") from exc
+
+            for artist in response.json().get('artists', []):
+                artist_id = artist.get('id')
+                images[artist_id] = self._select_largest_image(artist.get('images') or [])
+
+        return images
+
+    @staticmethod
+    def _select_largest_image(images: List[Dict[str, Any]]) -> Optional[str]:
+        if not images:
+            return None
+
+        def width(image: Dict[str, Any]) -> int:
+            try:
+                return int(image.get('width') or 0)
+            except (TypeError, ValueError):
+                return 0
+
+        primary = max(images, key=width)
+        return primary.get('url')
     
     def search_track(self, title: str, artist: str) -> Tuple[Optional[Dict[str, Any]], int]:
         regular_query = f'track:{title} artist:{artist}'
@@ -255,16 +300,81 @@ class SongRecognizer:
         return await self.shazam.recognize(audio_path)
 
 class TrackProcessor:
-    def __init__(self, db_connector: PostgresConnector):
+    def __init__(self, db_connector: PostgresConnector, spotify_client: SpotifyClient, logger=None):
         self.db_connector = db_connector
+        self.spotify_client = spotify_client
+        self.logger = logger
     
     def process_track(self, track: Dict[str, Any], shazam_track: Dict[str, Any], spotify_track: Dict[str, Any], station: str) -> None:
-        simplified = self._simplify_spotify_data(spotify_track, shazam_track)
+        artist_images: Dict[str, Optional[str]] = {}
+        if self.spotify_client:
+            try:
+                artist_images = self._fetch_artist_images(spotify_track)
+            except Exception as exc:
+                if self.logger:
+                    self.logger.warning(
+                        f"Failed to enrich artist imagery via Spotify: {exc}",
+                        extra={'station': station}
+                    )
+                artist_images = {}
+
+        simplified = self._simplify_spotify_data(spotify_track, shazam_track, artist_images)
         self._add_external_links(simplified, shazam_track, spotify_track)
         self.db_connector.index_song_if_needed(simplified)
         self.db_connector.index_play(simplified, station)
     
-    def _simplify_spotify_data(self, raw: Dict[str, Any], shazam_track: Dict[str, Any]) -> Dict[str, Any]:
+    def _fetch_artist_images(self, raw: Dict[str, Any]) -> Dict[str, Optional[str]]:
+        if not self.spotify_client:
+            return {}
+
+        artist_ids: List[str] = []
+        seen: Set[str] = set()
+
+        for artist in raw.get("artists", []):
+            artist_id = artist.get("id")
+            if artist_id and artist_id not in seen:
+                artist_ids.append(artist_id)
+                seen.add(artist_id)
+
+        album = raw.get("album") or {}
+        for artist in album.get("artists", []):
+            artist_id = artist.get("id")
+            if artist_id and artist_id not in seen:
+                artist_ids.append(artist_id)
+                seen.add(artist_id)
+
+        if not artist_ids:
+            return {}
+
+        return self.spotify_client.get_artist_images(artist_ids)
+
+    def _build_artist_payload(
+        self,
+        artists: List[Dict[str, Any]],
+        artist_images: Dict[str, Optional[str]],
+        fallback_image: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        payload: List[Dict[str, Any]] = []
+        for index, artist in enumerate(artists):
+            artist_id = artist.get("id")
+            image_url = artist_images.get(artist_id)
+            if not image_url and fallback_image and index == 0:
+                image_url = fallback_image
+
+            payload.append({
+                "id": artist_id,
+                "name": artist.get("name"),
+                "image_url": image_url
+            })
+
+        return payload
+
+    def _simplify_spotify_data(
+        self,
+        raw: Dict[str, Any],
+        shazam_track: Dict[str, Any],
+        artist_images: Dict[str, Optional[str]]
+    ) -> Dict[str, Any]:
         # Always use Israel timezone regardless of server location
         israel_tz = ZoneInfo('Asia/Jerusalem')
         israel_now = datetime.now(timezone.utc).astimezone(israel_tz)
@@ -278,30 +388,27 @@ class TrackProcessor:
         shazam_artist_image = shazam_images.get("background")
 
         song_image_url = album_image_url or shazam_song_image
+
+        track_artists = self._build_artist_payload(
+            raw.get("artists", []),
+            artist_images,
+            shazam_artist_image
+        )
+
+        album_artists = self._build_artist_payload(
+            album.get("artists", []),
+            artist_images
+        )
         
         return {
             "played_at": israel_now.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "id": raw.get("id"),
             "name": raw.get("name"),
-            "artists": [
-                {
-                    "id": artist.get("id"),
-                    "name": artist.get("name"),
-                    "image_url": shazam_artist_image if index == 0 else None
-                }
-                for index, artist in enumerate(raw["artists"])
-            ],
+            "artists": track_artists,
             "album": {
                 "id": album.get("id"),
                 "name": album.get("name"),
-                "artists": [
-                    {
-                        "id": artist.get("id"),
-                        "name": artist.get("name"),
-                        "image_url": shazam_artist_image if index == 0 else None
-                    }
-                    for index, artist in enumerate(album.get("artists", []))
-                ],
+                "artists": album_artists,
                 "release_date": album.get("release_date"),
                 "image_url": album_image_url or shazam_song_image
             },
@@ -389,12 +496,12 @@ class RadioPlaysTracker:
         )
         self.stream_capture = StreamCapture()
         self.song_recognizer = SongRecognizer()
-        self.track_processor = TrackProcessor(PostgresConnector())
         self.logger = Helper.get_rotating_logger(
             'RadioPlaysFetch',
             log_file='radio_plays_fetch.log',
             station_info=True
         )
+        self.track_processor = TrackProcessor(PostgresConnector(), self.spotify_client, self.logger)
     
     async def process_station(self, station: StationConfig) -> None:
         try:

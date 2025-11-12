@@ -367,7 +367,8 @@ public class PlayRepository : IPlayRepository
                 Id = song.Id,
                 Title = song.Name,
                 Artist = string.Join(", ", song.SongArtists.Select(sa => sa.Artist.Name)),
-                Hits = ts.Count
+                Hits = ts.Count,
+                ImageUrl = song.ImageUrl
             };
         }).ToList();
     }
@@ -422,7 +423,8 @@ public class PlayRepository : IPlayRepository
                 Id = song.Id,
                 Title = song.Name,
                 Artist = string.Join(", ", song.SongArtists.Select(sa => sa.Artist.Name)),
-                Hits = ts.Count
+                Hits = ts.Count,
+                ImageUrl = song.ImageUrl
             };
         }).ToList();
     }
@@ -500,7 +502,8 @@ public class PlayRepository : IPlayRepository
             Artist = artistNames,
             Time = play.PlayedAt.ToString(timeFormat),
             Station = play.Station.Name,
-            Album = play.Song.Album?.Name
+            Album = play.Song.Album?.Name,
+            ImageUrl = play.Song.ImageUrl
         };
     }
 
@@ -513,18 +516,30 @@ public class PlayRepository : IPlayRepository
             PlayedAt = playedAt,
             DurationMs = song.DurationMs,
             Popularity = song.Popularity,
+            ImageUrl = song.ImageUrl,
             Artists = song.SongArtists
                 .OrderBy(sa => sa.ArtistOrder)
-                .Select(sa => new ArtistInfoDto { Id = sa.Artist.Id, Name = sa.Artist.Name })
+                .Select(sa => new ArtistInfoDto
+                {
+                    Id = sa.Artist.Id,
+                    Name = sa.Artist.Name,
+                    ImageUrl = sa.Artist.ImageUrl
+                })
                 .ToList(),
             Album = song.Album != null ? new AlbumInfoDto
             {
                 Id = song.Album.Id,
                 Name = song.Album.Name,
                 ReleaseDate = song.Album.ReleaseDate?.ToString("yyyy-MM-dd") ?? "",
+                ImageUrl = song.Album.ImageUrl,
                 Artists = song.Album.AlbumArtists
                     .OrderBy(aa => aa.ArtistOrder)
-                    .Select(aa => new ArtistInfoDto { Id = aa.Artist.Id, Name = aa.Artist.Name })
+                    .Select(aa => new ArtistInfoDto
+                    {
+                        Id = aa.Artist.Id,
+                        Name = aa.Artist.Name,
+                        ImageUrl = aa.Artist.ImageUrl
+                    })
                     .ToList()
             } : new AlbumInfoDto()
         };

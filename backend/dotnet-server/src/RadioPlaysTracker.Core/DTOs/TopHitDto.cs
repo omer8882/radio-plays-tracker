@@ -9,4 +9,5 @@ public class TopHitDto
     public string Title { get; set; } = string.Empty;
     public string Artist { get; set; } = string.Empty;  // Comma-separated artist names
     public int Hits { get; set; }
+    public string? ImageUrl { get; set; }
 }

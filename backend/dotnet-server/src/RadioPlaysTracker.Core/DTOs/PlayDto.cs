@@ -14,4 +14,5 @@ public class PlayDto
     public string Time { get; set; } = string.Empty;     // Formatted time (HH:mm or dd/MM/yyyy HH:mm:ss)
     public string? Station { get; set; }
     public string? Album { get; set; }
+    public string? ImageUrl { get; set; }
 }

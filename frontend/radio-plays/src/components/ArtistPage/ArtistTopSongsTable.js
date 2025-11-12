@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Alert,
+  Avatar,
   Box,
   LinearProgress,
   Paper,
@@ -24,6 +25,14 @@ const ArtistTopSongsTable = ({ artistName, onSongClick }) => {
 
   const days = selectedTab === 0 ? 30 : 365;
 
+  const normalizeTopSong = (song) => ({
+    id: song.id ?? song.Id ?? '',
+    title: song.title ?? song.Title ?? '',
+    artist: song.artist ?? song.Artist ?? '',
+    hits: song.hits ?? song.Hits ?? 0,
+    imageUrl: song.imageUrl ?? song.ImageUrl ?? ''
+  });
+
   useEffect(() => {
     let isCancelled = false;
 
@@ -41,7 +50,10 @@ const ArtistTopSongsTable = ({ artistName, onSongClick }) => {
           }
         });
         if (isCancelled) return;
-        setSongs(Array.isArray(response.data) ? response.data : []);
+        const normalizedSongs = Array.isArray(response.data)
+          ? response.data.map(normalizeTopSong)
+          : [];
+        setSongs(normalizedSongs);
       } catch (error) {
         console.error('Error fetching artist top songs:', error);
         if (!isCancelled) {
@@ -93,6 +105,7 @@ const ArtistTopSongsTable = ({ artistName, onSongClick }) => {
           <TableHead>
             <TableRow>
               <TableCell align="center">#</TableCell>
+              <TableCell align="center">תמונה</TableCell>
               <TableCell align="right">שיר</TableCell>
               <TableCell align="right">השמעות</TableCell>
             </TableRow>
@@ -100,7 +113,7 @@ const ArtistTopSongsTable = ({ artistName, onSongClick }) => {
           <TableBody>
             {!isLoading && songs.length === 0 && (
               <TableRow>
-                <TableCell align="center" colSpan={3}>
+                <TableCell align="center" colSpan={4}>
                   אין נתונים לתקופה שנבחרה
                 </TableCell>
               </TableRow>
@@ -116,6 +129,15 @@ const ArtistTopSongsTable = ({ artistName, onSongClick }) => {
                   sx={{ cursor: onSongClick ? 'pointer' : 'default' }}
                 >
                   <TableCell align="center">{rank}</TableCell>
+                  <TableCell align="center">
+                    <Avatar
+                      src={song.imageUrl || undefined}
+                      alt={song.title}
+                      sx={{ width: 48, height: 48, margin: '0 auto' }}
+                    >
+                      {(song.title || '?').trim().charAt(0).toUpperCase() || '?'}
+                    </Avatar>
+                  </TableCell>
                   <TableCell align="right">
                     <Typography variant="subtitle1">{song.title}</Typography>
                   </TableCell>

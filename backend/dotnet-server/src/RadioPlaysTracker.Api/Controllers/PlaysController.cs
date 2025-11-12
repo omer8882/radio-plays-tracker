@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using RadioPlaysTracker.Core.DTOs;
 using RadioPlaysTracker.Core.Interfaces;
 
 namespace RadioPlaysTracker.Api.Controllers;
@@ -12,16 +13,21 @@ public class PlaysController : ControllerBase
 {
     private readonly IPlayRepository _playRepository;
     private readonly ISongRepository _songRepository;
+    private readonly IArtistRepository _artistRepository;
 
     private const int MaxPageSize = 25;
     private const int MaxPageNumber = 30;
     private const int MaxTopSongsPageSize = 50;
     private const int MaxTopArtistsPageSize = 50;
 
-    public PlaysController(IPlayRepository playRepository, ISongRepository songRepository)
+    public PlaysController(
+        IPlayRepository playRepository,
+        ISongRepository songRepository,
+        IArtistRepository artistRepository)
     {
         _playRepository = playRepository;
         _songRepository = songRepository;
+        _artistRepository = artistRepository;
     }
 
     /// <summary>
@@ -101,6 +107,59 @@ public class PlaysController : ControllerBase
         {
             var plays = await _playRepository.GetArtistPlaysAsync(artist, limit);
             return Ok(plays);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { detail = $"Server Error: {ex.Message}" });
+        }
+    }
+
+    /// <summary>
+    /// Get basic profile details for an artist, including image.
+    /// </summary>
+    /// <param name="id">Spotify artist identifier</param>
+    /// <param name="name">Case-insensitive artist name</param>
+    /// <returns>Artist details including the primary image URL</returns>
+    /// <response code="200">Returns the artist details</response>
+    /// <response code="400">If neither id nor name provided</response>
+    /// <response code="404">If the artist was not found</response>
+    /// <response code="500">If there was an internal server error</response>
+    [HttpGet("artist_details")]
+    [ProducesResponseType(typeof(ArtistDetailsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetArtistDetails([FromQuery] string? id = null, [FromQuery] string? name = null)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(id) && string.IsNullOrWhiteSpace(name))
+            {
+                return BadRequest(new { detail = "Either id or name query parameter is required" });
+            }
+
+            var artist = !string.IsNullOrWhiteSpace(id)
+                ? await _artistRepository.GetByIdAsync(id)
+                : null;
+
+            if (artist == null && !string.IsNullOrWhiteSpace(name))
+            {
+                artist = await _artistRepository.GetByNameAsync(name);
+            }
+
+            if (artist == null)
+            {
+                return NotFound(new { detail = "Artist not found" });
+            }
+
+            var dto = new ArtistDetailsDto
+            {
+                Id = artist.Id,
+                Name = artist.Name,
+                ImageUrl = artist.ImageUrl
+            };
+
+            return Ok(dto);
         }
         catch (Exception ex)
         {

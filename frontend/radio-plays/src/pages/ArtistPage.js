@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-import { Box, Typography, Alert, CircularProgress, Divider } from '@mui/material';
+import { Box, Typography, Alert, CircularProgress, Divider, Avatar } from '@mui/material';
 import ArtistRecentPlays from '../components/ArtistPage/ArtistRecentPlays';
 import ArtistTopSongsTable from '../components/ArtistPage/ArtistTopSongsTable';
 import SongDetailsPage from '../components/SongDetailsPage';
@@ -14,6 +14,7 @@ const ArtistPage = () => {
   const [recentPlays, setRecentPlays] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [artistDetails, setArtistDetails] = useState(null);
 
   // Song details modal state
   const [selectedSongId, setSelectedSongId] = useState(null);
@@ -21,6 +22,15 @@ const ArtistPage = () => {
 
   useEffect(() => {
     let isCancelled = false;
+
+    const normalizeRecentPlay = (play) => ({
+      id: play.id ?? play.Id ?? '',
+      title: play.title ?? play.Title ?? '',
+      artist: play.artist ?? play.Artist ?? '',
+      time: play.time ?? play.Time ?? '',
+      station: play.station ?? play.Station ?? '',
+      imageUrl: play.imageUrl ?? play.ImageUrl ?? ''
+    });
 
     const fetchArtistPlays = async () => {
       if (!artistName) {
@@ -38,7 +48,8 @@ const ArtistPage = () => {
           }
         });
         if (isCancelled) return;
-        setRecentPlays(Array.isArray(response.data) ? response.data : []);
+        const plays = Array.isArray(response.data) ? response.data.map(normalizeRecentPlay) : [];
+        setRecentPlays(plays);
       } catch (err) {
         console.error('Error fetching artist plays:', err);
         if (!isCancelled) {
@@ -59,6 +70,51 @@ const ArtistPage = () => {
     };
   }, [artistName]);
 
+  useEffect(() => {
+    let isCancelled = false;
+
+    const fetchArtistDetails = async () => {
+      if (!artistName) {
+        setArtistDetails(null);
+        return;
+      }
+
+      setArtistDetails(null);
+
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/artist_details`, {
+          params: { name: artistName }
+        });
+
+        if (isCancelled) return;
+
+        const details = response?.data || {};
+        const normalized = {
+          id: details.id ?? details.Id ?? '',
+          name: details.name ?? details.Name ?? artistName,
+          imageUrl: details.imageUrl ?? details.ImageUrl ?? ''
+        };
+
+        setArtistDetails(normalized);
+      } catch (err) {
+        if (isCancelled) return;
+
+        if (err?.response?.status === 404) {
+          setArtistDetails(null);
+        } else {
+          console.error('Error fetching artist details:', err);
+          setArtistDetails(null);
+        }
+      }
+    };
+
+    fetchArtistDetails();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [artistName]);
+
   const handleSongClick = (songId) => {
     setSelectedSongId(songId);
     setShowSongModal(true);
@@ -72,11 +128,21 @@ const ArtistPage = () => {
     );
   }
 
+  const heroImageUrl = artistDetails?.imageUrl || recentPlays.find((play) => play.imageUrl)?.imageUrl;
+  const displayName = artistDetails?.name || artistName;
+
   return (
     <Box sx={{ width: '90%', mx: 'auto' }}>
-      <Box dir="rtl" sx={{ mb: 4 }}>
+      <Box dir="rtl" sx={{ mb: 4, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+        <Avatar
+          src={heroImageUrl || undefined}
+          alt={displayName}
+          sx={{ width: 96, height: 96, fontSize: '2rem' }}
+        >
+          {displayName.trim().charAt(0).toUpperCase()}
+        </Avatar>
         <Typography variant="h4" gutterBottom>
-          {artistName}
+          {displayName}
         </Typography>
       </Box>
 
@@ -108,7 +174,7 @@ const ArtistPage = () => {
 
           {/* Top Songs Section */}
           <Box sx={{ mb: 4 }}>
-            <ArtistTopSongsTable artistName={artistName} onSongClick={handleSongClick} />
+            <ArtistTopSongsTable artistName={artistDetails?.name || artistName} onSongClick={handleSongClick} />
           </Box>
         </>
       )}

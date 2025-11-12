@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Modal, IconButton, Typography, CircularProgress, Link } from '@mui/material';
+import { Box, Modal, IconButton, Typography, CircularProgress, Link, Avatar, Stack } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
 import StationBreakdown from './StationBreakdown';
@@ -96,33 +96,72 @@ const SongDetailsModal = ({ showModal, setShowModal, songId }) => {
                 artist={songDetails.artists?.[0]?.name}
               />
             </Box>
-            <Typography id="song-title" variant="h6" component="h2" sx={{ textAlign: 'center', marginTop: '12px' }}>
-              {songDetails.name}
-            </Typography>
-            <Typography id="song-details-description" sx={{ mt: 2, textAlign: 'right' }}>
-              <p>
-                <Link
-                  component="button"
-                  variant="body1"
-                  onClick={() => handleArtistClick(songDetails.artists?.[0]?.name)}
-                  sx={{ 
-                    cursor: 'pointer',
-                    textDecoration: 'none',
-                    '&:hover': { textDecoration: 'underline' }
-                  }}
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4 }}>
+              <Avatar
+                variant="rounded"
+                src={songDetails.imageUrl || undefined}
+                alt={songDetails.name}
+                sx={{ width: 160, height: 160, mb: 2, fontSize: '3rem' }}
+              >
+                {(songDetails.name || '?').trim().charAt(0).toUpperCase() || '?'}
+              </Avatar>
+              <Typography id="song-title" variant="h6" component="h2" sx={{ textAlign: 'center' }}>
+                {songDetails.name}
+              </Typography>
+            </Box>
+
+            <Box id="song-details-description" sx={{ mt: 3 }}>
+              {songDetails.album?.name && (
+                <Typography variant="subtitle1" sx={{ textAlign: 'center', mb: 2 }}>
+                  {songDetails.album?.name} <strong>:אלבום</strong>
+                </Typography>
+              )}
+
+              {songDetails.artists?.length > 0 && (
+                <Stack
+                  direction="row"
+                  justifyContent="center"
+                  spacing={2}
+                  sx={{ mb: 3, flexWrap: 'wrap' }}
                 >
-                  {songDetails.artists?.[0]?.name}
-                </Link>
-                {' '}<strong>:אמן</strong>
-              </p>
-              <p>
-                {songDetails.album?.name} <strong>:אלבום</strong>
-              </p>
+                  {songDetails.artists.map((artist) => (
+                    <Stack
+                      key={artist.id}
+                      direction="column"
+                      alignItems="center"
+                      spacing={1}
+                    >
+                      <Avatar
+                        src={artist.imageUrl || undefined}
+                        alt={artist.name}
+                        sx={{ width: 56, height: 56, cursor: 'pointer' }}
+                        onClick={() => handleArtistClick(artist.name)}
+                      >
+                        {(artist.name || '?').trim().charAt(0).toUpperCase() || '?'}
+                      </Avatar>
+                      <Link
+                        component="button"
+                        variant="body2"
+                        onClick={() => handleArtistClick(artist.name)}
+                        sx={{ 
+                          cursor: 'pointer',
+                          textDecoration: 'none',
+                          '&:hover': { textDecoration: 'underline' }
+                        }}
+                      >
+                        {artist.name}
+                      </Link>
+                    </Stack>
+                  ))}
+                </Stack>
+              )}
+
               <Typography id="StationBreakdown-title" variant="subtitle2" component="h2" sx={{ textAlign: 'center' }}>
                 השמעות לפי תחנה
               </Typography>
               <StationBreakdown stationBreakdown={stationBreakdown} />
-            </Typography>
+            </Box>
           </>
         ) : (
           <Typography align="center">No details available.</Typography>
