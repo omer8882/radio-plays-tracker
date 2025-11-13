@@ -477,6 +477,6 @@ FodyWeavers.xsd
 .idea/
 *.sln.iml
 
-## Entity Framework Core Migrations
-**/Migrations/*.Designer.cs
+## Entity Framework Core - DO NOT ignore Designer.cs files, they are required for migrations!
+# **/Migrations/*.Designer.cs  # <-- WRONG! This breaks migrations
 /backend/dotnet-server/src/RadioPlaysTracker.Api/appsettings.Development.json

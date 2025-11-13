@@ -12,8 +12,6 @@ RUN dotnet restore src/RadioPlaysTracker.Api/RadioPlaysTracker.Api.csproj
 COPY src ./src
 RUN dotnet publish src/RadioPlaysTracker.Api/RadioPlaysTracker.Api.csproj -c Release -o /app/publish --no-restore
 
-COPY src/RadioPlaysTracker.Infrastructure/Migrations /app/publish/Migrations
-
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
