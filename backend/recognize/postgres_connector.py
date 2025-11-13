@@ -1,8 +1,11 @@
 import json
 import os
+from datetime import datetime
+from typing import Dict, List, Optional
+
 import psycopg2
 from psycopg2.extras import Json, execute_values
-from datetime import datetime
+
 from helper import Helper
 
 class PostgresConnector:
@@ -58,16 +61,37 @@ class PostgresConnector:
     def index_artists(self, artists):
         """Insert artists if they don't exist"""
         try:
+            if not artists:
+                return
+
+            unique_artists: Dict[str, Dict[str, Optional[str]]] = {}
+            for artist in artists:
+                artist_id = artist.get('id')
+                if not artist_id:
+                    continue
+
+                existing = unique_artists.get(artist_id)
+                image_url = artist.get('image_url') or (existing or {}).get('image_url')
+
+                unique_artists[artist_id] = {
+                    'name': artist.get('name', (existing or {}).get('name')),
+                    'image_url': image_url
+                }
+
+            if not unique_artists:
+                return
+
             with self.conn.cursor() as cur:
-                for artist in artists:
+                for artist_id, payload in unique_artists.items():
                     cur.execute(
+
                         """INSERT INTO artists (id, name, image_url)
                                VALUES (%s, %s, %s)
                                ON CONFLICT (id) DO UPDATE SET
                                    name = EXCLUDED.name,
                                    image_url = COALESCE(artists.image_url, EXCLUDED.image_url),
                                    updated_at = CURRENT_TIMESTAMP""",
-                        (artist['id'], artist['name'], artist.get('image_url'))
+                        (artist_id, payload.get('name'), payload.get('image_url'))
                     )
                 self.conn.commit()
         except Exception as e:
@@ -75,14 +99,26 @@ class PostgresConnector:
             self.logger.error(f"Error indexing artists: {e}")
             raise
 
+    def get_artist_images(self, artist_ids: List[str]) -> Dict[str, Optional[str]]:
+        """Return stored image URLs for the specified artist IDs."""
+        if not artist_ids:
+            return {}
+
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(
+                    "SELECT id, image_url FROM artists WHERE id = ANY(%s)",
+                    (artist_ids,)
+                )
+                return {artist_id: image_url for artist_id, image_url in cur.fetchall()}
+        except Exception as e:
+            self.logger.error(f"Error fetching artist images: {e}")
+            raise
+
     def index_album(self, album):
         """Insert album and its artists if they don't exist"""
         try:
             with self.conn.cursor() as cur:
-                # Insert album artists first
-                if 'artists' in album:
-                    self.index_artists(album['artists'])
-
                 # Insert album if it doesn't exist
                 release_date = None
                 if album.get('release_date'):
@@ -127,11 +163,29 @@ class PostgresConnector:
         """Insert or update song with all relationships"""
         try:
             with self.conn.cursor() as cur:
-                # Insert artists first
-                if 'artists' in song:
-                    self.index_artists(song['artists'])
+                song_artists = song.get('artists', []) or []
+                album_artists = (song.get('album') or {}).get('artists', []) or []
 
-                # Insert album
+                artist_lookup: Dict[str, Dict[str, Optional[str]]] = {}
+
+                for artist in song_artists + album_artists:
+                    artist_id = artist.get('id')
+                    if not artist_id:
+                        continue
+
+                    existing = artist_lookup.get(artist_id)
+                    image_url = artist.get('image_url') or (existing or {}).get('image_url')
+                    name = artist.get('name') or (existing or {}).get('name')
+
+                    artist_lookup[artist_id] = {
+                        'id': artist_id,
+                        'name': name,
+                        'image_url': image_url
+                    }
+
+                if artist_lookup:
+                    self.index_artists(list(artist_lookup.values()))
+
                 if 'album' in song:
                     self.index_album(song['album'])
 

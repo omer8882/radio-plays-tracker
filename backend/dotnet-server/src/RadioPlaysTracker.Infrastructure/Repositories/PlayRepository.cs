@@ -14,7 +14,7 @@ public class PlayRepository : IPlayRepository
 {
     private readonly AppDbContext _context;
     private const string TimeFormat = "HH:mm";
-    private const string FullDateTimeFormat = "dd/MM/yyyy HH:mm:ss";
+    private const string FullDateTimeFormat = "dd/MM/yyyy\nHH:mm";
 
     // Israel timezone - handles both Windows and Linux server deployments
     private static readonly TimeZoneInfo IsraelTimeZone = GetIsraelTimeZone();

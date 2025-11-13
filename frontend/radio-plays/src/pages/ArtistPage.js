@@ -27,7 +27,7 @@ const ArtistPage = () => {
       id: play.id ?? play.Id ?? '',
       title: play.title ?? play.Title ?? '',
       artist: play.artist ?? play.Artist ?? '',
-      time: play.time ?? play.Time ?? '',
+      time: play.time ?? play.Time.replace(" ", "\n") ?? '',
       station: play.station ?? play.Station ?? '',
       imageUrl: play.imageUrl ?? play.ImageUrl ?? ''
     });

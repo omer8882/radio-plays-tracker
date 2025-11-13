@@ -324,9 +324,6 @@ class TrackProcessor:
         self.db_connector.index_play(simplified, station)
     
     def _fetch_artist_images(self, raw: Dict[str, Any]) -> Dict[str, Optional[str]]:
-        if not self.spotify_client:
-            return {}
-
         artist_ids: List[str] = []
         seen: Set[str] = set()
 
@@ -346,7 +343,28 @@ class TrackProcessor:
         if not artist_ids:
             return {}
 
-        return self.spotify_client.get_artist_images(artist_ids)
+        stored_images: Dict[str, Optional[str]] = {}
+
+        try:
+            stored_images = self.db_connector.get_artist_images(artist_ids)
+        except Exception as exc:
+            if self.logger:
+                self.logger.warning(
+                    f"Failed loading cached artist images: {exc}",
+                    extra={'station': 'system'}
+                )
+
+        missing_ids: List[str] = [artist_id for artist_id in artist_ids if not stored_images.get(artist_id)]
+
+        if missing_ids:
+            spotify_images = self.spotify_client.get_artist_images(missing_ids)
+            for artist_id, image in spotify_images.items():
+                stored_images[artist_id] = image
+
+            for artist_id in missing_ids:
+                stored_images.setdefault(artist_id, None)
+
+        return stored_images
 
     def _build_artist_payload(
         self,
