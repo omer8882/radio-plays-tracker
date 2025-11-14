@@ -17,7 +17,7 @@ import TopArtistsTable from '../components/TopHitsPage/TopArtistsTable';
 import { API_BASE_URL } from '../config';
 import { STATION_FILTER_OPTIONS, STATION_LABEL_LOOKUP } from '../constants/stations';
 
-const SONGS_PAGE_SIZE = 25;
+const SONGS_PAGE_SIZE = 20;
 const ARTISTS_PAGE_SIZE = 20;
 
 const TopHitsPage = () => {

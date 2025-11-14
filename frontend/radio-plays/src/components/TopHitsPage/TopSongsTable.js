@@ -72,9 +72,9 @@ const TopSongsTable = ({
   isLoading,
   errorMessage
 }) => (
-  <Paper elevation={4} sx={{ p: 3, width: '100%', boxSizing: 'border-box' }}>
+  <Paper elevation={4} sx={{ p: 1, width: '100%', boxSizing: 'border-box' }}>
     <Box dir="rtl">
-      <Typography variant="h5" component="h2" gutterBottom>
+      <Typography margin="7px 7px 9px 7px" variant="h5" component="h2" gutterBottom>
         השירים המושמעים ביותר
       </Typography>
 
@@ -88,11 +88,11 @@ const TopSongsTable = ({
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell align="center">#</TableCell>
-            <TableCell align="right">שיר</TableCell>
-            <TableCell align="right">השמעות</TableCell>
-            <TableCell align="right">תחנות מובילות</TableCell>
-            <TableCell align="right">הושמע לאחרונה</TableCell>
+            <TableCell align="center" sx={{ width: { xs: '8%', sm: '5%' } }}>#</TableCell>
+            <TableCell align="right" sx={{ width: { xs: '35%', sm: '35%' } }}>שיר</TableCell>
+            <TableCell align="right" sx={{ width: { xs: '15%', sm: '10%' } }}>השמעות</TableCell>
+            <TableCell align="right" sx={{ width: { xs: '0%', sm: '30%' }, display: { xs: 'none', sm: 'table-cell' } }}>תחנות מובילות</TableCell>
+            <TableCell align="right" sx={{ width: { xs: '30%', sm: '20%' } }}>הושמע לאחרונה</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -109,25 +109,46 @@ const TopSongsTable = ({
 
             return (
               <TableRow key={song.id} hover>
-                <TableCell align="center">{rank}</TableCell>
-                <TableCell align="right">
-                  <Typography variant="subtitle1">{song.title}</Typography>
-                  <Typography variant="body2" color="text.secondary">
+                <TableCell align="center" sx={{ width: { xs: '8%', sm: '5%' } }}>{rank}</TableCell>
+                <TableCell align="right" sx={{ width: { xs: '35%', sm: '35%' } }}>
+                  <Typography 
+                    variant="subtitle1"
+                    sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, lineHeight: 1.3 }}
+                  >
+                    {song.title}
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
+                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                  >
                     {song.artist}
                   </Typography>
                   {song.album && (
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography 
+                      variant="caption" 
+                      color="text.secondary"
+                      sx={{ display: { xs: 'none', sm: 'block' } }}
+                    >
                       אלבום: {song.album}
                     </Typography>
                   )}
                 </TableCell>
-                <TableCell align="right">
-                  <Typography variant="subtitle1">{song.plays}</Typography>
+                <TableCell align="right" sx={{ width: { xs: '15%', sm: '10%' } }}>
+                  <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{song.plays}</Typography>
                 </TableCell>
-                <TableCell align="right">
+                <TableCell align="right" sx={{ width: { xs: '0%', sm: '30%' }, display: { xs: 'none', sm: 'table-cell' } }}>
                   <StationBreakdown stationBreakdown={stations} />
                 </TableCell>
-                <TableCell align="right">{formatDateTime(song.lastPlayedAt)}</TableCell>
+                <TableCell 
+                  align="right" 
+                  sx={{ 
+                    width: { xs: '30%', sm: '20%' },
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                  }}
+                >
+                  {formatDateTime(song.lastPlayedAt)}
+                </TableCell>
               </TableRow>
             );
           })}

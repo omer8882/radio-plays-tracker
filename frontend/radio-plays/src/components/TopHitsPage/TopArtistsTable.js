@@ -32,9 +32,9 @@ const TopArtistsTable = ({
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, width: '100%', boxSizing: 'border-box' }}>
+    <Paper elevation={3} sx={{ p: 1, width: '100%', boxSizing: 'border-box' }}>
       <Box dir="rtl">
-        <Typography variant="h5" component="h2" gutterBottom>
+        <Typography margin="7px 7px 9px 7px" variant="h5" component="h2" gutterBottom>
           האמנים המושמעים ביותר
         </Typography>
 
@@ -48,11 +48,11 @@ const TopArtistsTable = ({
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell align="center">#</TableCell>
-            <TableCell align="right">אמן</TableCell>
-            <TableCell align="right">השמעות</TableCell>
-            <TableCell align="right">שירים שונים</TableCell>
-            <TableCell align="right">תחנה מובילה</TableCell>
+            <TableCell align="center" sx={{ width: { xs: '8%', sm: '5%' } }}>#</TableCell>
+            <TableCell align="right" sx={{ width: { xs: '40%', sm: '35%' } }}>אמן</TableCell>
+            <TableCell align="center" sx={{ width: { xs: '26%', sm: '15%' } }}>השמעות</TableCell>
+            <TableCell align="center" sx={{ width: { xs: '26%', sm: '15%' } }}>שירים שונים</TableCell>
+            <TableCell align="center" sx={{ width: { xs: '0%', sm: '30%' }, display: { xs: 'none', sm: 'table-cell' } }}>תחנה מובילה</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -77,13 +77,41 @@ const TopArtistsTable = ({
                 onClick={() => handleArtistClick(artist.name)}
                 sx={{ cursor: 'pointer' }}
               >
-                <TableCell align="center">{rank}</TableCell>
-                <TableCell align="right">
-                  <Typography variant="subtitle1">{artist.name}</Typography>
+                <TableCell align="center" sx={{ width: { xs: '8%', sm: '5%' } }}>{rank}</TableCell>
+                <TableCell align="center" sx={{ width: { xs: '40%', sm: '35%' } }}>
+                  <Typography 
+                    variant="subtitle1"
+                    sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, lineHeight: 1.3 }}
+                  >
+                    {artist.name}
+                  </Typography>
                 </TableCell>
-                <TableCell align="right">{artist.plays}</TableCell>
-                <TableCell align="right">{artist.uniqueSongs}</TableCell>
-                <TableCell align="right">
+                <TableCell 
+                  align="center" 
+                  sx={{ 
+                    width: { xs: '26%', sm: '15%' },
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }}
+                >
+                  {artist.plays}
+                </TableCell>
+                <TableCell 
+                  align="center" 
+                  sx={{ 
+                    width: { xs: '26%', sm: '15%' },
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }}
+                >
+                  {artist.uniqueSongs}
+                </TableCell>
+                <TableCell 
+                  align="center" 
+                  sx={{ 
+                    width: { xs: '0%', sm: '30%' },
+                    display: { xs: 'none', sm: 'table-cell' },
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                  }}
+                >
                   {topStationLabel ? `${topStationLabel} (${artist.topStationPlays})` : '—'}
                 </TableCell>
               </TableRow>
