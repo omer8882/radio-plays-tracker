@@ -9,6 +9,7 @@ public class TopArtistDto
     public string Name { get; set; } = string.Empty;
     public int Plays { get; set; }
     public int UniqueSongs { get; set; }
+    public string? ImageUrl { get; set; }
     public string? TopStation { get; set; }
     public int? TopStationPlays { get; set; }
 }

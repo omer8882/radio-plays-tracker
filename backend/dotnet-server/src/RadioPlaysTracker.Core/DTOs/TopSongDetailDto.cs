@@ -13,6 +13,7 @@ public class TopSongDetailDto
     public string Artist { get; set; } = string.Empty;
     public int Plays { get; set; }
     public string? Album { get; set; }
+    public string? ImageUrl { get; set; }
     public DateTime? LastPlayedAt { get; set; }
     public Dictionary<string, int> StationBreakdown { get; set; } = new();
 }

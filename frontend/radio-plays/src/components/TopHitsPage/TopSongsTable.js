@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   Alert,
+  Avatar,
   Box,
   Button,
   LinearProgress,
@@ -88,11 +89,12 @@ const TopSongsTable = ({
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell align="center" sx={{ width: { xs: '8%', sm: '5%' } }}>#</TableCell>
-            <TableCell align="right" sx={{ width: { xs: '35%', sm: '35%' } }}>שיר</TableCell>
-            <TableCell align="right" sx={{ width: { xs: '15%', sm: '10%' } }}>השמעות</TableCell>
-            <TableCell align="right" sx={{ width: { xs: '0%', sm: '30%' }, display: { xs: 'none', sm: 'table-cell' } }}>תחנות מובילות</TableCell>
-            <TableCell align="right" sx={{ width: { xs: '30%', sm: '20%' } }}>הושמע לאחרונה</TableCell>
+            <TableCell align="center" sx={{ width: { xs: '5%', sm: '5%' } }}>#</TableCell>
+            <TableCell align="center" sx={{ width: { xs: '15%', sm: '12%' } }}></TableCell>
+            <TableCell align="right" sx={{ width: { xs: '42%', sm: '28%' } }}>שיר</TableCell>
+            <TableCell align="center" sx={{ width: { xs: '8%', sm: '10%' } }}>השמעות</TableCell>
+            <TableCell align="center" sx={{ width: { xs: '0%', sm: '25%' }, display: { xs: 'none', sm: 'table-cell' } }}>תחנות מובילות</TableCell>
+            <TableCell align="center" sx={{ width: { xs: '25%', sm: '20%' } }}>הושמע לאחרונה</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -109,8 +111,17 @@ const TopSongsTable = ({
 
             return (
               <TableRow key={song.id} hover>
-                <TableCell align="center" sx={{ width: { xs: '8%', sm: '5%' } }}>{rank}</TableCell>
-                <TableCell align="right" sx={{ width: { xs: '35%', sm: '35%' } }}>
+                <TableCell align="center" sx={{ width: { xs: '5%', sm: '5%' } }}>{rank}</TableCell>
+                <TableCell align="center" sx={{ width: { xs: '15%', sm: '12%' }, padding: { xs: '6px', sm: '16px' } }}>
+                  <Avatar
+                    src={song.imageUrl || undefined}
+                    alt={song.title}
+                    sx={{ width: { xs: 40, sm: 48 }, height: { xs: 40, sm: 48 }, margin: '0 auto' }}
+                  >
+                    {(song.title || '?').trim().charAt(0).toUpperCase() || '?'}
+                  </Avatar>
+                </TableCell>
+                <TableCell align="right" sx={{ width: { xs: '42%', sm: '28%' } }}>
                   <Typography 
                     variant="subtitle1"
                     sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, lineHeight: 1.3 }}
@@ -134,16 +145,16 @@ const TopSongsTable = ({
                     </Typography>
                   )}
                 </TableCell>
-                <TableCell align="right" sx={{ width: { xs: '15%', sm: '10%' } }}>
+                <TableCell align="center" sx={{ width: { xs: '8%', sm: '10%' } }}>
                   <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{song.plays}</Typography>
                 </TableCell>
-                <TableCell align="right" sx={{ width: { xs: '0%', sm: '30%' }, display: { xs: 'none', sm: 'table-cell' } }}>
+                <TableCell align="center" sx={{ width: { xs: '0%', sm: '25%' }, display: { xs: 'none', sm: 'table-cell' } }}>
                   <StationBreakdown stationBreakdown={stations} />
                 </TableCell>
                 <TableCell 
-                  align="right" 
+                  align="center" 
                   sx={{ 
-                    width: { xs: '30%', sm: '20%' },
+                    width: { xs: '25%', sm: '20%' },
                     fontSize: { xs: '0.75rem', sm: '0.875rem' }
                   }}
                 >
@@ -157,11 +168,11 @@ const TopSongsTable = ({
 
       <Box display="flex" justifyContent="space-between" alignItems="center" mt={3}>
         <Button variant="text" onClick={onPrev} disabled={page === 0 || isLoading}>
-          חדשים יותר
+          קדימה
         </Button>
         <Typography variant="body2">עמוד {page + 1}</Typography>
         <Button variant="text" onClick={onNext} disabled={!hasMore || isLoading}>
-          ישנים יותר
+          אחורה
         </Button>
       </Box>
     </Box>

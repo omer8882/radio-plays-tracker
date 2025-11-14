@@ -185,6 +185,7 @@ public class PlayRepository : IPlayRepository
                 Title = song.Name,
                 Artist = artistNames,
                 Album = song.Album?.Name,
+                ImageUrl = song.ImageUrl,
                 Plays = aggregate.Plays,
                 LastPlayedAt = aggregate.LastPlayed,
                 StationBreakdown = breakdown
@@ -258,6 +259,12 @@ public class PlayRepository : IPlayRepository
 
         var artistIds = artistAggregates.Select(a => a.ArtistId).ToList();
 
+        // Fetch artist details including ImageUrl
+        var artists = await _context.Artists
+            .AsNoTracking()
+            .Where(a => artistIds.Contains(a.Id))
+            .ToDictionaryAsync(a => a.Id);
+
         var stationCounts = await baseQuery
             .SelectMany(p => p.Song.SongArtists.Select(sa => new
             {
@@ -292,6 +299,7 @@ public class PlayRepository : IPlayRepository
                 Name = aggregate.Name,
                 Plays = aggregate.Plays,
                 UniqueSongs = aggregate.UniqueSongs,
+                ImageUrl = artists.TryGetValue(aggregate.ArtistId, out var artist) ? artist.ImageUrl : null,
                 TopStation = topStation?.StationName,
                 TopStationPlays = topStation?.Count
             };

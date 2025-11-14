@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Alert,
+  Avatar,
   Box,
   Button,
   LinearProgress,
@@ -49,10 +50,11 @@ const TopArtistsTable = ({
         <TableHead>
           <TableRow>
             <TableCell align="center" sx={{ width: { xs: '8%', sm: '5%' } }}>#</TableCell>
-            <TableCell align="right" sx={{ width: { xs: '40%', sm: '35%' } }}>אמן</TableCell>
-            <TableCell align="center" sx={{ width: { xs: '26%', sm: '15%' } }}>השמעות</TableCell>
-            <TableCell align="center" sx={{ width: { xs: '26%', sm: '15%' } }}>שירים שונים</TableCell>
-            <TableCell align="center" sx={{ width: { xs: '0%', sm: '30%' }, display: { xs: 'none', sm: 'table-cell' } }}>תחנה מובילה</TableCell>
+            <TableCell align="center" sx={{ width: { xs: '15%', sm: '12%' } }}></TableCell>
+            <TableCell align="right" sx={{ width: { xs: '32%', sm: '28%' } }}>אמן</TableCell>
+            <TableCell align="center" sx={{ width: { xs: '22%', sm: '15%' } }}>השמעות</TableCell>
+            <TableCell align="center" sx={{ width: { xs: '23%', sm: '15%' } }}>שירים שונים</TableCell>
+            <TableCell align="center" sx={{ width: { xs: '0%', sm: '25%' }, display: { xs: 'none', sm: 'table-cell' } }}>תחנה מובילה</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -78,7 +80,16 @@ const TopArtistsTable = ({
                 sx={{ cursor: 'pointer' }}
               >
                 <TableCell align="center" sx={{ width: { xs: '8%', sm: '5%' } }}>{rank}</TableCell>
-                <TableCell align="center" sx={{ width: { xs: '40%', sm: '35%' } }}>
+                <TableCell align="center" sx={{ width: { xs: '15%', sm: '12%' }, padding: { xs: '6px', sm: '16px' } }}>
+                  <Avatar
+                    src={artist.imageUrl || undefined}
+                    alt={artist.name}
+                    sx={{ width: { xs: 40, sm: 48 }, height: { xs: 40, sm: 48 }, margin: '0 auto' }}
+                  >
+                    {(artist.name || '?').trim().charAt(0).toUpperCase() || '?'}
+                  </Avatar>
+                </TableCell>
+                <TableCell align="center" sx={{ width: { xs: '32%', sm: '28%' } }}>
                   <Typography 
                     variant="subtitle1"
                     sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, lineHeight: 1.3 }}
@@ -89,7 +100,7 @@ const TopArtistsTable = ({
                 <TableCell 
                   align="center" 
                   sx={{ 
-                    width: { xs: '26%', sm: '15%' },
+                    width: { xs: '22%', sm: '15%' },
                     fontSize: { xs: '0.875rem', sm: '1rem' }
                   }}
                 >
@@ -98,7 +109,7 @@ const TopArtistsTable = ({
                 <TableCell 
                   align="center" 
                   sx={{ 
-                    width: { xs: '26%', sm: '15%' },
+                    width: { xs: '23%', sm: '15%' },
                     fontSize: { xs: '0.875rem', sm: '1rem' }
                   }}
                 >
@@ -107,7 +118,7 @@ const TopArtistsTable = ({
                 <TableCell 
                   align="center" 
                   sx={{ 
-                    width: { xs: '0%', sm: '30%' },
+                    width: { xs: '0%', sm: '25%' },
                     display: { xs: 'none', sm: 'table-cell' },
                     fontSize: { xs: '0.75rem', sm: '0.875rem' }
                   }}
@@ -122,11 +133,11 @@ const TopArtistsTable = ({
 
       <Box display="flex" justifyContent="space-between" alignItems="center" mt={3}>
         <Button variant="text" onClick={onPrev} disabled={page === 0 || isLoading}>
-          חדשים יותר
+          קדימה
         </Button>
         <Typography variant="body2">עמוד {page + 1}</Typography>
         <Button variant="text" onClick={onNext} disabled={!hasMore || isLoading}>
-          ישנים יותר
+          אחורה
         </Button>
       </Box>
     </Box>
