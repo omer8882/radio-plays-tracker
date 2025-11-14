@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, ToggleButton, ToggleButtonGroup, Paper, List, ListItem, Tooltip, Button } from '@mui/material';
 import axios from 'axios';
 import StationBreakdown from './StationBreakdown';
+import SongDetailsPage from './SongDetailsPage';
 import { API_BASE_URL } from '../config';
 import { Link as RouterLink } from 'react-router-dom';
 
@@ -11,6 +12,8 @@ const TopHits = () => {
   const [timeRange, setTimeRange] = useState('7');
   const [topHits, setTopHits] = useState([]);
   const [stationBreakdowns, setStationBreakdowns] = useState({});
+  const [selectedSongId, setSelectedSongId] = useState(null);
+  const [showSongModal, setShowSongModal] = useState(false);
 
   /*const sim_hits_7 = [
     { title: "Espresso", artist: "Sabrina Carpenter", hits: 9 },
@@ -57,6 +60,12 @@ const TopHits = () => {
 
     fetchStationBreakdowns();
   }, [topHits, timeRange]);
+
+  const handleSongClick = (songId) => {
+    setSelectedSongId(songId);
+    setShowSongModal(true);
+  };
+
   return (
     <Paper style={{ backgroundColor: '#dedadc', padding: '0px', borderRadius: '15px', margin: '10px 2px 5px 2px', width: '100%', minWidth: '275px', border: '1px solid', borderColor: '#c0c0c0',}} sx={{ boxShadow: 6 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" style={{ padding: '6px' }}>
@@ -84,7 +93,9 @@ const TopHits = () => {
       <List>
         {topHits.map((hit, i) => (
           <ListItem
+            button
             key={i}
+            onClick={() => handleSongClick(hit.id)}
             style={{
               display: 'flex',
               width: '100%',
@@ -92,7 +103,8 @@ const TopHits = () => {
               padding: '10px 15px',
               backgroundColor: overlayColor,
               margin: '0',
-              borderRadius: '0'
+              borderRadius: '0',
+              cursor: 'pointer'
             }}
           >
             <Box>
@@ -139,6 +151,13 @@ const TopHits = () => {
           מעבר לכל הלהיטים
         </Button>
       </Box>
+
+      {/* Song Details Modal */}
+      <SongDetailsPage
+        showModal={showSongModal}
+        setShowModal={setShowSongModal}
+        songId={selectedSongId}
+      />
     </Paper>
   );
 };
