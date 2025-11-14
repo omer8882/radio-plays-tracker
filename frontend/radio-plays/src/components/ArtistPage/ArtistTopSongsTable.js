@@ -79,9 +79,9 @@ const ArtistTopSongsTable = ({ artistName, onSongClick }) => {
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, width: '100%', boxSizing: 'border-box' }}>
+    <Paper elevation={3} sx={{ p: 0, width: '100%', boxSizing: 'border-box' }}>
       <Box dir="rtl">
-        <Typography variant="h5" component="h2" gutterBottom>
+        <Typography  padding="16px 16px 6px 16px" variant="h5" component="h2" gutterBottom>
           השירים המובילים
         </Typography>
 
@@ -104,10 +104,10 @@ const ArtistTopSongsTable = ({ artistName, onSongClick }) => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell align="center">#</TableCell>
-              <TableCell align="center">תמונה</TableCell>
-              <TableCell align="right">שיר</TableCell>
-              <TableCell align="right">השמעות</TableCell>
+              <TableCell align="center" sx={{ width: { xs: '5%', sm: '8%' } }}>#</TableCell>
+              <TableCell align="center" sx={{ width: { xs: '18%', sm: '15%' } }}></TableCell>
+              <TableCell align="right" sx={{ width: { xs: '57%', sm: '57%' } }}>שיר</TableCell>
+              <TableCell align="center" sx={{ width: { xs: '20%', sm: '20%' } }}>השמעות</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -128,20 +128,28 @@ const ArtistTopSongsTable = ({ artistName, onSongClick }) => {
                   onClick={() => onSongClick && onSongClick(song.id)}
                   sx={{ cursor: onSongClick ? 'pointer' : 'default' }}
                 >
-                  <TableCell align="center">{rank}</TableCell>
-                  <TableCell align="center">
+                  <TableCell align="center" sx={{ width: { xs: '5%', sm: '8%' } }}>{rank}</TableCell>
+                  <TableCell align="center" sx={{ width: { xs: '18%', sm: '15%' }, padding: { xs: '8px', sm: '16px' } }}>
                     <Avatar
                       src={song.imageUrl || undefined}
                       alt={song.title}
-                      sx={{ width: 48, height: 48, margin: '0 auto' }}
+                      sx={{ width: { xs: 40, sm: 48 }, height: { xs: 40, sm: 48 }, margin: '0 auto' }}
                     >
                       {(song.title || '?').trim().charAt(0).toUpperCase() || '?'}
                     </Avatar>
                   </TableCell>
-                  <TableCell align="right">
-                    <Typography variant="subtitle1">{song.title}</Typography>
+                  <TableCell align="right" sx={{ width: { xs: '60%', sm: '57%' } }}>
+                    <Typography 
+                      variant="subtitle1"
+                      sx={{ 
+                        fontSize: { xs: '0.875rem', sm: '1rem' },
+                        lineHeight: 1.3
+                      }}
+                    >
+                      {song.title}
+                    </Typography>
                   </TableCell>
-                  <TableCell align="right">{song.hits}</TableCell>
+                  <TableCell align="center" sx={{ width: { xs: '17%', sm: '20%' } }}>{song.hits}</TableCell>
                 </TableRow>
               );
             })}
