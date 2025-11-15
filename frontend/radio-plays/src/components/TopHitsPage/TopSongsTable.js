@@ -167,7 +167,7 @@ const TopSongsTable = ({
                   <Avatar
                     src={song.imageUrl || undefined}
                     alt={song.title}
-                    sx={{ width: { xs: 40, sm: 48 }, height: { xs: 40, sm: 48 }, margin: '0 auto' }}
+                    sx={{ width: { xs: 40, sm: 55 }, height: { xs: 40, sm: 55 }, margin: '0 auto' }}
                   >
                     {(song.title || '?').trim().charAt(0).toUpperCase() || '?'}
                   </Avatar>
@@ -209,10 +209,10 @@ const TopSongsTable = ({
                   }}
                 >
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-                    <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.78rem' } }}>
+                    <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
                       {dateLabel}
                     </Typography>
-                    <Typography variant="subtitle2" sx={{ fontSize: { xs: '0.8rem', sm: '0.92rem' } }}>
+                    <Typography variant="subtitle2" sx={{ fontSize: { xs: '0.8rem', sm: '0.87rem' } }}>
                       {timeLabel}
                     </Typography>
                   </Box>
