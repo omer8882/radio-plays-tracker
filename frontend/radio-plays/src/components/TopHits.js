@@ -128,15 +128,15 @@ const TopHits = () => {
                   },
                 }}
               >
-                <Typography variant="subtitle1">השמעות: {hit.hits}</Typography>
+                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' }}}>השמעות: {hit.hits}</Typography>
               </Tooltip>
             </Box>
             <Box flexGrow={1} display="flex" justifyContent="flex-end">
               <Box textAlign="right">
-                <Typography variant="subtitle1">{hit.title}</Typography>
-                <Typography variant="body2" color="textSecondary">{hit.artist}</Typography>
+                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.83rem', sm: '0.9rem' }}}>{hit.title}</Typography>
+                <Typography variant="body2" color="textSecondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' }}}>{hit.artist}</Typography>
               </Box>
-              <Typography variant="h6" style={{ marginLeft: '10px' }}>.{i + 1}</Typography>
+              <Typography variant="h6" style={{ marginLeft: '10px' }} sx={{ fontSize: { xs: '1.1rem', sm: '1.2rem' }}}>.{i + 1}</Typography>
             </Box>
           </ListItem>
         ))}

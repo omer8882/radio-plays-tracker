@@ -22,7 +22,7 @@ const SongListItem = ({ song, onClick }) => {
           style={{
               display: 'flex',
               justifyContent: 'space-between',
-              padding: '10px 15px',
+              padding: '8px 15px',
               backgroundColor: overlayColor,
               margin: '0',
               borderRadius: '0',
@@ -30,7 +30,8 @@ const SongListItem = ({ song, onClick }) => {
           }}
         >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Typography variant="subtitle1" sx={{ marginRight: '22px' }}>
+                <Typography variant="subtitle1" sx={{ marginRight: '22px', fontSize: { xs: '0.85rem', sm: '0.875rem' }
+                  }}>
                     {song.time}
                 </Typography>
                 {isSongPlaying(song.time) && (
@@ -39,8 +40,8 @@ const SongListItem = ({ song, onClick }) => {
             </Box>
 
             <Box sx={{ textAlign: 'right' }}>
-                <Typography variant="subtitle1">{song.title}</Typography>
-                <Typography variant="body2" color="textSecondary">
+                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.83rem', sm: '0.9rem' }}}>{song.title}</Typography>
+                <Typography variant="body2" color="textSecondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' }}}>
                     {song.artist}
                 </Typography>
             </Box>
