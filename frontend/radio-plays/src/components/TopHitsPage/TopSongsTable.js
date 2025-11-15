@@ -15,22 +15,48 @@ import {
 } from '@mui/material';
 import StationBreakdown from '../StationBreakdown';
 
-const formatDateTime = (value) => {
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+const getDateOnly = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+const formatDateLabel = (targetDate) => {
+  const today = getDateOnly(new Date());
+  const startOfTarget = getDateOnly(targetDate);
+  const diffDays = Math.floor((today - startOfTarget) / MS_PER_DAY);
+
+  if (diffDays === 0) {
+    return 'היום';
+  }
+
+  if (diffDays === 1) {
+    return 'אתמול';
+  }
+
+  return targetDate.toLocaleDateString('he-IL', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+};
+
+const formatDateTimeParts = (value) => {
   if (!value) {
-    return '-';
+    return { dateLabel: '-', timeLabel: '' };
   }
-  try {
-    return new Date(value).toLocaleString('he-IL', {
-      hour12: false,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return { dateLabel: value, timeLabel: '' };
+  }
+
+  return {
+    dateLabel: formatDateLabel(parsed),
+    timeLabel: parsed.toLocaleTimeString('he-IL', {
       hour: '2-digit',
-      minute: '2-digit'
-    });
-  } catch (error) {
-    return value;
-  }
+      minute: '2-digit',
+      hour12: false
+    })
+  };
 };
 
 const buildOrderedBreakdown = (breakdown) => {
@@ -124,6 +150,8 @@ const TopSongsTable = ({
               }
             };
 
+            const { dateLabel, timeLabel } = formatDateTimeParts(song.lastPlayedAt);
+
             return (
               <TableRow
                 key={song.id}
@@ -177,11 +205,17 @@ const TopSongsTable = ({
                 <TableCell 
                   align="center" 
                   sx={{ 
-                    width: { xs: '25%', sm: '20%' },
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                    width: { xs: '25%', sm: '20%' }
                   }}
                 >
-                  {formatDateTime(song.lastPlayedAt)}
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                    <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.78rem' } }}>
+                      {dateLabel}
+                    </Typography>
+                    <Typography variant="subtitle2" sx={{ fontSize: { xs: '0.8rem', sm: '0.92rem' } }}>
+                      {timeLabel}
+                    </Typography>
+                  </Box>
                 </TableCell>
               </TableRow>
             );
