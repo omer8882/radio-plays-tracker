@@ -5,8 +5,13 @@ import EqualizerIcon from './EqualizerIcon';
 
 const SongListItem = ({ song, onClick }) => {
     const overlayColor = 'rgba(0, 0, 0, 0.07)';
+    const coverUrl = song?.imageUrl;
+    const coverFallbackLabel = (song?.artist || song?.title || '♫').charAt(0).toUpperCase();
 
     const isSongPlaying = (playedAt) => {
+        if (!playedAt || !playedAt.includes(':')) {
+            return false;
+        }
         const now = new Date();
         const [playedHour, playedMinute] = playedAt.split(':').map(Number);
         const playedTime = new Date(now);
@@ -19,31 +24,51 @@ const SongListItem = ({ song, onClick }) => {
         <ListItem 
           button 
           onClick={onClick}
+          className="song-list-item"
           style={{
               display: 'flex',
               justifyContent: 'space-between',
-              padding: '8px 15px',
+              padding: '5px 10px',
               backgroundColor: overlayColor,
               margin: '0',
               borderRadius: '0',
               alignItems: 'center'
           }}
         >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Typography variant="subtitle1" sx={{ marginRight: '22px', fontSize: { xs: '0.85rem', sm: '0.875rem' }
-                  }}>
+            <Box className="song-list-item__time">
+                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.83rem', sm: '0.875rem' } }}>
                     {song.time}
                 </Typography>
                 {isSongPlaying(song.time) && (
-                  <EqualizerIcon sx={{ animation: 'equalizer 1s infinite ease-in-out' }} />
+                    <EqualizerIcon sx={{ animation: 'equalizer 1s infinite ease-in-out' }} />
                 )}
             </Box>
 
-            <Box sx={{ textAlign: 'right' }}>
-                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.83rem', sm: '0.9rem' }}}>{song.title}</Typography>
-                <Typography variant="body2" color="textSecondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' }}}>
-                    {song.artist}
-                </Typography>
+            <Box className="song-list-item__content">
+                <Box sx={{ textAlign: 'right' }}>
+                    <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.83rem', sm: '0.9rem' }}}>
+                        {song.title || ' '}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' }}}>
+                        {song.artist || ' '}
+                    </Typography>
+                </Box>
+
+                <Box className={`song-list-item__cover${coverUrl ? '' : ' song-list-item__cover--placeholder'}`}>
+                    {coverUrl ? (
+                        <Box
+                            component="img"
+                            src={coverUrl}
+                            alt={`${song.title || 'Unknown song'} cover art`}
+                            loading="lazy"
+                            className="song-list-item__cover-image"
+                        />
+                    ) : (
+                        <Typography variant="subtitle2" component="span">
+                            {coverFallbackLabel}
+                        </Typography>
+                    )}
+                </Box>
             </Box>
         </ListItem>
     );
