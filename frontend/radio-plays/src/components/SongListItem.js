@@ -36,7 +36,7 @@ const SongListItem = ({ song, onClick }) => {
           }}
         >
             <Box className="song-list-item__time">
-                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.83rem', sm: '0.875rem' } }}>
+                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.88rem', sm: '0.9rem' } }}>
                     {song.time}
                 </Typography>
                 {isSongPlaying(song.time) && (
@@ -46,7 +46,7 @@ const SongListItem = ({ song, onClick }) => {
 
             <Box className="song-list-item__content">
                 <Box sx={{ textAlign: 'right' }}>
-                    <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.83rem', sm: '0.9rem' }}}>
+                    <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.9rem', sm: '0.9rem' }}}>
                         {song.title || ' '}
                     </Typography>
                     <Typography variant="body2" color="textSecondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' }}}>
