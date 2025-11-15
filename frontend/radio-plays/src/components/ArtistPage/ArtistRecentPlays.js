@@ -27,6 +27,7 @@ const ArtistRecentPlays = ({ plays, onSongClick, isLoading, errorMessage }) => {
                 key={`${play.id}-${index}`}
                 song={{
                   time: play.time,
+                  dateLabel: play.dateLabel,
                   title: play.title,
                   artist: play.artist,
                   station: play.station,

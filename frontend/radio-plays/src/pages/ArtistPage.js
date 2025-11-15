@@ -7,6 +7,58 @@ import ArtistTopSongsTable from '../components/ArtistPage/ArtistTopSongsTable';
 import SongDetailsPage from '../components/SongDetailsPage';
 import { API_BASE_URL } from '../config';
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+const normalizeDateLabel = (datePart) => {
+  if (!datePart) {
+    return '';
+  }
+
+  const [day, month, year] = datePart.split('/').map((segment) => parseInt(segment, 10));
+  if ([day, month, year].some((value) => Number.isNaN(value))) {
+    return datePart;
+  }
+
+  const targetDate = new Date(year, month - 1, day);
+  if (Number.isNaN(targetDate.getTime())) {
+    return datePart;
+  }
+
+  const today = new Date();
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const startOfTarget = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+  const diffDays = Math.round((startOfToday - startOfTarget) / MS_PER_DAY);
+
+  if (diffDays === 0) {
+    return 'היום';
+  }
+
+  if (diffDays === 1) {
+    return 'אתמול';
+  }
+
+  return datePart;
+};
+
+const extractTimeParts = (rawValue) => {
+  if (!rawValue || typeof rawValue !== 'string') {
+    return { dateLabel: '', timeLabel: '' };
+  }
+
+  const tokens = rawValue
+    .replace(/\r/g, '')
+    .split(/\s+/)
+    .filter(Boolean);
+
+  const datePart = tokens[0] || '';
+  const timePart = tokens[1] || rawValue.trim();
+
+  return {
+    dateLabel: normalizeDateLabel(datePart),
+    timeLabel: timePart
+  };
+};
+
 const ArtistPage = () => {
   const [searchParams] = useSearchParams();
   const artistName = searchParams.get('name');
@@ -23,14 +75,20 @@ const ArtistPage = () => {
   useEffect(() => {
     let isCancelled = false;
 
-    const normalizeRecentPlay = (play) => ({
-      id: play.id ?? play.Id ?? '',
-      title: play.title ?? play.Title ?? '',
-      artist: play.artist ?? play.Artist ?? '',
-      time: play.time ?? play.Time.replace(" ", "\n") ?? '',
-      station: play.station ?? play.Station ?? '',
-      imageUrl: play.imageUrl ?? play.ImageUrl ?? ''
-    });
+    const normalizeRecentPlay = (play) => {
+      const rawTime = play.time ?? play.Time ?? '';
+      const { dateLabel, timeLabel } = extractTimeParts(rawTime);
+
+      return {
+        id: play.id ?? play.Id ?? '',
+        title: play.title ?? play.Title ?? '',
+        artist: play.artist ?? play.Artist ?? '',
+        time: timeLabel || '',
+        dateLabel,
+        station: play.station ?? play.Station ?? '',
+        imageUrl: play.imageUrl ?? play.ImageUrl ?? ''
+      };
+    };
 
     const fetchArtistPlays = async () => {
       if (!artistName) {

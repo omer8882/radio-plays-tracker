@@ -7,6 +7,8 @@ const SongListItem = ({ song, onClick }) => {
     const overlayColor = 'rgba(0, 0, 0, 0.07)';
     const coverUrl = song?.imageUrl;
     const coverFallbackLabel = (song?.artist || song?.title || '♫').charAt(0).toUpperCase();
+    const timeLabel = song?.time || '';
+    const dateLabel = song?.dateLabel || '';
 
     const isSongPlaying = (playedAt) => {
         if (!playedAt || !playedAt.includes(':')) {
@@ -36,10 +38,15 @@ const SongListItem = ({ song, onClick }) => {
           }}
         >
             <Box className="song-list-item__time">
-                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.88rem', sm: '0.9rem' } }}>
-                    {song.time}
+                {dateLabel && (
+                    <Typography className="song-list-item__date" variant="body2">
+                        {dateLabel}
+                    </Typography>
+                )}
+                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.85rem', sm: '0.9rem' } }}>
+                    {timeLabel}
                 </Typography>
-                {isSongPlaying(song.time) && (
+                {isSongPlaying(timeLabel) && (
                     <EqualizerIcon sx={{ animation: 'equalizer 1s infinite ease-in-out' }} />
                 )}
             </Box>

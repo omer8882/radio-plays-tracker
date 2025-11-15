@@ -38,6 +38,12 @@
   gap: 2px;
 }
 
+.song-list-item__date {
+  font-size: 0.75rem;
+  color: #4a4a4a;
+  line-height: 1.1;
+}
+
 .song-list-item__content {
   display: flex;
   align-items: center;
