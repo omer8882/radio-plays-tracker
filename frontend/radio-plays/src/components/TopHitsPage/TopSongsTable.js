@@ -71,7 +71,8 @@ const TopSongsTable = ({
   onNext,
   onPrev,
   isLoading,
-  errorMessage
+  errorMessage,
+  onSongClick
 }) => (
   <Paper elevation={4} sx={{ p: 1, width: '100%', boxSizing: 'border-box' }}>
     <Box dir="rtl">
@@ -108,9 +109,31 @@ const TopSongsTable = ({
           {songs.map((song, index) => {
             const rank = page * pageSize + index + 1;
             const stations = buildOrderedBreakdown(song.stationBreakdown);
+            const handleRowClick = () => {
+              if (onSongClick) {
+                onSongClick(song.id);
+              }
+            };
+            const handleRowKeyDown = (event) => {
+              if (!onSongClick) {
+                return;
+              }
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                onSongClick(song.id);
+              }
+            };
 
             return (
-              <TableRow key={song.id} hover>
+              <TableRow
+                key={song.id}
+                hover
+                onClick={handleRowClick}
+                onKeyDown={handleRowKeyDown}
+                tabIndex={onSongClick ? 0 : undefined}
+                role={onSongClick ? 'button' : undefined}
+                sx={{ cursor: onSongClick ? 'pointer' : 'default' }}
+              >
                 <TableCell align="center" sx={{ width: { xs: '5%', sm: '5%' } }}>{rank}</TableCell>
                 <TableCell align="center" sx={{ width: { xs: '10%', sm: '12%' }, padding: { xs: '3px', sm: '12px' } }}>
                   <Avatar

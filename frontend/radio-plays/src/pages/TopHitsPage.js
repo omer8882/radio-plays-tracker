@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import TopSongsTable from '../components/TopHitsPage/TopSongsTable';
 import TopArtistsTable from '../components/TopHitsPage/TopArtistsTable';
+import SongDetailsPage from '../components/SongDetailsPage';
 import { API_BASE_URL } from '../config';
 import { STATION_FILTER_OPTIONS, STATION_LABEL_LOOKUP } from '../constants/stations';
 
@@ -29,6 +30,8 @@ const TopHitsPage = () => {
   const [songsHasMore, setSongsHasMore] = useState(false);
   const [songsLoading, setSongsLoading] = useState(false);
   const [songsError, setSongsError] = useState(null);
+  const [selectedSongId, setSelectedSongId] = useState(null);
+  const [showSongModal, setShowSongModal] = useState(false);
 
   const [artistPage, setArtistPage] = useState(0);
   const [artists, setArtists] = useState([]);
@@ -137,6 +140,11 @@ const TopHitsPage = () => {
     setStation(event.target.value);
   };
 
+  const handleSongClick = (songId) => {
+    setSelectedSongId(songId);
+    setShowSongModal(true);
+  };
+
   return (
     <Box sx={{ width: '92%', mx: 'auto' }}>
       <Box dir="rtl" sx={{ mb: 4 }}>
@@ -226,6 +234,7 @@ const TopHitsPage = () => {
         onPrev={() => setSongPage((prev) => Math.max(prev - 1, 0))}
         isLoading={songsLoading}
         errorMessage={songsError}
+        onSongClick={handleSongClick}
       />
 
       <Divider sx={{ my: 4 }} />
@@ -240,6 +249,12 @@ const TopHitsPage = () => {
         isLoading={artistsLoading}
         errorMessage={artistsError}
         stationLabels={STATION_LABEL_LOOKUP}
+      />
+
+      <SongDetailsPage
+        showModal={showSongModal}
+        setShowModal={setShowSongModal}
+        songId={selectedSongId}
       />
     </Box>
   );
