@@ -112,7 +112,7 @@ const TopSongsTable = ({
             return (
               <TableRow key={song.id} hover>
                 <TableCell align="center" sx={{ width: { xs: '5%', sm: '5%' } }}>{rank}</TableCell>
-                <TableCell align="center" sx={{ width: { xs: '10%', sm: '12%' }, padding: { xs: '6px', sm: '16px' } }}>
+                <TableCell align="center" sx={{ width: { xs: '10%', sm: '12%' }, padding: { xs: '3px', sm: '12px' } }}>
                   <Avatar
                     src={song.imageUrl || undefined}
                     alt={song.title}
@@ -145,7 +145,7 @@ const TopSongsTable = ({
                     </Typography>
                   )}
                 </TableCell>
-                <TableCell align="center" sx={{ width: { xs: '5%', sm: '10%' } }}>
+                <TableCell align="center" sx={{ width: { xs: '2%', sm: '10%' } }}>
                   <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{song.plays}</Typography>
                 </TableCell>
                 <TableCell align="center" sx={{ width: { xs: '0%', sm: '25%' }, display: { xs: 'none', sm: 'table-cell' } }}>
@@ -154,7 +154,7 @@ const TopSongsTable = ({
                 <TableCell 
                   align="center" 
                   sx={{ 
-                    width: { xs: '30%', sm: '20%' },
+                    width: { xs: '25%', sm: '20%' },
                     fontSize: { xs: '0.75rem', sm: '0.875rem' }
                   }}
                 >

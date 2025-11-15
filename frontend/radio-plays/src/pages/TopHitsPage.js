@@ -138,7 +138,7 @@ const TopHitsPage = () => {
   };
 
   return (
-    <Box sx={{ width: '90%', mx: 'auto' }}>
+    <Box sx={{ width: '92%', mx: 'auto' }}>
       <Box dir="rtl" sx={{ mb: 4 }}>
         <Typography variant="h4" gutterBottom>
           הלהיטים
