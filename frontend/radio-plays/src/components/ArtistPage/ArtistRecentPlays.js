@@ -30,7 +30,8 @@ const ArtistRecentPlays = ({ plays, onSongClick, isLoading, errorMessage }) => {
                   title: play.title,
                   artist: play.artist,
                   station: play.station,
-                  id: play.id
+                  id: play.id,
+                  imageUrl: play.imageUrl || play.ImageUrl || ''
                 }}
                 onClick={() => onSongClick && onSongClick(play.id)}
               />
