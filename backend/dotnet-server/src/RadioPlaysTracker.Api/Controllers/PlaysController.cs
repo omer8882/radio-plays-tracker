@@ -103,6 +103,11 @@ public class PlaysController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetArtistPlays([FromQuery] string artist, [FromQuery] int limit = 100)
     {
+        if (limit > 100)
+        {
+            return BadRequest(new { detail = "Limit is too high. Must be 100 or less" });
+        }
+
         try
         {
             var plays = await _playRepository.GetArtistPlaysAsync(artist, limit);
