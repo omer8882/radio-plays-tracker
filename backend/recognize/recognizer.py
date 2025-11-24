@@ -5,6 +5,7 @@ from datetime import datetime, timezone, timedelta
 import asyncio
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
+from pathlib import Path
 #sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from helper import Helper
 from postgres_connector import PostgresConnector
@@ -146,10 +147,13 @@ class ConfigManager:
             json.dump(self.station_state, file, ensure_ascii=False, indent=2)
 
 class SpotifyClient:
-    def __init__(self, client_id: str, client_secret: str):
+    DEFAULT_TIMEOUT = (5, 10)  # (connect, read)
+
+    def __init__(self, client_id: str, client_secret: str, request_timeout: Tuple[int, int] = None):
         self.client_id = client_id
         self.client_secret = client_secret
         self._token: Optional[str] = None
+        self._timeout = request_timeout or self.DEFAULT_TIMEOUT
     
     def get_token(self) -> str:
         if not self._token or not self._is_token_valid():
@@ -160,11 +164,15 @@ class SpotifyClient:
         client_credentials = f"{self.client_id}:{self.client_secret}"
         client_credentials_b64 = base64.b64encode(client_credentials.encode()).decode()
         
-        response = requests.post(
-            "https://accounts.spotify.com/api/token",
-            headers={'Authorization': f'Basic {client_credentials_b64}'},
-            data={'grant_type': 'client_credentials'}
-        )
+        try:
+            response = requests.post(
+                "https://accounts.spotify.com/api/token",
+                headers={'Authorization': f'Basic {client_credentials_b64}'},
+                data={'grant_type': 'client_credentials'},
+                timeout=self._timeout
+            )
+        except requests.exceptions.RequestException as exc:
+            raise ConnectionError(f"Error getting access token: {exc}") from exc
         
         if response.status_code != 200:
             raise Exception(f'Error getting access token: {response.status_code}, {response.text}')
@@ -179,7 +187,8 @@ class SpotifyClient:
             response = requests.get(
                 "https://api.spotify.com/v1/search",
                 headers={'Authorization': f'Bearer {self._token}'},
-                params={'q': 'test', 'type': 'track', 'limit': 1}
+                params={'q': 'test', 'type': 'track', 'limit': 1},
+                timeout=self._timeout
             )
             return response.status_code == 200
         except requests.exceptions.RequestException:
@@ -204,7 +213,8 @@ class SpotifyClient:
                 response = requests.get(
                     "https://api.spotify.com/v1/artists",
                     headers={'Authorization': f'Bearer {self.get_token()}'},
-                    params={'ids': ','.join(chunk)}
+                    params={'ids': ','.join(chunk)},
+                    timeout=self._timeout
                 )
                 response.raise_for_status()
             except requests.exceptions.RequestException as exc:
@@ -245,7 +255,8 @@ class SpotifyClient:
             response = requests.get(
                 "https://api.spotify.com/v1/search",
                 headers={'Authorization': f'Bearer {self.get_token()}'},
-                params={'q': query, 'type': 'track', 'limit': 1}
+                params={'q': query, 'type': 'track', 'limit': 1},
+                timeout=self._timeout
             )
             response.raise_for_status()
             
@@ -256,6 +267,8 @@ class SpotifyClient:
             raise ConnectionError(f"Error searching Spotify: {str(e)}")
 
 class StreamCapture:
+    STREAM_TIMEOUT = (35, 65)  # (connect, read)
+
     def __init__(self, temp_dir: str = None):
         self.temp_dir = temp_dir or os.path.join(os.path.dirname(os.path.abspath(__file__)), './temp')
         os.makedirs(self.temp_dir, exist_ok=True)
@@ -270,7 +283,12 @@ class StreamCapture:
         return file_path
     
     def _download_stream(self, stream_url: str, duration: int) -> bytes:
-        response = requests.get(stream_url, stream=True)
+        try:
+            response = requests.get(stream_url, stream=True, timeout=self.STREAM_TIMEOUT)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as exc:
+            raise ConnectionError(f"Failed downloading stream '{stream_url}': {exc}") from exc
+
         start_time = time.time()
         audio_data = bytearray()
         
@@ -506,6 +524,8 @@ class TrackProcessor:
         return url
 
 class RadioPlaysTracker:
+    STATION_TIMEOUT_SECONDS = 100
+
     def __init__(self):
         self.config_manager = ConfigManager()
         self.spotify_client = SpotifyClient(
@@ -520,6 +540,7 @@ class RadioPlaysTracker:
             station_info=True
         )
         self.track_processor = TrackProcessor(PostgresConnector(), self.spotify_client, self.logger)
+        self.heartbeat_path = self._resolve_heartbeat_path()
     
     async def process_station(self, station: StationConfig) -> None:
         try:
@@ -569,9 +590,54 @@ class RadioPlaysTracker:
     async def run(self):
         while True:
             stations = self.config_manager.get_stations()
+            self.logger.info(
+                f"Polling cycle started for {len(stations)} stations",
+                extra={'station': 'system'}
+            )
+            cycle_started = time.perf_counter()
             for station in stations:
-                await self.process_station(station)
+                station_started = time.perf_counter()
+                try:
+                    await asyncio.wait_for(
+                        self.process_station(station),
+                        timeout=self.STATION_TIMEOUT_SECONDS
+                    )
+                except asyncio.TimeoutError:
+                    self.logger.error(
+                        f"Processing station '{station.name}' timed out after {self.STATION_TIMEOUT_SECONDS}s",
+                        extra={'station': station.name}
+                    )
+                else:
+                    elapsed = time.perf_counter() - station_started
+                    self.logger.debug(
+                        f"Finished station '{station.name}' in {elapsed:.1f}s",
+                        extra={'station': station.name}
+                    )
+                finally:
+                    self._write_heartbeat()
+            cycle_elapsed = time.perf_counter() - cycle_started
+            self.logger.info(
+                f"Polling cycle completed in {cycle_elapsed:.1f}s",
+                extra={'station': 'system'}
+            )
             await asyncio.sleep(20)
+
+    def _resolve_heartbeat_path(self) -> Path:
+        env_path = os.getenv('WORKER_HEARTBEAT_PATH')
+        if env_path:
+            return Path(env_path)
+        base_dir = Path(os.getenv('WORKER_CONFIG_PATH') or os.path.dirname(os.path.abspath(__file__)))
+        return Path(base_dir) / 'recognizer.heartbeat'
+
+    def _write_heartbeat(self) -> None:
+        try:
+            self.heartbeat_path.parent.mkdir(parents=True, exist_ok=True)
+            self.heartbeat_path.write_text(datetime.utcnow().isoformat() + 'Z', encoding='utf-8')
+        except OSError as exc:
+            self.logger.warning(
+                f"Failed to update heartbeat file '{self.heartbeat_path}': {exc}",
+                extra={'station': 'system'}
+            )
 
 if __name__ == '__main__':
     print("Starting Radio Plays Tracker...")
