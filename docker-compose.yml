@@ -57,7 +57,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
-      WORKER_CONFIG_PATH: /data/config.json
       WORKER_STATE_PATH: /data/state.json
       WORKER_POSTGRES_LOG: ./postgres_indexing.log
       TZ: ${TZ:-UTC}
