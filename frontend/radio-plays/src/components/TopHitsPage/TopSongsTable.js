@@ -103,7 +103,7 @@ const TopSongsTable = ({
   <Paper elevation={4} sx={{ p: 1, width: '100%', boxSizing: 'border-box' }}>
     <Box dir="rtl">
       <Typography margin="7px 7px 9px 7px" variant="h5" component="h2" gutterBottom>
-        השירים המושמעים ביותר
+השירים הכי מושמעים הרדיו
       </Typography>
 
       {isLoading && <LinearProgress sx={{ mb: 2 }} />}

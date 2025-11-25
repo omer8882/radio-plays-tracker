@@ -7,7 +7,7 @@ import galatzLogo from '../assets/galatz_logo.png';
 
 export const STATIONS = [
   { name: 'galatz', displayName: 'גל"צ', logo: galatzLogo, bgColor: '#dbd944' },
-  { name: '103fm', displayName: '103FM', logo: fm103Logo, bgColor: '#64D1DE' },
+  //{ name: '103fm', displayName: '103FM', logo: fm103Logo, bgColor: '#64D1DE' },
   { name: 'kan88', displayName: 'כאן 88', logo: kan88Logo, bgColor: '#b38bae' },
   { name: '100fm', displayName: '100FM', logo: fm100Logo, bgColor: '#cccc31' },
   { name: 'eco99', displayName: 'Eco 99FM', logo: eco99Logo, bgColor: '#BBDEFB' },
