@@ -18,6 +18,12 @@
             "live_intro": 5
         },
         {
+            "name": "103fm",
+            "stream_url": "https://103fm-live.mediacast.co.il/103fm_aac",
+            "last_song_recorded": null,
+            "live_intro": 5
+        },
+        {
             "name": "galatz",
             "stream_url": "http://glzwizzlv.bynetcdn.com/glz_mp3",
             "last_song_recorded": null
