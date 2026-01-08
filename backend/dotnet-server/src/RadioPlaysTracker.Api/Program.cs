@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using RadioPlaysTracker.Core.Interfaces;
 using RadioPlaysTracker.Infrastructure.Data;
 using RadioPlaysTracker.Infrastructure.Repositories;
+using RadioPlaysTracker.Api.Mcp;
+using ModelContextProtocol.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +26,11 @@ builder.Services.AddScoped<ISongRepository, SongRepository>();
 builder.Services.AddScoped<IStationRepository, StationRepository>();
 builder.Services.AddScoped<IArtistRepository, ArtistRepository>();
 builder.Services.AddScoped<IAlbumRepository, AlbumRepository>();
+
+// Configure MCP Server
+builder.Services.AddMcpServer()
+    .WithHttpTransport()
+    .WithToolsFromAssembly();
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -88,5 +95,8 @@ app.UseSwaggerUI(options =>
 });
 
 app.MapControllers();
+
+// Map MCP endpoint
+app.MapMcp();
 
 app.Run();
