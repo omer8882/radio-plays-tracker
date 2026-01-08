@@ -180,7 +180,7 @@ curl -X POST http://localhost:5000/mcp \
 
 ```bash
 curl -X POST http://localhost:5000/mcp \
-  -H "Content-Type": "application/json" \
+  -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
     "id": 4,
