@@ -11,6 +11,7 @@ Track what's playing on radio stations in real-time! This project continuously m
 - 🔍 **Search Around**: Remember hearing a song Tuesday at 8am? Search by station and time to find it
 - 📈 **Station Breakdown**: See how many times each song was played across different stations
 - 🌐 **Public Web UI**: Clean, responsive interface built with React and Material-UI
+- 🤖 **AI Assistant Integration**: MCP (Model Context Protocol) server for chatbot access to radio play data
 
 ## 🏗️ Architecture
 
@@ -32,6 +33,10 @@ RESTful API built with .NET 8+ following Clean Architecture principles.
   - `/api/search_around` - Find songs by timestamp
   - `/api/song_details` - Detailed song information
   - `/api/stations` - List all monitored stations
+- **MCP Server**: Built-in Model Context Protocol server at `/mcp` for AI assistant integration
+  - Exposes 10 tools for querying radio play data
+  - Compatible with Claude, GPT-4, and other MCP-enabled AI assistants
+  - See [MCP_SERVER.md](backend/dotnet-server/MCP_SERVER.md) for details
 
 ### Frontend (`frontend/radio-plays/`)
 
