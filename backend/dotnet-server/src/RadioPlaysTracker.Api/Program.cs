@@ -78,19 +78,24 @@ using (var scope = app.Services.CreateScope())
 
 app.UseCors();
 
-app.UseHttpsRedirection();
+// Disable HTTPS redirect in Production when running behind reverse proxy (Cloudflared)
+// MCP clients require stable HTTP connection without redirects
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthorization();
 
 //Enable Swagger in all environments (you can restrict this if needed)
 app.UseSwagger(options =>
 {
-    options.RouteTemplate = "swagger/{documentName}/swagger.json";
+    options.RouteTemplate = "{documentName}/swagger.json";
 });
 
 app.UseSwaggerUI(options =>
 {
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "MaHushma Public API v1.1");
+    options.SwaggerEndpoint("v1/swagger.json", "MaHushma Public API v1.1");
     options.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
 });
 
