@@ -101,7 +101,13 @@ app.UseSwaggerUI(options =>
 
 app.MapControllers();
 
-// Map MCP endpoint
-app.MapMcp();
+// Map MCP endpoint explicitly at /mcp to match Cloudflared routing
+app.MapMcp("/mcp");
+
+// Temporary debug endpoint to list registered routes (helps verify MCP is mapped)
+app.MapGet("/mcp-debug", (IEnumerable<EndpointDataSource> sources) =>
+    sources.SelectMany(s => s.Endpoints)
+           .OfType<RouteEndpoint>()
+           .Select(e => new { e.RoutePattern.RawText, e.DisplayName }));
 
 app.Run();
