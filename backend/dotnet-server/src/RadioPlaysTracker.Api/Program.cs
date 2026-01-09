@@ -105,18 +105,11 @@ app.MapControllers();
 // Map MCP endpoint explicitly at /mcp to match Cloudflared routing
 app.MapMcp("/mcp");
 
-// Temporary debug logging: list all mapped routes on startup
-var endpointSources = app.Services.GetRequiredService<IEnumerable<EndpointDataSource>>();
-var routeEndpoints = endpointSources
-    .SelectMany(s => s.Endpoints)
-    .OfType<RouteEndpoint>()
-    .Select(e => e.RoutePattern.RawText)
-    .ToList();
+// Temporary debug endpoint to list registered routes (helps verify MCP is mapped)
+app.MapGet("/mcp-debug", (IEnumerable<EndpointDataSource> sources) =>
+    sources.SelectMany(s => s.Endpoints)
+           .OfType<RouteEndpoint>()
+           .Select(e => new { e.RoutePattern.RawText, e.DisplayName }));
 
-var startupLogger = app.Services.GetRequiredService<ILogger<Program>>();
-foreach (var route in routeEndpoints)
-{
-    startupLogger.LogInformation("Mapped route: {Route}", route);
-}
 
 app.Run();
