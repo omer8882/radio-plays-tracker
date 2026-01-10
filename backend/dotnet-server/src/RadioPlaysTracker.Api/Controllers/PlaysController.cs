@@ -91,17 +91,17 @@ public class PlaysController : ControllerBase
     }
 
     /// <summary>
-    /// Get all plays for a specific artist
+    /// Get the last recent song plays for a specific artist.
     /// </summary>
     /// <param name="artist">The name of the artist</param>
-    /// <param name="limit">Maximum number of plays to return (default: 100)</param>
-    /// <returns>A list of plays featuring the specified artist</returns>
-    /// <response code="200">Returns the list of artist plays</response>
+    /// <param name="limit">Maximum number of last plays to return (default: 20)</param>
+    /// <returns>A list of the recent X song plays featuring the specified artist</returns>
+    /// <response code="200">Returns the list of last X artist plays</response>
     /// <response code="500">If there was an internal server error</response>
     [HttpGet("get_artist_plays")]
     [ProducesResponseType(typeof(IEnumerable<Core.DTOs.PlayDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetArtistPlays([FromQuery] string artist, [FromQuery] int limit = 100)
+    public async Task<IActionResult> GetArtistPlays([FromQuery] string artist, [FromQuery] int limit = 20)
     {
         if (limit > 100)
         {

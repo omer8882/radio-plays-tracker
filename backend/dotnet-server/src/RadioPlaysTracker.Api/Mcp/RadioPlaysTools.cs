@@ -145,7 +145,7 @@ public class RadioPlaysTools
             ? await _artistRepository.GetByIdAsync(id)
             : null;
 
-        if (artist == null && !string.IsNullOrWhiteSpace(name))
+        if (artist is null && !string.IsNullOrWhiteSpace(name))
         {
             artist = await _artistRepository.GetByNameAsync(name);
         }
@@ -191,10 +191,10 @@ public class RadioPlaysTools
     }
 
     [McpServerTool]
-    [Description("Get all plays for a specific artist")]
+    [Description("Get the last recent song plays for a specific artist")]
     public async Task<string> GetArtistPlays(
         [Description("The name of the artist")] string artist,
-        [Description("Maximum number of plays to return (default: 100, max: 100)")] int limit = 100)
+        [Description("Maximum number of last recent plays to return (default: 20, max: 100)")] int limit = 20)
     {
         if (limit > 100)
         {
@@ -262,21 +262,6 @@ public class RadioPlaysTools
             success = true,
             data = results,
             message = $"Retrieved top artists for last {days} days"
-        });
-    }
-
-    [McpServerTool]
-    [Description("Get play count breakdown by station for a specific song")]
-    public async Task<string> GetSongPlaysByStation(
-        [Description("The Spotify song ID")] string songId,
-        [Description("Optional: Number of days to look back (null for all time)")] int? days = null)
-    {
-        var breakdown = await _playRepository.GetSongPlaysByStationAsync(songId, days);
-        return JsonSerializer.Serialize(new
-        {
-            success = true,
-            data = breakdown,
-            message = $"Retrieved play breakdown for song {songId}"
         });
     }
 }
