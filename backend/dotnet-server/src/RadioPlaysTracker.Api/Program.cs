@@ -5,7 +5,6 @@ using RadioPlaysTracker.Infrastructure.Data;
 using RadioPlaysTracker.Infrastructure.Repositories;
 using RadioPlaysTracker.Api.Mcp;
 using ModelContextProtocol.Server;
-using ModelContextProtocol.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -104,12 +103,5 @@ app.MapControllers();
 
 // Map MCP endpoint explicitly at /mcp to match Cloudflared routing
 app.MapMcp("/mcp");
-
-// Temporary debug endpoint to list registered routes (helps verify MCP is mapped)
-app.MapGet("/mcp-debug", (IEnumerable<EndpointDataSource> sources) =>
-    sources.SelectMany(s => s.Endpoints)
-           .OfType<RouteEndpoint>()
-           .Select(e => new { e.RoutePattern.RawText, e.DisplayName }));
-
 
 app.Run();
