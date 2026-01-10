@@ -191,6 +191,30 @@ public class RadioPlaysTools
     }
 
     [McpServerTool]
+    [Description("Get all plays for a specific artist")]
+    public async Task<string> GetArtistPlays(
+        [Description("The name of the artist")] string artist,
+        [Description("Maximum number of plays to return (default: 100, max: 100)")] int limit = 100)
+    {
+        if (limit > 100)
+        {
+            return JsonSerializer.Serialize(new
+            {
+                success = false,
+                error = "Limit is too high. Must be 100 or less"
+            });
+        }
+
+        var plays = await _playRepository.GetArtistPlaysAsync(artist, limit);
+        return JsonSerializer.Serialize(new
+        {
+            success = true,
+            data = plays,
+            message = $"Retrieved {plays.Count()} plays for {artist}"
+        });
+    }
+
+    [McpServerTool]
     [Description("Get a list of all monitored radio stations")]
     public async Task<string> GetAllStations()
     {
@@ -219,6 +243,25 @@ public class RadioPlaysTools
             success = true,
             data = results,
             message = $"Retrieved top songs for last {days} days"
+        });
+    }
+
+    [McpServerTool]
+    [Description("Get paginated top artists with station breakdowns for a specified time period")]
+    public async Task<string> GetTopArtists(
+        [Description("Number of days to look back (default: 7)")] int days = 7,
+        [Description("Optional station filter (default: all stations)")] string? station = null,
+        [Description("Page size for results (default: 20, max: 50)")] int limit = 20,
+        [Description("Zero-based page index (default: 0)")] int page = 0)
+    {
+        var pageSize = Math.Min(limit, 50);
+        var results = await _playRepository.GetTopArtistsAsync(days, station, page, pageSize);
+        
+        return JsonSerializer.Serialize(new
+        {
+            success = true,
+            data = results,
+            message = $"Retrieved top artists for last {days} days"
         });
     }
 
