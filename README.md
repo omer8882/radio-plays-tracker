@@ -92,9 +92,15 @@ PostgreSQL with normalized schema optimized for time-series queries:
     - Frontend: `http://localhost:${FRONTEND_PORT:-3000}`
     - PostgreSQL: `localhost:${POSTGRES_PORT:-5432}`
 
+    The containerized frontend proxies `/api/*` to the API service. Keep
+    `FRONTEND_API_BASE_URL` empty for same-origin browser requests; set it only
+    when the frontend must use an API hosted on a different origin.
+
 4. **Optional: expose via Cloudflare Tunnel**
 
-    Populate `CLOUDFLARED_TUNNEL_TOKEN` in `.env` and start with:
+    Copy `ops/cloudflared/config.template.yml` to
+    `ops/cloudflared/config.yml`, fill in the tunnel UUID/hostnames, populate
+    `CLOUDFLARED_TUNNEL_TOKEN` in `.env`, and start with:
 
     ```bash
     docker compose --profile tunnel up -d

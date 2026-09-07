@@ -41,7 +41,9 @@ services:
     ports:
       - "${API_PORT:-8080}:8080"
     networks:
-      - app
+      app:
+        aliases:
+          - radio-plays-tracker-api
 
   worker:
     build:
@@ -73,7 +75,7 @@ services:
       context: ./frontend/radio-plays
       dockerfile: Dockerfile
       args:
-        REACT_APP_API_BASE_URL: ${FRONTEND_API_BASE_URL:-http://api:8080}
+        REACT_APP_API_BASE_URL: ${FRONTEND_API_BASE_URL:-}
     container_name: mahushma-frontend
     restart: unless-stopped
     depends_on:
@@ -82,13 +84,21 @@ services:
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     networks:
-      - app
+      app:
+        aliases:
+          - radio-plays-tracker-frontend
 
   cloudflared:
     image: cloudflare/cloudflared:latest
+    pull_policy: always
     container_name: mahushma-cloudflared
     restart: unless-stopped
-    command: tunnel --config /etc/cloudflared/config.yml run
+    # The Pi's network has shown repeated QUIC/UDP timeouts. HTTP/2 uses the
+    # verified TCP path, while explicit resolvers avoid boot-time DNS failures.
+    command: tunnel --protocol http2 --config /etc/cloudflared/config.yml run
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
     environment:
       TUNNEL_TOKEN: ${CLOUDFLARED_TUNNEL_TOKEN:-}
     depends_on:

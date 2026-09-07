@@ -1,0 +1,11 @@
+tunnel: YOUR_TUNNEL_UUID
+credentials-file: /etc/cloudflared/YOUR_TUNNEL_UUID.json
+
+ingress:
+  # Use the project's unique Docker aliases. Generic service names such as
+  # "api" can resolve to another Compose project's container on shared networks.
+  - hostname: mahushma.com
+    service: http://radio-plays-tracker-frontend:3000
+  - hostname: server.mahushma.com
+    service: http://radio-plays-tracker-api:8080
+  - service: http_status:404
