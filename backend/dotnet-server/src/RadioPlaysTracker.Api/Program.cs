@@ -55,6 +55,27 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Output caching. The read endpoints are served from aggregate play data that
+// changes at most once per recognizer cycle, so short server-side caching removes
+// repeated Postgres work when users toggle station/period filters.
+builder.Services.AddOutputCache(options =>
+{
+    // No SetVaryByQuery: the default key covers the whole query string. Naming an
+    // explicit subset silently drops the rest from the key, which would serve one
+    // artist's or song's payload for another.
+    // Vary by Origin so a cached body never carries another origin's CORS header.
+
+    // Recent plays move often; keep this short enough to stay live-feeling.
+    options.AddPolicy("RecentPlays", policy => policy
+        .Expire(TimeSpan.FromSeconds(30))
+        .SetVaryByHeader("Origin"));
+
+    // Aggregates over 7/30 day windows barely move within a few minutes.
+    options.AddPolicy("Aggregates", policy => policy
+        .Expire(TimeSpan.FromMinutes(5))
+        .SetVaryByHeader("Origin"));
+});
+
 // Configure Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -86,6 +107,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
+
+// Must sit after routing/CORS and before endpoints so cached responses still
+// carry the correct CORS headers.
+app.UseOutputCache();
 
 //Enable Swagger in all environments (you can restrict this if needed)
 app.UseSwagger(options =>

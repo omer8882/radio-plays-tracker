@@ -57,6 +57,7 @@ public class PlayRepository : IPlayRepository
     public async Task<PaginatedResult<PlayDto>> GetStationPlaysAsync(string stationName, int page, int pageSize)
     {
         var skip = page * pageSize;
+        var normalizedStation = stationName.ToLowerInvariant();
 
         var plays = await _context.Plays
             .AsNoTracking()
@@ -65,7 +66,7 @@ public class PlayRepository : IPlayRepository
                 .ThenInclude(sa => sa.Artist)
             .Include(p => p.Song.Album)
             .Include(p => p.Station)
-            .Where(p => EF.Functions.Like(p.Station.Name.ToLower(), stationName.ToLower()))
+            .Where(p => p.Station.Name.ToLower() == normalizedStation)
             .OrderByDescending(p => p.PlayedAt)
             .Skip(skip)
             .Take(pageSize + 1)
@@ -316,10 +317,11 @@ public class PlayRepository : IPlayRepository
 
     public async Task<List<PlayDto>> GetArtistPlaysAsync(string artistName, int limit = 100)
     {
+        var normalizedArtist = artistName.ToLowerInvariant();
         // Get all songs by this artist
         var songIds = await _context.SongArtists
             .Include(sa => sa.Artist)
-            .Where(sa => EF.Functions.Like(sa.Artist.Name.ToLower(), artistName.ToLower()))
+            .Where(sa => sa.Artist.Name.ToLower() == normalizedArtist)
             .Select(sa => sa.SongId)
             .ToListAsync();
 
@@ -346,9 +348,12 @@ public class PlayRepository : IPlayRepository
         var endDate = Now;
         var startDate = endDate.AddDays(-days);
 
+        var periodQuery = _context.Plays
+            .AsNoTracking()
+            .Where(p => p.PlayedAt >= startDate && p.PlayedAt <= endDate);
+
         // Get top song IDs by play count
-        var topSongs = await _context.Plays
-            .Where(p => p.PlayedAt >= startDate && p.PlayedAt <= endDate)
+        var topSongs = await periodQuery
             .GroupBy(p => p.SongId)
             .Select(g => new { SongId = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
@@ -361,10 +366,28 @@ public class PlayRepository : IPlayRepository
         // Get song details
         var songIds = topSongs.Select(x => x.SongId).ToList();
         var songs = await _context.Songs
+            .AsNoTracking()
             .Include(s => s.SongArtists.OrderBy(sa => sa.ArtistOrder))
                 .ThenInclude(sa => sa.Artist)
             .Where(s => songIds.Contains(s.Id))
             .ToListAsync();
+
+        // Station breakdown for every top song in a single grouped query, so the
+        // caller does not have to issue one follow-up request per song.
+        var stationCounts = await periodQuery
+            .Where(p => songIds.Contains(p.SongId))
+            .GroupBy(p => new { p.SongId, StationName = p.Station.Name })
+            .Select(g => new
+            {
+                g.Key.SongId,
+                g.Key.StationName,
+                Count = g.Count()
+            })
+            .ToListAsync();
+
+        var stationBreakdownLookup = stationCounts
+            .GroupBy(sc => sc.SongId)
+            .ToDictionary(g => g.Key, g => g.ToDictionary(x => x.StationName, x => x.Count));
 
         // Combine and return
         return topSongs.Select(ts =>
@@ -376,17 +399,21 @@ public class PlayRepository : IPlayRepository
                 Title = song.Name,
                 Artist = string.Join(", ", song.SongArtists.Select(sa => sa.Artist.Name)),
                 Hits = ts.Count,
-                ImageUrl = song.ImageUrl
+                ImageUrl = song.ImageUrl,
+                StationBreakdown = stationBreakdownLookup.TryGetValue(song.Id, out var breakdown)
+                    ? breakdown
+                    : new Dictionary<string, int>()
             };
         }).ToList();
     }
 
     public async Task<List<TopHitDto>> GetArtistTopHitsAsync(string artistName, int? days = null, int limit = 10)
     {
+        var normalizedArtist = artistName.ToLowerInvariant();
         // Get all songs by this artist
         var songIds = await _context.SongArtists
             .Include(sa => sa.Artist)
-            .Where(sa => EF.Functions.Like(sa.Artist.Name.ToLower(), artistName.ToLower()))
+            .Where(sa => sa.Artist.Name.ToLower() == normalizedArtist)
             .Select(sa => sa.SongId)
             .ToListAsync();
 
@@ -509,6 +536,7 @@ public class PlayRepository : IPlayRepository
             Title = play.Song.Name,
             Artist = artistNames,
             Time = play.PlayedAt.ToString(timeFormat),
+            PlayedAt = play.PlayedAt,
             Station = play.Station.Name,
             Album = play.Song.Album?.Name,
             ImageUrl = play.Song.ImageUrl

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using RadioPlaysTracker.Core.DTOs;
 using RadioPlaysTracker.Core.Interfaces;
 
@@ -40,6 +41,7 @@ public class PlaysController : ControllerBase
     /// <response code="200">Returns the list of recent plays</response>
     /// <response code="500">If there was an internal server error</response>
     [HttpGet("station_last_plays")]
+    [OutputCache(PolicyName = "RecentPlays")]
     [ProducesResponseType(typeof(Core.DTOs.PaginatedResult<Core.DTOs.PlayDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [EndpointSummary("Stations = ['glglz', 'eco99', '100fm', 'galatz', '103fm', 'kan88']")]
@@ -99,6 +101,7 @@ public class PlaysController : ControllerBase
     /// <response code="200">Returns the list of last X artist plays</response>
     /// <response code="500">If there was an internal server error</response>
     [HttpGet("get_artist_plays")]
+    [OutputCache(PolicyName = "RecentPlays")]
     [ProducesResponseType(typeof(IEnumerable<Core.DTOs.PlayDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetArtistPlays([FromQuery] string artist, [FromQuery] int limit = 20)
@@ -130,6 +133,7 @@ public class PlaysController : ControllerBase
     /// <response code="404">If the artist was not found</response>
     /// <response code="500">If there was an internal server error</response>
     [HttpGet("artist_details")]
+    [OutputCache(PolicyName = "Aggregates")]
     [ProducesResponseType(typeof(ArtistDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -192,6 +196,7 @@ public class PlaysController : ControllerBase
     /// 
     /// </remarks>
     [HttpGet("artist_top_hits")]
+    [OutputCache(PolicyName = "Aggregates")]
     [ProducesResponseType(typeof(IEnumerable<Core.DTOs.TopHitDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetArtistTopHits(
@@ -225,6 +230,7 @@ public class PlaysController : ControllerBase
     /// 
     /// </remarks>
     [HttpGet("top_hits")]
+    [OutputCache(PolicyName = "Aggregates")]
     [ProducesResponseType(typeof(IEnumerable<Core.DTOs.TopHitDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetTopHits([FromQuery] int days = 7, [FromQuery] int top_n = 5)
@@ -252,6 +258,7 @@ public class PlaysController : ControllerBase
     /// <response code="400">If the request parameters are invalid</response>
     /// <response code="500">If there was an internal server error</response>
     [HttpGet("top_songs")]
+    [OutputCache(PolicyName = "Aggregates")]
     [ProducesResponseType(typeof(Core.DTOs.PaginatedResult<Core.DTOs.TopSongDetailDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -300,6 +307,7 @@ public class PlaysController : ControllerBase
     /// <response code="400">If the request parameters are invalid</response>
     /// <response code="500">If there was an internal server error</response>
     [HttpGet("top_artists")]
+    [OutputCache(PolicyName = "Aggregates")]
     [ProducesResponseType(typeof(Core.DTOs.PaginatedResult<Core.DTOs.TopArtistDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -345,6 +353,7 @@ public class PlaysController : ControllerBase
     /// <response code="200">Returns the play count breakdown by station</response>
     /// <response code="500">If there was an internal server error</response>
     [HttpGet("song_plays_by_station")]
+    [OutputCache(PolicyName = "Aggregates")]
     [ProducesResponseType(typeof(Dictionary<string, int>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetSongPlaysByStation([FromQuery] string song_id, [FromQuery] int? days = null)
@@ -451,6 +460,7 @@ public class PlaysController : ControllerBase
     /// <response code="404">If the song was not found</response>
     /// <response code="500">If there was an internal server error</response>
     [HttpGet("get_song_details")]
+    [OutputCache(PolicyName = "Aggregates")]
     [ProducesResponseType(typeof(Core.DTOs.SongDetailsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
