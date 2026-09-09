@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Typography, Paper, List, ListItem, Button } from '@mui/material';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import StationBreakdown from './StationBreakdown';
 import { ROW_MIN_HEIGHT } from '../theme';
 import { fetchTopHits, queryKeys } from '../api';
 import { useSongModal } from '../hooks/useSongModal';
@@ -36,6 +35,8 @@ const TopHits = () => {
           value={timeRange}
           onChange={setTimeRange}
           ariaLabel="time range"
+          attached
+          fullWidth
         />
       }
       footer={
@@ -52,7 +53,9 @@ const TopHits = () => {
         p: 0,
         overflow: 'hidden',
         width: '100%',
+        borderRadius: '0px 0px 10px 10px',
         border: '1px solid',
+        borderTop: 0,
         borderColor: 'app.hairline',
         boxShadow: 1,
         opacity: isFetching && !isPending ? 0.6 : 1,
@@ -77,10 +80,9 @@ const TopHits = () => {
               cursor: 'pointer'
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="subtitle2" className="num" sx={{ whiteSpace: 'nowrap' }}>השמעות: {hit.hits}</Typography>
-              <StationBreakdown stationBreakdown={hit.stationBreakdown} compact />
-            </Box>
+            <Typography variant="subtitle2" className="num" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+              השמעות: {hit.hits}
+            </Typography>
             <Box flexGrow={1} display="flex" justifyContent="flex-end" alignItems="center" gap={1.5} sx={{ minWidth: 0 }}>
               <Box sx={{ textAlign: 'right', minWidth: 0 }}>
                 <Typography variant="subtitle2" noWrap>{hit.title}</Typography>
@@ -94,7 +96,7 @@ const TopHits = () => {
                 color="text.secondary"
                 sx={{ minWidth: 24, textAlign: 'left', flexShrink: 0 }}
               >
-                {i + 1}.
+                {i + 1}
               </Typography>
             </Box>
           </ListItem>

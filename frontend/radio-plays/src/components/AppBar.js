@@ -25,7 +25,7 @@ const TopToolbar = () => {
       }}
       dir="rtl"
     >
-      <Toolbar variant="dense" sx={{ gap: 1, minHeight: 52 }}>
+      <Toolbar variant="dense" sx={{ gap: 0.5, minHeight: 52, position: 'relative' }}>
         <Box
           component={RouterLink}
           to="/"
@@ -35,11 +35,14 @@ const TopToolbar = () => {
             gap: 1,
             color: '#FFFFFF',
             textDecoration: 'none',
-            ml: 2
+            ml: { xs: 0.5, sm: 2 }
           }}
         >
           <RadioIcon fontSize="small" />
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>
+          <Typography
+            variant="subtitle1"
+            sx={{ fontWeight: 700, whiteSpace: 'nowrap', fontSize: { xs: '0.9rem', sm: '1rem' } }}
+          >
             מה הושמע ברדיו
           </Typography>
         </Box>
@@ -56,7 +59,7 @@ const TopToolbar = () => {
                 color: '#FFFFFF',
                 fontWeight: active ? 700 : 500,
                 borderRadius: 0,
-                px: 1.5,
+                px: { xs: 1, sm: 1.5 },
                 minWidth: 'auto',
                 borderBottom: '2px solid',
                 borderColor: active ? '#FFFFFF' : 'transparent',

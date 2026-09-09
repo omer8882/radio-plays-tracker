@@ -7,10 +7,19 @@ import { TimeField } from '@mui/x-date-pickers/TimeField';
 import SearchIcon from '@mui/icons-material/Search';
 import { STATIONS } from '../../constants/stations';
 
-// The controls read as one sentence, so each field's own label would just repeat
-// the word before it. The inline copy is the label; the fields carry none.
+// Compact by design: this is a secondary tool sitting above the content people
+// came for, so it should read as one quiet line rather than a slab of
+// full-height controls. The inline copy is the label; the fields carry none.
+const FIELD_HEIGHT = 34;
+
 const fieldSx = {
-  '& .MuiInputBase-root': { height: 40, backgroundColor: 'background.paper' }
+  '& .MuiInputBase-root': {
+    height: FIELD_HEIGHT,
+    fontSize: '0.8125rem',
+    backgroundColor: 'background.paper'
+  },
+  '& .MuiInputBase-input': { py: 0 },
+  '& .MuiSvgIcon-root': { fontSize: '1.05rem' }
 };
 
 const SearchAroundBar = ({ onSearch }) => {
@@ -35,45 +44,45 @@ const SearchAroundBar = ({ onSearch }) => {
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
-          rowGap: 1.5,
-          columnGap: 1,
+          rowGap: 1,
+          columnGap: 0.75,
           backgroundColor: 'app.card',
-          borderRadius: 2,
-          p: 1.5,
+          borderRadius: '10px',
+          px: 1.5,
+          py: 1,
           width: '100%',
           boxSizing: 'border-box',
           border: '1px solid',
-          borderColor: 'app.hairline',
-          boxShadow: 1
+          borderColor: 'app.hairline'
         }}
       >
-        <Typography variant="subtitle1">מה הושמע ב</Typography>
+        <Typography variant="body2" color="text.secondary">מה הושמע ב</Typography>
 
         <DatePicker
           value={selectedDate}
           onChange={setSelectedDate}
-          format="dd/MM/yyyy"
-          slotProps={{ textField: { size: 'small', sx: { ...fieldSx, width: 150 } } }}
+          format="dd/MM/yy"
+          slotProps={{ textField: { size: 'small', sx: { ...fieldSx, width: 118 } } }}
         />
 
-        <Typography variant="subtitle1">בסביבות</Typography>
+        <Typography variant="body2" color="text.secondary">בסביבות</Typography>
 
         <TimeField
           value={selectedTime}
           format="HH:mm"
           onChange={setSelectedTime}
           size="small"
-          sx={{ ...fieldSx, width: 80 }}
+          sx={{ ...fieldSx, width: 62 }}
         />
 
-        <Typography variant="subtitle1">בתחנה</Typography>
+        <Typography variant="body2" color="text.secondary">בתחנה</Typography>
 
         <TextField
           select
           value={selectedStation}
           onChange={(event) => setSelectedStation(event.target.value)}
           size="small"
-          sx={{ ...fieldSx, minWidth: 130 }}
+          sx={{ ...fieldSx, minWidth: 100 }}
         >
           {STATIONS.map((station) => (
             <MenuItem key={station.name} value={station.name}>
@@ -85,10 +94,17 @@ const SearchAroundBar = ({ onSearch }) => {
         <Button
           type="submit"
           variant="contained"
-          startIcon={<SearchIcon />}
-          sx={{ height: 40, marginInlineStart: 'auto' }}
+          size="small"
+          aria-label="חיפוש"
+          sx={{
+            minWidth: 0,
+            minHeight: FIELD_HEIGHT,
+            height: FIELD_HEIGHT,
+            px: 1.25,
+            marginInlineStart: 'auto'
+          }}
         >
-          חיפוש
+          <SearchIcon fontSize="small" />
         </Button>
       </Box>
     </LocalizationProvider>
