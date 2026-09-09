@@ -1,43 +1,9 @@
 // StationBreakdown.js
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Typography } from '@mui/material';
+import { STATION_INFO } from '../constants/stations';
 
-// Import station logos
-import eco99Logo from '../assets/eco99_logo.png';
-import glglzLogo from '../assets/glglz_logo.png';
-import fm100Logo from '../assets/100fm_logo.png';
-import kan88Logo from '../assets/kan88_logo.png';
-import fm103Logo from '../assets/103fm_logo.png';
-import galatzLogo from '../assets/galatz_logo.png';
-
-const stationsInfo = {
-    'glglz': {
-      logo: glglzLogo,
-      bgColor: '#D1C4E9'
-    },
-    'eco99': {
-      logo: eco99Logo,
-      bgColor: '#BBDEFB'
-    },
-    '100fm': {
-      logo: fm100Logo,
-      bgColor: '#cccc31'
-    },
-    'kan88': {
-      logo: kan88Logo,
-      bgColor: '#b38bae'
-    },
-    '103fm': {
-      logo: fm103Logo,
-      bgColor: '#64D1DE'
-    },
-    'galatz': {
-      logo: galatzLogo,
-      bgColor: '#ebe834'
-    }
-};
-
-const StationBreakdown = ({ stationBreakdown }) => {
+const StationBreakdown = ({ stationBreakdown, compact = false }) => {
   const containerRef = useRef(null);
   const [isRtl, setIsRtl] = useState(false);
 
@@ -46,7 +12,7 @@ const StationBreakdown = ({ stationBreakdown }) => {
       const normalized = typeof station === 'string'
         ? station.replace(/\s+/g, '').toLowerCase()
         : station;
-      const info = normalized ? stationsInfo[normalized] : undefined;
+      const info = normalized ? STATION_INFO[normalized] : undefined;
 
       if (!info) {
         return null;
@@ -76,10 +42,11 @@ const StationBreakdown = ({ stationBreakdown }) => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', padding: '3px', justifyContent: 'center' }}>
+      <Box sx={{ display: 'flex', padding: compact ? 0 : '3px', justifyContent: 'center' }}>
         <Box
           ref={containerRef}
-          sx={{ backgroundColor: '#f0f0f0', borderRadius: '10px', display: 'inline-flex', gap: '0px' }}
+          dir="rtl"
+          sx={{ backgroundColor: 'app.overlay', borderRadius: '10px', display: 'inline-flex' }}
         >
           {entries.map(({ key, plays, info }, index) => {
             const isFirst = index === 0;
@@ -104,17 +71,17 @@ const StationBreakdown = ({ stationBreakdown }) => {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                padding: '10px 10px 7px 10px',
+                padding: compact ? '4px 6px 3px 6px' : '10px 10px 7px 10px',
                 borderRadius,
                 transition: 'transform 0.3s, box-shadow 0.3s',
                 '&:hover': {
                   transform: 'scale(1.03)',
                   boxShadow: '0 3px 5px rgba(0, 0, 0, 0.2)',
-                },
+                }
               }}
             >
-              <Box component="img" src={info.logo} alt={`${key} logo`} sx={{ width: '30px', height: '30px', objectFit: 'contain' }} />
-              <Typography sx={{ textAlign: 'center', marginTop: '8px' }}><strong>{plays}</strong></Typography>
+              <Box component="img" src={info.logo} alt={`${key} logo`} sx={{ width: compact ? '18px' : '30px', height: compact ? '18px' : '30px', objectFit: 'contain' }} />
+              <Typography variant={compact ? 'caption' : 'body1'} sx={{ textAlign: 'center', marginTop: compact ? '2px' : '8px', lineHeight: 1.1 }}><strong>{plays}</strong></Typography>
             </Box>
           );
           })}

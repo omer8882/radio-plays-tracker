@@ -1,164 +1,107 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, ToggleButton, ToggleButtonGroup, Paper, List, ListItem, Tooltip, Button } from '@mui/material';
-import axios from 'axios';
+import React, { useState } from 'react';
+import { Box, Typography, Paper, List, ListItem, Button } from '@mui/material';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import StationBreakdown from './StationBreakdown';
-import SongDetailsPage from './SongDetailsPage';
-import { API_BASE_URL } from '../config';
+import { ROW_MIN_HEIGHT } from '../theme';
+import { fetchTopHits, queryKeys } from '../api';
+import { useSongModal } from '../hooks/useSongModal';
+import SectionColumn from './SectionColumn';
+import SegmentedControl from './SegmentedControl';
+import { DAY_OPTIONS } from '../constants/dayRanges';
 import { Link as RouterLink } from 'react-router-dom';
 
-const overlayColor = 'rgba(0, 0, 0, 0.07)'; // 10% opaque black
+// Matches SongList's page size so the two homepage columns end at the same height.
+const HITS_COUNT = 10;
 
 const TopHits = () => {
   const [timeRange, setTimeRange] = useState('7');
-  const [topHits, setTopHits] = useState([]);
-  const [stationBreakdowns, setStationBreakdowns] = useState({});
-  const [selectedSongId, setSelectedSongId] = useState(null);
-  const [showSongModal, setShowSongModal] = useState(false);
+  const { openSong } = useSongModal();
 
-  /*const sim_hits_7 = [
-    { title: "Espresso", artist: "Sabrina Carpenter", hits: 9 },
-    { title: "נאדי באדי", artist: "שחר טבוך, אדם בוחבוט", hits: 8 },
-    { title: "360", artist: "Charli XCX", hits: 4 }
-  ];
-  const sim_hits_30 = [
-    { title: "Espresso", artist: "Sabrina Carpenter", hits: 33 },
-    { title: "נאדי באדי", artist: "שחר טבוך, אדם בוחבוט", hits: 28 },
-    { title: "360", artist: "Charli XCX", hits: 12 }
-  ];*/
+  // top_hits carries stationBreakdown for every hit, so this is the only
+  // request the widget needs.
+  const { data, isFetching, isPending } = useQuery({
+    queryKey: queryKeys.topHits(timeRange, HITS_COUNT),
+    queryFn: ({ signal }) => fetchTopHits(timeRange, HITS_COUNT, signal),
+    placeholderData: keepPreviousData
+  });
 
-  useEffect(() => {
-    const fetchTopHits = async () => {
-      try {
-  const response = await axios.get(`${API_BASE_URL}/api/top_hits?days=${timeRange}`);
-        setTopHits(response.data);
-        //setTopHits(timeRange === '7' ? sim_hits_7 : sim_hits_30);
-      } catch (error) {
-        console.error("Error fetching top hits:", error);
-      }
-    };
-
-    fetchTopHits();
-  }, [timeRange]);
-
-
-  useEffect(() => {
-    const fetchStationBreakdowns = async () => {
-      const breakdowns = {};
-      for (const hit of topHits) {
-        try {
-          const response = await axios.get(`${API_BASE_URL}/api/song_plays_by_station?song_id=${hit.id}&days=${timeRange}`);
-          breakdowns[hit.id] = response.data;
-        } catch (error) {
-          console.error(`Error fetching station breakdown for song ${hit.id}:`, error);
-        }
-      }
-      setStationBreakdowns((prevBreakdowns) => ({
-        ...prevBreakdowns,
-        ...breakdowns
-      }));
-    };
-
-    fetchStationBreakdowns();
-  }, [topHits, timeRange]);
-
-  const handleSongClick = (songId) => {
-    setSelectedSongId(songId);
-    setShowSongModal(true);
-  };
+  const topHits = Array.isArray(data) ? data : [];
 
   return (
-    <Paper style={{ backgroundColor: '#dedadc', padding: '0px', borderRadius: '15px', margin: '10px 2px 5px 2px', width: '100%', minWidth: '275px', border: '1px solid', borderColor: '#c0c0c0',}} sx={{ boxShadow: 6 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" style={{ padding: '6px' }}>
-        <ToggleButtonGroup
+    <SectionColumn
+      title="להיטים"
+      control={
+        <SegmentedControl
+          options={DAY_OPTIONS}
           value={timeRange}
-          exclusive
-          onChange={(event, newValue) => {
-            if (newValue !== null) {
-              setTimeRange(newValue);
-            }
-          }}
-          aria-label="time range"
-          sx={{
-            margin: '8px 5px 0px 10px',
-            display: 'inline-flex',
-          }}
-        >
-          <ToggleButton value="7" aria-label="7 days">7</ToggleButton>
-          <ToggleButton value="30" aria-label="30 days">30</ToggleButton>
-        </ToggleButtonGroup>
-        <Box flexGrow={1} display="flex" justifyContent="center">
-          <Typography variant="h6">להיטים</Typography>
+          onChange={setTimeRange}
+          ariaLabel="time range"
+        />
+      }
+      footer={
+        <Box display="flex" justifyContent="center" sx={{ pt: 1 }}>
+          <Button component={RouterLink} to="/top-hits" size="small" variant="text">
+            מעבר לכל הלהיטים
+          </Button>
         </Box>
-      </Box>
-      <List>
+      }
+    >
+    <Paper
+      sx={{
+        backgroundColor: 'app.card',
+        p: 0,
+        overflow: 'hidden',
+        width: '100%',
+        border: '1px solid',
+        borderColor: 'app.hairline',
+        boxShadow: 1,
+        opacity: isFetching && !isPending ? 0.6 : 1,
+        transition: 'opacity 150ms ease'
+      }}
+    >
+      <List sx={{ py: 0 }}>
         {topHits.map((hit, i) => (
           <ListItem
             button
             key={i}
-            onClick={() => handleSongClick(hit.id)}
-            style={{
+            onClick={() => openSong(hit.id)}
+            sx={{
               display: 'flex',
               width: '100%',
               justifyContent: 'space-between',
-              padding: '10px 15px',
-              backgroundColor: overlayColor,
-              margin: '0',
-              borderRadius: '0',
+              px: 1.5,
+              py: 1,
+              minHeight: ROW_MIN_HEIGHT,
+              backgroundColor: 'app.overlay',
+              borderRadius: 0,
               cursor: 'pointer'
             }}
           >
-            <Box>
-              <Tooltip
-                title={
-                  stationBreakdowns[hit.id] ? (
-                    <StationBreakdown stationBreakdown={stationBreakdowns[hit.id]} />
-                  ) : (
-                    'Loading...'
-                  )
-                }
-                arrow
-                componentsProps={{
-                  tooltip: {
-                    sx: {
-                      boxShadow: 'none',
-                      padding: 0,
-                      margin: 0,
-                      borderRadius: '10px'
-                    },
-                  },
-                }}
-              >
-                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' }}}>השמעות: {hit.hits}</Typography>
-              </Tooltip>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="subtitle2" className="num" sx={{ whiteSpace: 'nowrap' }}>השמעות: {hit.hits}</Typography>
+              <StationBreakdown stationBreakdown={hit.stationBreakdown} compact />
             </Box>
-            <Box flexGrow={1} display="flex" justifyContent="flex-end">
-              <Box textAlign="right">
-                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.83rem', sm: '0.9rem' }}}>{hit.title}</Typography>
-                <Typography variant="body2" color="textSecondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' }}}>{hit.artist}</Typography>
+            <Box flexGrow={1} display="flex" justifyContent="flex-end" alignItems="center" gap={1.5} sx={{ minWidth: 0 }}>
+              <Box sx={{ textAlign: 'right', minWidth: 0 }}>
+                <Typography variant="subtitle2" noWrap>{hit.title}</Typography>
+                <Typography variant="caption" color="text.secondary" component="div" noWrap>
+                  {hit.artist}
+                </Typography>
               </Box>
-              <Typography variant="h6" style={{ marginLeft: '10px' }} sx={{ fontSize: { xs: '1.1rem', sm: '1.2rem' }}}>.{i + 1}</Typography>
+              <Typography
+                variant="subtitle1"
+                className="num"
+                color="text.secondary"
+                sx={{ minWidth: 24, textAlign: 'left', flexShrink: 0 }}
+              >
+                {i + 1}.
+              </Typography>
             </Box>
           </ListItem>
         ))}
       </List>
-      <Box display="flex" justifyContent="center" sx={{ p: 1 }}>
-        <Button
-          component={RouterLink}
-          to="/top-hits"
-          size="small"
-          variant="text"
-        >
-          מעבר לכל הלהיטים
-        </Button>
-      </Box>
-
-      {/* Song Details Modal */}
-      <SongDetailsPage
-        showModal={showSongModal}
-        setShowModal={setShowSongModal}
-        songId={selectedSongId}
-      />
     </Paper>
+    </SectionColumn>
   );
 };
 

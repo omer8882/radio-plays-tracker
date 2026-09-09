@@ -4,8 +4,6 @@ import {
   Alert,
   Avatar,
   Box,
-  Button,
-  LinearProgress,
   Paper,
   Table,
   TableBody,
@@ -14,6 +12,7 @@ import {
   TableRow,
   Typography
 } from '@mui/material';
+import Pagination from '../Pagination';
 
 const TopArtistsTable = ({
   artists,
@@ -33,20 +32,25 @@ const TopArtistsTable = ({
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 1, width: '100%', boxSizing: 'border-box' }}>
+    <Paper elevation={1} sx={{ p: 1, width: '100%', boxSizing: 'border-box' }}>
       <Box dir="rtl">
-        <Typography margin="7px 7px 9px 7px" variant="h5" component="h2" gutterBottom>
+        <Typography variant="h5" component="h2" sx={{ p: 2, pb: 1 }}>
           האמנים המושמעים ביותר
         </Typography>
-
-      {isLoading && <LinearProgress sx={{ mb: 2 }} />}
       {errorMessage && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {errorMessage}
         </Alert>
       )}
 
-      <Table size="small">
+      <Table
+        size="small"
+        sx={{
+          opacity: isLoading ? 0.5 : 1,
+          pointerEvents: isLoading ? 'none' : 'auto',
+          transition: 'opacity 150ms ease'
+        }}
+      >
         <TableHead>
           <TableRow>
             <TableCell align="center" sx={{ width: { xs: '8%', sm: '5%' } }}>#</TableCell>
@@ -60,7 +64,7 @@ const TopArtistsTable = ({
         <TableBody>
           {!isLoading && artists.length === 0 && (
             <TableRow>
-              <TableCell align="center" colSpan={5}>
+              <TableCell align="center" colSpan={6}>
                 אין נתונים לתקופה שנבחרה
               </TableCell>
             </TableRow>
@@ -79,7 +83,7 @@ const TopArtistsTable = ({
                 onClick={() => handleArtistClick(artist.name)}
                 sx={{ cursor: 'pointer' }}
               >
-                <TableCell align="center" sx={{ width: { xs: '8%', sm: '5%' } }}>{rank}</TableCell>
+                <TableCell align="center" className="num" sx={{ width: { xs: '8%', sm: '5%' } }}>{rank}</TableCell>
                 <TableCell align="center" sx={{ width: { xs: '15%', sm: '12%' }, padding: { xs: '6px', sm: '16px' } }}>
                   <Avatar
                     src={artist.imageUrl || undefined}
@@ -92,7 +96,7 @@ const TopArtistsTable = ({
                 <TableCell align="center" sx={{ width: { xs: '32%', sm: '28%' } }}>
                   <Typography 
                     variant="subtitle1"
-                    sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, lineHeight: 1.3 }}
+                    sx={{ lineHeight: 1.3 }}
                   >
                     {artist.name}
                   </Typography>
@@ -100,8 +104,7 @@ const TopArtistsTable = ({
                 <TableCell 
                   align="center" 
                   sx={{ 
-                    width: { xs: '22%', sm: '15%' },
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                    width: { xs: '22%', sm: '15%' }
                   }}
                 >
                   {artist.plays}
@@ -109,8 +112,7 @@ const TopArtistsTable = ({
                 <TableCell 
                   align="center" 
                   sx={{ 
-                    width: { xs: '23%', sm: '15%' },
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                    width: { xs: '23%', sm: '15%' }
                   }}
                 >
                   {artist.uniqueSongs}
@@ -119,8 +121,7 @@ const TopArtistsTable = ({
                   align="center" 
                   sx={{ 
                     width: { xs: '0%', sm: '25%' },
-                    display: { xs: 'none', sm: 'table-cell' },
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                    display: { xs: 'none', sm: 'table-cell' }
                   }}
                 >
                   {topStationLabel ? `${topStationLabel} (${artist.topStationPlays})` : '—'}
@@ -131,15 +132,13 @@ const TopArtistsTable = ({
         </TableBody>
       </Table>
 
-      <Box display="flex" justifyContent="space-between" alignItems="center" mt={3}>
-        <Button variant="text" onClick={onPrev} disabled={page === 0 || isLoading}>
-          קדימה
-        </Button>
-        <Typography variant="body2">עמוד {page + 1}</Typography>
-        <Button variant="text" onClick={onNext} disabled={!hasMore || isLoading}>
-          אחורה
-        </Button>
-      </Box>
+      <Pagination
+        page={page}
+        hasMore={hasMore}
+        onPrev={onPrev}
+        onNext={onNext}
+        disabled={isLoading}
+      />
     </Box>
   </Paper>
   );

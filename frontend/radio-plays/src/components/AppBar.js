@@ -2,6 +2,12 @@ import React from 'react';
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import RadioIcon from '@mui/icons-material/Radio';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
+import GlobalSearch from './GlobalSearch';
+
+const NAV_ITEMS = [
+  { to: '/', label: 'לאחרונה' },
+  { to: '/top-hits', label: 'להיטים' }
+];
 
 const TopToolbar = () => {
   const location = useLocation();
@@ -10,39 +16,63 @@ const TopToolbar = () => {
 
   return (
     <AppBar
-      position="static"
+      position="sticky"
+      elevation={0}
       sx={{
-        backgroundColor: '#BAB2B5', //b2a7c7
-        margin: 0,
-        padding: 0,
-        boxSizing: 'border-box',
-        width: '100%'
+        backgroundColor: 'app.appBar',
+        borderBottom: '1px solid',
+        borderColor: 'app.hairline'
       }}
       dir="rtl"
     >
-      <Toolbar sx={{ justifyContent: 'flex-start', padding: 0, margin: 0, minHeight: '50px', height: '40px' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <RadioIcon />
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#FFFFFF', mr: 1 }}>
+      <Toolbar variant="dense" sx={{ gap: 1, minHeight: 52 }}>
+        <Box
+          component={RouterLink}
+          to="/"
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            color: '#FFFFFF',
+            textDecoration: 'none',
+            ml: 2
+          }}
+        >
+          <RadioIcon fontSize="small" />
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>
             מה הושמע ברדיו
           </Typography>
-          <Button
-            component={RouterLink}
-            to="/"
-            color={isActive('/') ? 'inherit' : 'info'}
-            sx={{ color: isActive('/') ? '#FFFFFF' : '#FFFFFF', backgroundColor: isActive('/') ? '#c0b9bc' : 'transparent' }}
-          >
-            לאחרונה
-          </Button>
-          <Button
-            component={RouterLink}
-            to="/top-hits"
-            color={isActive('/top-hits') ? 'inherit' : 'info'}
-            sx={{ color: isActive('/top-hits') ? '#FFFFFF' : '#FFFFFF', backgroundColor: isActive('/top-hits') ? '#c0b9bc' : 'transparent' }}
-          >
-            להיטים
-          </Button>
         </Box>
+
+        {NAV_ITEMS.map(({ to, label }) => {
+          const active = isActive(to);
+          return (
+            <Button
+              key={to}
+              component={RouterLink}
+              to={to}
+              disableRipple={false}
+              sx={{
+                color: '#FFFFFF',
+                fontWeight: active ? 700 : 500,
+                borderRadius: 0,
+                px: 1.5,
+                minWidth: 'auto',
+                borderBottom: '2px solid',
+                borderColor: active ? '#FFFFFF' : 'transparent',
+                backgroundColor: active ? 'app.appBarActive' : 'transparent',
+                '&:hover': {
+                  backgroundColor: 'app.appBarActive'
+                }
+              }}
+            >
+              {label}
+            </Button>
+          );
+        })}
+
+        <Box sx={{ flexGrow: 1 }} />
+        <GlobalSearch />
       </Toolbar>
     </AppBar>
   );

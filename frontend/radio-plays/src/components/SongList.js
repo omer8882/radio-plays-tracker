@@ -1,170 +1,89 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { List, Box, Button, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { List, Box, Typography } from '@mui/material';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import SongListItem from './SongListItem';
-import SongDetailsPage from './SongDetailsPage';
-import axios from 'axios';
+import SongListSkeleton from './SongListSkeleton';
+import Pagination from './Pagination';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import './SongList.css';
-import { API_BASE_URL } from '../config';
+import { fetchStationPlays, queryKeys } from '../api';
+import { useSongModal } from '../hooks/useSongModal';
 
-const GHOST_DATA = [
-  { time: ' ', title: ' ', artist: ' ' },
-  { time: ' ', title: ' ', artist: ' ' },
-  { time: ' ', title: ' ', artist: ' ' },
-  { time: ' ', title: ' ', artist: ' ' },
-  { time: ' ', title: ' ', artist: ' ' },
-  { time: ' ', title: ' ', artist: ' ' },
-  { time: ' ', title: ' ', artist: ' ' },
-  { time: ' ', title: ' ', artist: ' ' },
-  { time: ' ', title: ' ', artist: ' ' },
-  { time: ' ', title: ' ', artist: ' ' }
-];
-
-const ERROR_SONGS = [
-  { time: '00:00', title: 'server error', artist: '' }
-];
+const PAGE_SIZE = 10;
 
 const SongList = ({ station }) => {
-  const PAGE_SIZE = 10;
-
-  const [displayedSongs, setDisplayedData] = useState(GHOST_DATA);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedSong, setSelectedSong] = useState(null);
   const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState(null);
+  const { openSong } = useSongModal();
 
-  const stationName = useMemo(() => station.name, [station]);
+  const stationName = station.name;
 
   useEffect(() => {
     setPage(0);
   }, [stationName]);
 
-  useEffect(() => {
-    let isSubscribed = true;
+  const { data, isPending, isError, isFetching } = useQuery({
+    queryKey: queryKeys.stationPlays(stationName, page, PAGE_SIZE),
+    queryFn: ({ signal }) => fetchStationPlays(stationName, page, PAGE_SIZE, signal),
+    // Keep showing the previous station/page while the next one loads, so
+    // switching never flashes an empty panel.
+    placeholderData: keepPreviousData,
+    // Only the newest page is live; older pages never change.
+    refetchInterval: page === 0 ? 2 * 60 * 1000 : false
+  });
 
-    const fetchData = async () => {
-      setIsLoading(true);
-      setErrorMessage(null);
-      try {
-        const response = await axios.get(`${API_BASE_URL}/api/station_last_plays`, {
-          params: {
-            station: stationName,
-            limit: PAGE_SIZE,
-            page
-          }
-        });
-
-        if (!isSubscribed) {
-          return;
-        }
-
-        const payload = response.data;
-        if (Array.isArray(payload)) {
-          setDisplayedData(payload);
-          setHasMore(payload.length === PAGE_SIZE);
-        } else {
-          const items = Array.isArray(payload.items) ? payload.items : [];
-          setDisplayedData(items);
-          setHasMore(Boolean(payload.hasMore));
-        }
-      } catch (err) {
-        console.error("Error fetching songs:", err);
-        if (!isSubscribed) {
-          return;
-        }
-        setDisplayedData(ERROR_SONGS);
-        setHasMore(false);
-        setErrorMessage('הייתה בעיה בטעינת הנתונים, נסו שוב בעוד רגע.');
-      } finally {
-        if (isSubscribed) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchData();
-
-    if (page === 0) {
-      const interval = setInterval(fetchData, 2 * 60 * 1000); // Refresh first page every 2 minutes
-      return () => {
-        isSubscribed = false;
-        clearInterval(interval);
-      };
-    }
-
-    return () => {
-      isSubscribed = false;
-    };
-  }, [stationName, page]);
-
-  const handleSongClick = (song) => {
-    setSelectedSong(song);
-    setShowModal(true);
-  };
+  const payload = data ?? {};
+  const songs = Array.isArray(payload) ? payload : (payload.items ?? []);
+  const hasMore = Array.isArray(payload) ? payload.length === PAGE_SIZE : Boolean(payload.hasMore);
 
   return (
     <>
-      <Box 
-        alignItems="center" 
+      <Box
+        alignItems="center"
         sx={{
           backgroundColor: station.bgColor,
           justifyContent: 'center',
           borderRadius: '0px 0px 10px 10px',
-          margin: '0px 2px 5px 2px',
-          padding: '0px',
+          overflow: 'hidden',
           width: '100%',
-          boxShadow: 2,
+          boxShadow: 1,
           boxSizing: 'border-box',
           border: '1px solid',
-          borderColor: '#c0c0c0',
+          borderColor: 'app.hairline',
           borderTop: '0px',
+          // Refresh in place rather than moving the page.
+          opacity: isFetching && !isPending ? 0.6 : 1,
+          transition: 'opacity 150ms ease'
         }}
       >
-        <List>
-          <TransitionGroup component={null}>
-            {displayedSongs.map((song, index) => (
-              <CSSTransition key={song.id || index} timeout={500} classNames="fade-slide">
-                <SongListItem song={song} onClick={() => handleSongClick(song)} />
-              </CSSTransition>
-            ))}
-          </TransitionGroup>
+        <List sx={{ py: 0 }}>
+          {isPending ? (
+            <SongListSkeleton rows={PAGE_SIZE} />
+          ) : (
+            <TransitionGroup component={null}>
+              {songs.map((song, index) => (
+                <CSSTransition key={song.id || index} timeout={400} classNames="fade-slide">
+                  <SongListItem song={song} onClick={() => openSong(song.id)} />
+                </CSSTransition>
+              ))}
+            </TransitionGroup>
+          )}
         </List>
       </Box>
 
-      <Box display="flex" alignItems="center" justifyContent="space-between" mt={1} px={1}>
-        <Button
-          variant="text"
-          onClick={() => setPage((current) => Math.max(current - 1, 0))}
-          disabled={page === 0 || isLoading}
-        >
-          חדשים יותר
-        </Button>
-        <Typography variant="body2">
-          עמוד {page + 1}
-        </Typography>
-        <Button
-          variant="text"
-          onClick={() => setPage((current) => current + 1)}
-          disabled={!hasMore || isLoading}
-        >
-          ישנים יותר
-        </Button>
-      </Box>
-
-      {errorMessage && (
-        <Typography variant="caption" color="error" display="block" align="center" mt={1}>
-          {errorMessage}
-        </Typography>
-      )}
-
-      {selectedSong && (
-        <SongDetailsPage
-        showModal={showModal}
-        setShowModal={setShowModal}
-        songId={selectedSong.id}
+      <Pagination
+        page={page}
+        hasMore={hasMore}
+        onPrev={() => setPage((current) => Math.max(current - 1, 0))}
+        onNext={() => setPage((current) => current + 1)}
+        disabled={isPending}
+        prevLabel="חדשים יותר"
+        nextLabel="ישנים יותר"
       />
+
+      {isError && (
+        <Typography variant="caption" color="error" display="block" align="center" mt={1}>
+          הייתה בעיה בטעינת הנתונים, נסו שוב בעוד רגע.
+        </Typography>
       )}
     </>
   );

@@ -4,9 +4,9 @@ import SongListItem from '../SongListItem';
 
 const ArtistRecentPlays = ({ plays, onSongClick, isLoading, errorMessage }) => {
   return (
-    <Paper elevation={3} sx={{ p: 0, width: '100%', boxSizing: 'border-box' }}>
+    <Paper elevation={1} sx={{ p: 0, width: '100%', boxSizing: 'border-box' }}>
       <Box>
-        <Typography dir="rtl" padding="16px 16px 6px 16px" variant="h5" component="h2" gutterBottom>
+        <Typography dir="rtl" variant="h5" component="h2" sx={{ p: 2, pb: 1 }}>
           השמעות אחרונות
         </Typography>
 
@@ -28,6 +28,7 @@ const ArtistRecentPlays = ({ plays, onSongClick, isLoading, errorMessage }) => {
                 song={{
                   time: play.time,
                   dateLabel: play.dateLabel,
+                  playedAt: play.playedAt,
                   title: play.title,
                   artist: play.artist,
                   station: play.station,

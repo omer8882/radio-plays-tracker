@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import {
   Box,
   Divider,
@@ -8,14 +8,14 @@ import {
   MenuItem,
   Select,
   Stack,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography
 } from '@mui/material';
 import TopSongsTable from '../components/TopHitsPage/TopSongsTable';
 import TopArtistsTable from '../components/TopHitsPage/TopArtistsTable';
-import SongDetailsPage from '../components/SongDetailsPage';
-import { API_BASE_URL } from '../config';
+import { fetchTopSongs, fetchTopArtists, queryKeys } from '../api';
+import { useSongModal } from '../hooks/useSongModal';
+import SegmentedControl from '../components/SegmentedControl';
+import { DAY_OPTIONS } from '../constants/dayRanges';
 import { STATION_FILTER_OPTIONS, STATION_LABEL_LOOKUP } from '../constants/stations';
 
 const SONGS_PAGE_SIZE = 20;
@@ -26,127 +26,37 @@ const TopHitsPage = () => {
   const [station, setStation] = useState('');
 
   const [songPage, setSongPage] = useState(0);
-  const [songs, setSongs] = useState([]);
-  const [songsHasMore, setSongsHasMore] = useState(false);
-  const [songsLoading, setSongsLoading] = useState(false);
-  const [songsError, setSongsError] = useState(null);
-  const [selectedSongId, setSelectedSongId] = useState(null);
-  const [showSongModal, setShowSongModal] = useState(false);
-
   const [artistPage, setArtistPage] = useState(0);
-  const [artists, setArtists] = useState([]);
-  const [artistsHasMore, setArtistsHasMore] = useState(false);
-  const [artistsLoading, setArtistsLoading] = useState(false);
-  const [artistsError, setArtistsError] = useState(null);
+  const { openSong } = useSongModal();
 
   useEffect(() => {
     setSongPage(0);
     setArtistPage(0);
   }, [days, station]);
 
-  useEffect(() => {
-    let isCancelled = false;
+  const songsQuery = useQuery({
+    queryKey: queryKeys.topSongs(days, station, songPage, SONGS_PAGE_SIZE),
+    queryFn: ({ signal }) => fetchTopSongs(days, station, songPage, SONGS_PAGE_SIZE, signal),
+    placeholderData: keepPreviousData
+  });
 
-    const fetchTopSongs = async () => {
-      setSongsLoading(true);
-      setSongsError(null);
-      try {
-        const params = {
-          days: Number(days),
-          page: songPage,
-          limit: SONGS_PAGE_SIZE
-        };
-        if (station) {
-          params.station = station;
-        }
-        const response = await axios.get(`${API_BASE_URL}/api/top_songs`, { params });
-        if (isCancelled) {
-          return;
-        }
-        const payload = response.data ?? {};
-        setSongs(Array.isArray(payload.items) ? payload.items : []);
-        setSongsHasMore(Boolean(payload.hasMore));
-      } catch (error) {
-        console.error('Error fetching top songs:', error);
-        if (!isCancelled) {
-          setSongs([]);
-          setSongsHasMore(false);
-          setSongsError('אירעה תקלה בטעינת השירים. נסו לרענן בעוד רגע.');
-        }
-      } finally {
-        if (!isCancelled) {
-          setSongsLoading(false);
-        }
-      }
-    };
+  const artistsQuery = useQuery({
+    queryKey: queryKeys.topArtists(days, station, artistPage, ARTISTS_PAGE_SIZE),
+    queryFn: ({ signal }) => fetchTopArtists(days, station, artistPage, ARTISTS_PAGE_SIZE, signal),
+    placeholderData: keepPreviousData
+  });
 
-    fetchTopSongs();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [days, station, songPage]);
-
-  useEffect(() => {
-    let isCancelled = false;
-
-    const fetchTopArtists = async () => {
-      setArtistsLoading(true);
-      setArtistsError(null);
-      try {
-        const params = {
-          days: Number(days),
-          page: artistPage,
-          limit: ARTISTS_PAGE_SIZE
-        };
-        if (station) {
-          params.station = station;
-        }
-        const response = await axios.get(`${API_BASE_URL}/api/top_artists`, { params });
-        if (isCancelled) {
-          return;
-        }
-        const payload = response.data ?? {};
-        setArtists(Array.isArray(payload.items) ? payload.items : []);
-        setArtistsHasMore(Boolean(payload.hasMore));
-      } catch (error) {
-        console.error('Error fetching top artists:', error);
-        if (!isCancelled) {
-          setArtists([]);
-          setArtistsHasMore(false);
-          setArtistsError('אירעה תקלה בטעינת האמנים. נסו לרענן בעוד רגע.');
-        }
-      } finally {
-        if (!isCancelled) {
-          setArtistsLoading(false);
-        }
-      }
-    };
-
-    fetchTopArtists();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [days, station, artistPage]);
-
-  const handleDaysChange = (_, value) => {
-    if (value !== null) {
-      setDays(value);
-    }
-  };
+  const songs = songsQuery.data?.items ?? [];
+  const songsHasMore = Boolean(songsQuery.data?.hasMore);
+  const artists = artistsQuery.data?.items ?? [];
+  const artistsHasMore = Boolean(artistsQuery.data?.hasMore);
 
   const handleStationChange = (event) => {
     setStation(event.target.value);
   };
 
-  const handleSongClick = (songId) => {
-    setSelectedSongId(songId);
-    setShowSongModal(true);
-  };
-
   return (
-    <Box sx={{ width: '92%', mx: 'auto' }}>
+    <Box>
       <Box dir="rtl" sx={{ mb: 4 }}>
         <Typography variant="h4" gutterBottom>
           הלהיטים
@@ -159,52 +69,18 @@ const TopHitsPage = () => {
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         spacing={2}
-        sx={{ mb: 4, alignItems: { xs: 'flex-start', sm: 'center' } }}
+        sx={{ mb: 4, alignItems: { xs: 'stretch', sm: 'center' } }}
         dir="rtl"
       >
-        <Box>
-          <ToggleButtonGroup
-            value={days}
-            exclusive
-            onChange={handleDaysChange}
-            aria-label="days range"
-            sx={{
-              display: 'inline-flex',
-              flexDirection: 'row-reverse',
-              '& .MuiToggleButtonGroup-grouped': {
-                borderRadius: 0,
-                border: '1px solid',
-                borderColor: 'divider',
-                '&:not(:first-of-type)': {
-                  borderLeft: 0,
-                }
-              },
-              '& .MuiToggleButtonGroup-grouped:first-of-type': {
-                borderRadius: '10px 0 0 10px',
-              },
-              '& .MuiToggleButtonGroup-grouped:last-of-type': {
-                borderRadius: '0 10px 10px 0',
-              }
-            }}
-          >
-            <ToggleButton value="7" aria-label="7 days">
-              7 ימים
-            </ToggleButton>
-            <ToggleButton value="30" aria-label="30 days">
-              30 ימים
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
+        <SegmentedControl
+          options={DAY_OPTIONS}
+          value={days}
+          onChange={setDays}
+          ariaLabel="days range"
+          sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}
+        />
 
-        <FormControl
-          size="small"
-          sx={{
-            minWidth: 160,
-            mt: { xs: 2, sm: 3 },
-            mr: { xs: 0, sm: 2 },
-            ml: { xs: 0, sm: 0 }
-          }}
-        >
+        <FormControl size="small" sx={{ minWidth: 160 }}>
           <InputLabel id="station-filter-label">תחנה</InputLabel>
           <Select
             labelId="station-filter-label"
@@ -212,9 +88,6 @@ const TopHitsPage = () => {
             value={station}
             label="תחנה"
             onChange={handleStationChange}
-            sx={{
-            marginRight: { xs: 2, sm: 2 },
-          }}
           >
             {STATION_FILTER_OPTIONS.map((option) => (
               <MenuItem key={option.value} value={option.value}>
@@ -232,9 +105,9 @@ const TopHitsPage = () => {
         hasMore={songsHasMore}
         onNext={() => setSongPage((prev) => prev + 1)}
         onPrev={() => setSongPage((prev) => Math.max(prev - 1, 0))}
-        isLoading={songsLoading}
-        errorMessage={songsError}
-        onSongClick={handleSongClick}
+        isLoading={songsQuery.isFetching}
+        errorMessage={songsQuery.isError ? 'אירעה תקלה בטעינת השירים. נסו לרענן בעוד רגע.' : null}
+        onSongClick={openSong}
       />
 
       <Divider sx={{ my: 4 }} />
@@ -246,15 +119,9 @@ const TopHitsPage = () => {
         hasMore={artistsHasMore}
         onNext={() => setArtistPage((prev) => prev + 1)}
         onPrev={() => setArtistPage((prev) => Math.max(prev - 1, 0))}
-        isLoading={artistsLoading}
-        errorMessage={artistsError}
+        isLoading={artistsQuery.isFetching}
+        errorMessage={artistsQuery.isError ? 'אירעה תקלה בטעינת האמנים. נסו לרענן בעוד רגע.' : null}
         stationLabels={STATION_LABEL_LOOKUP}
-      />
-
-      <SongDetailsPage
-        showModal={showSongModal}
-        setShowModal={setShowSongModal}
-        songId={selectedSongId}
       />
     </Box>
   );

@@ -13,7 +13,7 @@ const StreamingLinks = ({ streamingLinks, title, artist }) => {
   const youtubeLink = (streamingLinks && streamingLinks.youtube) || `https://www.youtube.com/results?search_query=${encodeURIComponent(title + " " + artist)}`;
 
   return (
-    <Box  sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 0.5, }} >
+    <Box  sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 0.5 }}>
 
       {spotifyLink && (
         <StyledIconButton

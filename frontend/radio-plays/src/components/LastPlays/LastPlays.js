@@ -1,47 +1,73 @@
 import React, { useState } from 'react';
 import SongList from '../SongList';
-import { Box, ToggleButton, ToggleButtonGroup, Typography} from '@mui/material';
+import { Box, ToggleButton } from '@mui/material';
 import { STATIONS } from '../../constants/stations';
+import SectionColumn from '../SectionColumn';
 
 const LastPlays = () => {
-    const [selectedStation, setSelectedStation] = useState(STATIONS[STATIONS.length - 1]);
+    const [selectedStation, setSelectedStation] = useState(STATIONS[0]);
 
-    const handleStationChange = (event, newStation) => {
-        if (newStation !== null) {
-            setSelectedStation(newStation);
-        }
-    };
-
-    return (
-        <Box sx={{ justifyContent: 'center', display: 'flex', flexWrap: 'wrap'}} alignItems="center" maxWidth="600px">
-            <Typography variant="h5" font align="center" sx={{margin:"8px 0px 8px 0px"}}>:השמעות אחרונות</Typography>
-
-            <ToggleButtonGroup value={selectedStation} exclusive onChange={handleStationChange} aria-label="station selection" dir="ltr" 
-                sx={{ width: '100%' }}>
-                {STATIONS.map((station) => (
+    /*
+      Deliberately not a ToggleButtonGroup: the group squares off the "inner"
+      corners of the end buttons based on theme.direction, which desyncs from
+      this strip's dir="rtl". Each tab is a self-contained button and only the
+      two outer corners are rounded with logical properties, so the strip reads
+      as one bar and a direction change can never square off the wrong side.
+    */
+    const tabs = (
+        <Box
+            dir="rtl"
+            role="group"
+            aria-label="station selection"
+            sx={{ display: 'flex', width: '100%' }}
+        >
+            {STATIONS.map((station, index) => {
+                const isSelected = selectedStation.name === station.name;
+                const isFirst = index === 0;
+                const isLast = index === STATIONS.length - 1;
+                return (
                     <ToggleButton
                         key={station.name}
-                        value={station}
-                        aria-label={station.name}
+                        value={station.name}
+                        selected={isSelected}
+                        onClick={() => setSelectedStation(station)}
+                        aria-label={station.displayName}
                         sx={{
-                            color: station.bgColor,
-                            width: '100%',
-                            margin: '1px 1px 0px 1px',
-                            padding: '10px',
-                            borderRadius: '8px 8px 0px 0px',
+                            flex: 1,
+                            minWidth: 0,
+                            py: 1,
+                            px: 0.5,
+                            border: '1px solid',
+                            borderColor: 'app.hairline',
                             borderBottom: 'none',
+                            borderRadius: 0,
+                            borderStartStartRadius: '8px',
+                            borderStartEndRadius: '8px',
+                            ...(isFirst ? {} : { borderStartStartRadius: 0 }),
+                            ...(isLast ? {} : { borderStartEndRadius: 0 }),
+                            borderInlineStartWidth: isFirst ? '1px' : 0,
+                            backgroundColor: 'background.paper',
                             '&.Mui-selected, &.Mui-selected:hover': {
-                                backgroundColor: station.bgColor,
+                                backgroundColor: station.bgColor
                             }
                         }}
                     >
-                        <Box component="img" src={station.logo} alt={`${station.name} logo`} sx={{display: 'flex', justifyContent: 'space-between', width: '100%', height: '30px', objectFit: 'contain' }} />
+                        <Box
+                            component="img"
+                            src={station.logo}
+                            alt={`${station.displayName} logo`}
+                            sx={{ width: '100%', height: 28, objectFit: 'contain' }}
+                        />
                     </ToggleButton>
-                ))}
-            </ToggleButtonGroup>
-                
-            <SongList station={selectedStation} />
+                );
+            })}
         </Box>
+    );
+
+    return (
+        <SectionColumn title="השמעות אחרונות" control={tabs}>
+            <SongList station={selectedStation} />
+        </SectionColumn>
     );
 };
 

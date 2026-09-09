@@ -3,8 +3,6 @@ import {
   Alert,
   Avatar,
   Box,
-  Button,
-  LinearProgress,
   Paper,
   Table,
   TableBody,
@@ -14,6 +12,8 @@ import {
   Typography
 } from '@mui/material';
 import StationBreakdown from '../StationBreakdown';
+import { AVATAR } from '../../theme';
+import Pagination from '../Pagination';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -100,20 +100,25 @@ const TopSongsTable = ({
   errorMessage,
   onSongClick
 }) => (
-  <Paper elevation={4} sx={{ p: 1, width: '100%', boxSizing: 'border-box' }}>
+  <Paper elevation={1} sx={{ p: 1, width: '100%', boxSizing: 'border-box' }}>
     <Box dir="rtl">
-      <Typography margin="7px 7px 9px 7px" variant="h5" component="h2" gutterBottom>
+      <Typography variant="h5" component="h2" sx={{ p: 2, pb: 1 }}>
 השירים הכי מושמעים הרדיו
       </Typography>
-
-      {isLoading && <LinearProgress sx={{ mb: 2 }} />}
       {errorMessage && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {errorMessage}
         </Alert>
       )}
 
-      <Table size="small">
+      <Table
+        size="small"
+        sx={{
+          opacity: isLoading ? 0.5 : 1,
+          pointerEvents: isLoading ? 'none' : 'auto',
+          transition: 'opacity 150ms ease'
+        }}
+      >
         <TableHead>
           <TableRow>
             <TableCell align="center" sx={{ width: { xs: '5%', sm: '5%' } }}>#</TableCell>
@@ -127,7 +132,7 @@ const TopSongsTable = ({
         <TableBody>
           {!isLoading && songs.length === 0 && (
             <TableRow>
-              <TableCell align="center" colSpan={5}>
+              <TableCell align="center" colSpan={6}>
                 אין נתונים לתקופה שנבחרה
               </TableCell>
             </TableRow>
@@ -162,12 +167,12 @@ const TopSongsTable = ({
                 role={onSongClick ? 'button' : undefined}
                 sx={{ cursor: onSongClick ? 'pointer' : 'default' }}
               >
-                <TableCell align="center" sx={{ width: { xs: '5%', sm: '5%' } }}>{rank}</TableCell>
+                <TableCell align="center" className="num" sx={{ width: { xs: '5%', sm: '5%' } }}>{rank}</TableCell>
                 <TableCell align="center" sx={{ width: { xs: '10%', sm: '12%' }, padding: { xs: '3px', sm: '12px' } }}>
                   <Avatar
                     src={song.imageUrl || undefined}
                     alt={song.title}
-                    sx={{ width: { xs: 40, sm: 55 }, height: { xs: 40, sm: 55 }, margin: '0 auto' }}
+                    sx={{ width: { xs: AVATAR.sm, sm: AVATAR.md }, height: { xs: AVATAR.sm, sm: AVATAR.md }, margin: '0 auto' }}
                   >
                     {(song.title || '?').trim().charAt(0).toUpperCase() || '?'}
                   </Avatar>
@@ -175,14 +180,13 @@ const TopSongsTable = ({
                 <TableCell align="right" sx={{ width: { xs: '42%', sm: '28%' } }}>
                   <Typography 
                     variant="subtitle1"
-                    sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, lineHeight: 1.3 }}
+                    sx={{ lineHeight: 1.3 }}
                   >
                     {song.title}
                   </Typography>
                   <Typography 
                     variant="body2" 
                     color="text.secondary"
-                    sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
                   >
                     {song.artist}
                   </Typography>
@@ -197,7 +201,7 @@ const TopSongsTable = ({
                   )}
                 </TableCell>
                 <TableCell align="center" sx={{ width: { xs: '2%', sm: '10%' } }}>
-                  <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>{song.plays}</Typography>
+                  <Typography variant="subtitle2" className="num">{song.plays}</Typography>
                 </TableCell>
                 <TableCell align="center" sx={{ width: { xs: '0%', sm: '25%' }, display: { xs: 'none', sm: 'table-cell' } }}>
                   <StationBreakdown stationBreakdown={stations} />
@@ -209,10 +213,10 @@ const TopSongsTable = ({
                   }}
                 >
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-                    <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
+                    <Typography variant="body2">
                       {dateLabel}
                     </Typography>
-                    <Typography variant="subtitle2" sx={{ fontSize: { xs: '0.8rem', sm: '0.87rem' } }}>
+                    <Typography variant="subtitle2">
                       {timeLabel}
                     </Typography>
                   </Box>
@@ -223,15 +227,13 @@ const TopSongsTable = ({
         </TableBody>
       </Table>
 
-      <Box display="flex" justifyContent="space-between" alignItems="center" mt={3}>
-        <Button variant="text" onClick={onPrev} disabled={page === 0 || isLoading}>
-          קדימה
-        </Button>
-        <Typography variant="body2">עמוד {page + 1}</Typography>
-        <Button variant="text" onClick={onNext} disabled={!hasMore || isLoading}>
-          אחורה
-        </Button>
-      </Box>
+      <Pagination
+        page={page}
+        hasMore={hasMore}
+        onPrev={onPrev}
+        onNext={onNext}
+        disabled={isLoading}
+      />
     </Box>
   </Paper>
 );

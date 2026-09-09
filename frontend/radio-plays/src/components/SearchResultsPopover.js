@@ -1,21 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Box, List, ListItem, Popover, Typography } from '@mui/material';
-import SongDetailsPage from './SongDetailsPage';
-
-const overlayColor = 'rgba(0, 0, 0, 0.07)';
+import { useSongModal } from '../hooks/useSongModal';
 
 const SearchResultsPopover = ({ id, open, anchorEl, handleClose, results, textFieldRef, showItemDetails, noResults = false }) => {
-  const [showModal, setShowModal] = useState(false);
-  const [songDetails, setSongDetails] = useState({});
+  const { openSong } = useSongModal();
   const listRef = useRef(null); // Reference to the List element
 
-  const handleSongClick = async (song) => {
-    try {
-      setSongDetails(song);
-      setShowModal(true);
-    } catch (error) {
-      console.error('Error fetching song details or plays by station:', error);
-    }
+  const handleSongClick = (song) => {
+    openSong(song.id);
+    handleClose();
   };
 
   useEffect(() => {
@@ -36,13 +29,13 @@ const SearchResultsPopover = ({ id, open, anchorEl, handleClose, results, textFi
         onClose={handleClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-        PaperProps={{ style: { backgroundColor: '#dedadc', width: textFieldRef.current ? textFieldRef.current.clientWidth : '100%', borderRadius: '16px' } }}
+        slotProps={{ paper: { sx: { backgroundColor: 'app.card', width: textFieldRef.current ? textFieldRef.current.clientWidth : '100%', borderRadius: 2 } } }}
         sx={{ margin: '7px 0px 0px 0px' }}
       >
         <Box sx={{ p: 0, maxHeight: '75vh', overflowY: 'auto' }} ref={listRef}>
           <List sx={{ width: '100%'}}>
             {noResults ? (
-              <ListItem sx={{ display: 'flex', justifyContent: 'center', backgroundColor: overlayColor, padding: '16px' }}>
+              <ListItem sx={{ display: 'flex', justifyContent: 'center', backgroundColor: 'app.overlay', p: 2 }}>
                 <Typography variant="subtitle1" align="center">לא נמצאו שירים לזמן זה</Typography>
               </ListItem>
             ) : (
@@ -51,7 +44,7 @@ const SearchResultsPopover = ({ id, open, anchorEl, handleClose, results, textFi
                   key={song.id}
                   button
                   onClick={() => handleSongClick(song)}
-                  sx={{ display: 'flex', width: '100%', justifyContent: 'space-between', backgroundColor: overlayColor, padding:'0', margin: '0', borderRadius: '0' }} >
+                  sx={{ display: 'flex', width: '100%', justifyContent: 'space-between', backgroundColor: 'app.overlay', p: 0, borderRadius: 0 }} >
                   {showItemDetails(song)}
                 </ListItem>
               ))
@@ -59,12 +52,6 @@ const SearchResultsPopover = ({ id, open, anchorEl, handleClose, results, textFi
           </List>
         </Box>
       </Popover>
-
-      <SongDetailsPage
-        showModal={showModal}
-        setShowModal={setShowModal}
-        songId={songDetails.id}
-      />
     </>
   );
 };

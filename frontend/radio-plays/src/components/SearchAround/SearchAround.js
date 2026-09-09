@@ -4,6 +4,7 @@ import axios from 'axios';
 import SearchAroundBar from './SearchAroundBar';
 import SearchResultsPopover from '../SearchResultsPopover';
 import { API_BASE_URL } from '../../config';
+import { ROW_MIN_HEIGHT } from '../../theme';
 
 const SearchAround = () => {
   const [results, setResults] = useState([]);
@@ -60,13 +61,15 @@ const SearchAround = () => {
     const backgroundColor = `rgba(0, 0, 0, ${opacity})`;
   
     return (
-      <Box sx={{ display: 'flex', background: backgroundColor, padding: '15px 20px', width: '100%', justifyContent: 'space-between', margin: '0', borderRadius: '0' }}>
-        <Box>
-          <Typography variant="subtitle1" align="left" padding='7px 0px 0px 7px'>{song?.playedAt?.slice(11, 16)}</Typography>
-        </Box>
-        <Box margin='0px 5px 0px 0px'>
-          <Typography variant="subtitle1" align="right">{song?.name}</Typography>
-          <Typography variant="body2" color="textSecondary" align="right">{song?.artists[0]?.name}</Typography>
+      <Box sx={{ display: 'flex', background: backgroundColor, px: 1.5, py: 1, width: '100%', minHeight: ROW_MIN_HEIGHT, alignItems: 'center', justifyContent: 'space-between', borderRadius: 0 }}>
+        <Typography variant="subtitle2" className="num" align="left">
+          {song?.playedAt?.slice(11, 16)}
+        </Typography>
+        <Box sx={{ minWidth: 0, marginInlineStart: 2 }}>
+          <Typography variant="subtitle2" align="right" noWrap>{song?.name}</Typography>
+          <Typography variant="caption" color="text.secondary" align="right" component="div" noWrap>
+            {song?.artists[0]?.name}
+          </Typography>
         </Box>
       </Box>
     );
@@ -82,8 +85,8 @@ const SearchAround = () => {
   const id = open ? 'search-around-popover' : undefined;
 
   return (
-    <Box sx={{ display: 'flex', width: '100%', justifyContent: "center"}}>
-      <Box ref={textFieldRef}>
+    <Box sx={{ display: 'flex', width: '100%' }}>
+      <Box ref={textFieldRef} sx={{ width: '100%' }}>
         <SearchAroundBar onSearch={handleSearch} />
       </Box>
       <SearchResultsPopover

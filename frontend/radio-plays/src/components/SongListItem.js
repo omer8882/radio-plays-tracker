@@ -2,61 +2,65 @@
 import React from 'react';
 import { ListItem, Box, Typography } from '@mui/material';
 import EqualizerIcon from './EqualizerIcon';
+import { ROW_MIN_HEIGHT } from '../theme';
 
 const SongListItem = ({ song, onClick }) => {
-    const overlayColor = 'rgba(0, 0, 0, 0.07)';
     const coverUrl = song?.imageUrl;
     const coverFallbackLabel = (song?.artist || song?.title || '♫').charAt(0).toUpperCase();
     const timeLabel = song?.time || '';
     const dateLabel = song?.dateLabel || '';
 
-    const isSongPlaying = (playedAt) => {
-        if (!playedAt || !playedAt.includes(':')) {
+    // Uses the real timestamp when present. The old HH:mm-only comparison assumed
+    // "today", so an older play sharing the current minute showed as now-playing.
+    const isSongPlaying = () => {
+        const raw = song?.playedAt ?? song?.PlayedAt;
+        if (!raw) {
             return false;
         }
-        const now = new Date();
-        const [playedHour, playedMinute] = playedAt.split(':').map(Number);
-        const playedTime = new Date(now);
-        playedTime.setHours(playedHour, playedMinute, 0, 0); // Set hours and minutes from the playedAt string
-        const differenceInMinutes = (now - playedTime) / (1000 * 60); // Convert to minutes
-        return differenceInMinutes <= 2.75 && differenceInMinutes >= 0; // Only return true if it's within 2.75 minutes and not in the future
+        const playedTime = new Date(raw);
+        if (Number.isNaN(playedTime.getTime())) {
+            return false;
+        }
+        const differenceInMinutes = (Date.now() - playedTime.getTime()) / (1000 * 60);
+        return differenceInMinutes >= 0 && differenceInMinutes <= 2.75;
     };
 
     return (
-        <ListItem 
-          button 
+        <ListItem
+          button
           onClick={onClick}
           className="song-list-item"
-          style={{
+          sx={{
               display: 'flex',
               justifyContent: 'space-between',
-              padding: '5px 10px',
-              backgroundColor: overlayColor,
-              margin: '0',
-              borderRadius: '0',
+              px: 1.5,
+              py: 1,
+              minHeight: ROW_MIN_HEIGHT,
+              backgroundColor: 'app.overlay',
+              borderRadius: 0,
               alignItems: 'center'
           }}
         >
             <Box className="song-list-item__time">
                 {dateLabel && (
-                    <Typography className="song-list-item__date" variant="body2">
+                    <Typography className="song-list-item__date num" variant="caption">
                         {dateLabel}
                     </Typography>
                 )}
-                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.85rem', sm: '0.9rem' } }}>
+                <Typography variant="subtitle2" className="num">
                     {timeLabel}
                 </Typography>
-                {isSongPlaying(timeLabel) && (
+                {isSongPlaying() && (
                     <EqualizerIcon sx={{ animation: 'equalizer 1s infinite ease-in-out' }} />
                 )}
             </Box>
 
             <Box className="song-list-item__content">
-                <Box sx={{ textAlign: 'right' }}>
-                    <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.9rem', sm: '0.9rem' }}}>
+                <Box sx={{ textAlign: 'right', minWidth: 0 }}>
+                    <Typography variant="subtitle2" noWrap>
                         {song.title || ' '}
                     </Typography>
-                    <Typography variant="body2" color="textSecondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' }}}>
+                    <Typography variant="body2" color="textSecondary">
                         {song.artist || ' '}
                     </Typography>
                 </Box>

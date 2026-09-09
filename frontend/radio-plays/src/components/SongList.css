@@ -1,46 +1,46 @@
-/* For new items fading in */
-  /* .fade-slide-enter {
-    opacity: 0.25;
-    transform: translateY(-12px);
-  }
+/* Restores the transition SongList has always referenced. A newly recognized
+   track slides in at the top on the 2-minute poll instead of appearing abruptly. */
+.fade-slide-enter {
+  opacity: 0;
+  transform: translateY(-10px);
+}
 
-  .fade-slide-enter-active {
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 400ms, transform 400ms;
-  }*/
-  
-  /* For old items sliding down */
-  /*.fade-slide-exit {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.fade-slide-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 400ms ease, transform 400ms ease;
+}
+
+.fade-slide-exit {
+  opacity: 1;
+}
+
+.fade-slide-exit-active {
+  opacity: 0;
+  transition: opacity 250ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-slide-enter-active,
   .fade-slide-exit-active {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 500ms, transform 500ms;
-  } */
-  
-  /* .fade-slide-exit-active {
-    opacity: 0;
-    transform: translateY(-20px);
-    transition: opacity 500ms ease-in, transform 500ms ease-in;
-  } */
-  
+    transition: none;
+  }
+}
+
 .song-list-item__time {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-right: 12px;
-  min-width: 60px;
+  margin-inline-end: 16px;
+  min-width: 52px;
   text-align: center;
   gap: 2px;
 }
 
 .song-list-item__date {
   font-size: 0.75rem;
-  color: #4a4a4a;
+  color: rgba(0, 0, 0, 0.6);
   line-height: 1.1;
 }
 
@@ -54,14 +54,14 @@
 }
 
 .song-list-item__cover {
-  width: 48px;
-  height: 48px;
-  border-radius: 5px;
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f5f5f5;
+  background-color: rgba(0, 0, 0, 0.06);
   flex-shrink: 0;
 }
 
@@ -73,21 +73,21 @@
 }
 
 .song-list-item__cover--placeholder {
-  color: #666666;
+  color: rgba(0, 0, 0, 0.55);
   font-weight: 600;
   letter-spacing: 0.03em;
 }
 
 @media (max-width: 600px) {
   .song-list-item__time {
-    min-width: 48px;
-    margin-right: 8px;
+    min-width: 44px;
+    margin-inline-end: 12px;
   }
 
   .song-list-item__cover {
     width: 40px;
     height: 40px;
-    border-radius: 5px;
+    border-radius: 6px;
   }
 
   .song-list-item__content {

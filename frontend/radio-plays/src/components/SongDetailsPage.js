@@ -1,48 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Modal, IconButton, Typography, CircularProgress, Link, Avatar, Stack } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import axios from 'axios';
+import { useQuery } from '@tanstack/react-query';
 import StationBreakdown from './StationBreakdown';
 import StreamingLinks from './StreamingLinks';
-import { API_BASE_URL } from '../config';
+import { AVATAR, RADIUS } from '../theme';
+import { fetchSongDetails, fetchSongStations, queryKeys } from '../api';
 
-const SongDetailsModal = ({ showModal, setShowModal, songId }) => {
+const SongDetailsModal = ({ songId, onClose }) => {
   const navigate = useNavigate();
-  const [songDetails, setSongDetails] = useState(null);
-  const [stationBreakdown, setStationBreakdown] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const enabled = Boolean(songId);
 
-  useEffect(() => {
-    if (showModal && songId) {
-      const getDetails = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-          const [songDetailsResponse, stationBreakdownResponse] = await Promise.all([
-            axios.get(`${API_BASE_URL}/api/get_song_details?song_id=${songId}`),
-            axios.get(`${API_BASE_URL}/api/song_plays_by_station?song_id=${songId}`)
-          ]);
-          setSongDetails(songDetailsResponse.data);
-          setStationBreakdown(stationBreakdownResponse.data);
-        } catch (err) {
-          console.error("Error fetching song details:", err);
-          setError('Failed to fetch song details.');
-        } finally {
-          setLoading(false);
-        }
-      };
+  const detailsQuery = useQuery({
+    queryKey: queryKeys.songDetails(songId),
+    queryFn: ({ signal }) => fetchSongDetails(songId, signal),
+    enabled
+  });
 
-      getDetails();
-    }
-  }, [showModal, songId]);
+  const stationsQuery = useQuery({
+    queryKey: queryKeys.songStations(songId),
+    queryFn: ({ signal }) => fetchSongStations(songId, signal),
+    enabled
+  });
+
+  const songDetails = detailsQuery.data ?? null;
+  const stationBreakdown = stationsQuery.data ?? null;
+  const loading = enabled && (detailsQuery.isPending || stationsQuery.isPending);
+  const error = detailsQuery.isError || stationsQuery.isError ? 'לא הצלחנו לטעון את פרטי השיר.' : null;
 
   const handleClose = () => {
-    setSongDetails(null);
-    setStationBreakdown(null);
-    setError(null);
-    setShowModal(false);
+    onClose();
   };
 
   const handleArtistClick = (artistName) => {
@@ -52,7 +40,8 @@ const SongDetailsModal = ({ showModal, setShowModal, songId }) => {
 
   return (
     <Modal
-      open={showModal}
+      open={enabled}
+      closeAfterTransition
       onClose={handleClose}
       aria-labelledby="song-details-title"
       aria-describedby="song-details-description"
@@ -63,18 +52,18 @@ const SongDetailsModal = ({ showModal, setShowModal, songId }) => {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: '75%',
-          maxWidth: '400px',
+          width: 'min(92vw, 400px)',
           bgcolor: 'background.paper',
-          boxShadow: 24,
-          p: 4,
+          boxShadow: 8,
+          borderRadius: `${RADIUS.lg}px`,
+          p: 3,
           outline: 'none'
         }}
       >
         <IconButton
           aria-label="close"
           onClick={handleClose}
-          sx={{ position: 'absolute', top: 8, right: 8 }}
+          sx={{ position: 'absolute', top: 8, left: 8 }}
         >
           <CloseIcon />
         </IconButton>
@@ -89,7 +78,7 @@ const SongDetailsModal = ({ showModal, setShowModal, songId }) => {
           </Typography>
         ) : songDetails ? (
           <>
-            <Box sx={{ position: 'absolute', top: 12, left: 12 }}>
+            <Box sx={{ position: 'absolute', top: 12, right: 12 }}>
               <StreamingLinks 
                 streamingLinks={songDetails.externalLinks} 
                 title={songDetails.name} 
@@ -102,7 +91,7 @@ const SongDetailsModal = ({ showModal, setShowModal, songId }) => {
                 variant="rounded"
                 src={songDetails.imageUrl || undefined}
                 alt={songDetails.name}
-                sx={{ width: 160, height: 160, mb: 2, fontSize: '3rem' }}
+                sx={{ width: AVATAR.xl, height: AVATAR.xl, mb: 2, fontSize: '2.5rem', borderRadius: `${RADIUS.md}px` }}
               >
                 {(songDetails.name || '?').trim().charAt(0).toUpperCase() || '?'}
               </Avatar>
@@ -113,8 +102,8 @@ const SongDetailsModal = ({ showModal, setShowModal, songId }) => {
 
             <Box id="song-details-description" sx={{ mt: 3 }}>
               {songDetails.album?.name && (
-                <Typography variant="subtitle1" sx={{ textAlign: 'center', mb: 2 }}>
-                  {songDetails.album?.name} <strong>:אלבום</strong>
+                <Typography variant="subtitle1" dir="rtl" sx={{ textAlign: 'center', mb: 2 }}>
+                  <strong>אלבום:</strong> {songDetails.album?.name}
                 </Typography>
               )}
 
@@ -135,7 +124,7 @@ const SongDetailsModal = ({ showModal, setShowModal, songId }) => {
                       <Avatar
                         src={artist.imageUrl || undefined}
                         alt={artist.name}
-                        sx={{ width: 56, height: 56, cursor: 'pointer' }}
+                        sx={{ width: AVATAR.sm, height: AVATAR.sm, cursor: 'pointer' }}
                         onClick={() => handleArtistClick(artist.name)}
                       >
                         {(artist.name || '?').trim().charAt(0).toUpperCase() || '?'}
