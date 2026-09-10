@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Song and artist pages carry the long-tail value; nothing here is private.
+Sitemap: https://mahushma.com/sitemap.xml

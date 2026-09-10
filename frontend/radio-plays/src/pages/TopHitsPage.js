@@ -14,6 +14,7 @@ import TopSongsTable from '../components/TopHitsPage/TopSongsTable';
 import TopArtistsTable from '../components/TopHitsPage/TopArtistsTable';
 import { fetchTopSongs, fetchTopArtists, queryKeys } from '../api';
 import { useSongModal } from '../hooks/useSongModal';
+import PageMeta from '../components/PageMeta';
 import SegmentedControl from '../components/SegmentedControl';
 import { DAY_OPTIONS } from '../constants/dayRanges';
 import { STATION_FILTER_OPTIONS, STATION_LABEL_LOOKUP } from '../constants/stations';
@@ -57,6 +58,12 @@ const TopHitsPage = () => {
 
   return (
     <Box>
+      <PageMeta
+        title="הלהיטים"
+        description="השירים והאמנים הכי מושמעים ברדיו הישראלי."
+        path="/top-hits"
+      />
+
       <Box dir="rtl" sx={{ mb: 4 }}>
         <Typography variant="h4" gutterBottom>
           הלהיטים

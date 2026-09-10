@@ -8,6 +8,7 @@ import ArtistTopSongsTable from '../components/ArtistPage/ArtistTopSongsTable';
 import { fetchArtistPlays, fetchArtistDetails, queryKeys } from '../api';
 import { useSongModal } from '../hooks/useSongModal';
 import { AVATAR } from '../theme';
+import PageMeta from '../components/PageMeta';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -113,8 +114,27 @@ const ArtistPage = () => {
     || recentPlays[0]?.artist
     || '';
 
+  const jsonLd = displayName
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'MusicGroup',
+        name: displayName,
+        ...(heroImageUrl ? { image: heroImageUrl } : {})
+      }
+    : null;
+
   return (
     <Box>
+      <PageMeta
+        title={displayName || undefined}
+        description={displayName
+          ? `השמעות ושירים מובילים של ${displayName} ברדיו הישראלי.`
+          : undefined}
+        path={`/artist/${artistId}`}
+        image={heroImageUrl}
+        jsonLd={jsonLd}
+      />
+
       <Box dir="rtl" sx={{ mb: 2 }}>
         <Button
           onClick={() => navigate(-1)}

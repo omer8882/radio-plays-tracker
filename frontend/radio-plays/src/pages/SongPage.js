@@ -9,6 +9,7 @@ import SongListItem from '../components/SongListItem';
 import Pagination from '../components/Pagination';
 import SongListSkeleton from '../components/SongListSkeleton';
 import { STATION_LABEL_LOOKUP } from '../constants/stations';
+import PageMeta from '../components/PageMeta';
 import {
   fetchSongDetails, fetchSongStations, fetchSongPlays, queryKeys
 } from '../api';
@@ -77,8 +78,43 @@ const SongPage = () => {
     );
   }
 
+  const artistNames = (song?.artists || []).map((a) => a.name).join(', ');
+  const metaDescription = song
+    ? `כל ההשמעות של ${song.name}${artistNames ? ` - ${artistNames}` : ''} ברדיו הישראלי.`
+    : undefined;
+
+  const jsonLd = song
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'MusicRecording',
+        name: song.name,
+        ...(song.imageUrl ? { image: song.imageUrl } : {}),
+        ...(song.album?.name ? { inAlbum: { '@type': 'MusicAlbum', name: song.album.name } } : {}),
+        ...(song.artists?.length
+          ? { byArtist: song.artists.map((a) => ({ '@type': 'MusicGroup', name: a.name })) }
+          : {}),
+        ...(history?.totalPlays
+          ? {
+              interactionStatistic: {
+                '@type': 'InteractionCounter',
+                interactionType: 'https://schema.org/ListenAction',
+                userInteractionCount: history.totalPlays
+              }
+            }
+          : {})
+      }
+    : null;
+
   return (
     <Box>
+      <PageMeta
+        title={song ? `${song.name}${artistNames ? ` - ${artistNames}` : ''}` : undefined}
+        description={metaDescription}
+        path={`/song/${songId}`}
+        image={song?.imageUrl}
+        jsonLd={jsonLd}
+      />
+
       <Box dir="rtl" sx={{ mb: 2 }}>
         <Button
           onClick={() => navigate(-1)}

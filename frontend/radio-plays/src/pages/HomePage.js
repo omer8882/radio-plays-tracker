@@ -3,6 +3,7 @@ import { Box } from '@mui/material';
 import SearchAround from '../components/SearchAround/SearchAround';
 import LastPlays from '../components/LastPlays/LastPlays';
 import TopHitsPreview from '../components/TopHits';
+import PageMeta from '../components/PageMeta';
 
 /**
  * Two equal columns on desktop that share a top edge, stacking on mobile.
@@ -11,6 +12,10 @@ import TopHitsPreview from '../components/TopHits';
  */
 const HomePage = () => (
   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <PageMeta
+      description="מה הושמע ברדיו הישראלי - השמעות אחרונות ולהיטים מכל התחנות."
+      path="/"
+    />
     <SearchAround />
 
     <Box
