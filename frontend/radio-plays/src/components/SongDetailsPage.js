@@ -33,9 +33,9 @@ const SongDetailsModal = ({ songId, onClose }) => {
     onClose();
   };
 
-  const handleArtistClick = (artistName) => {
+  const handleArtistClick = (artistId) => {
     handleClose();
-    navigate(`/artist?name=${encodeURIComponent(artistName)}`);
+    navigate(`/artist/${encodeURIComponent(artistId)}`);
   };
 
   return (
@@ -125,14 +125,14 @@ const SongDetailsModal = ({ songId, onClose }) => {
                         src={artist.imageUrl || undefined}
                         alt={artist.name}
                         sx={{ width: AVATAR.sm, height: AVATAR.sm, cursor: 'pointer' }}
-                        onClick={() => handleArtistClick(artist.name)}
+                        onClick={() => handleArtistClick(artist.id)}
                       >
                         {(artist.name || '?').trim().charAt(0).toUpperCase() || '?'}
                       </Avatar>
                       <Link
                         component="button"
                         variant="body2"
-                        onClick={() => handleArtistClick(artist.name)}
+                        onClick={() => handleArtistClick(artist.id)}
                         sx={{ 
                           cursor: 'pointer',
                           textDecoration: 'none',

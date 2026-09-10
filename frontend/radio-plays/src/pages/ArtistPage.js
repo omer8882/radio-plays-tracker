@@ -1,7 +1,8 @@
 import React from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Box, Typography, Alert, Divider, Avatar } from '@mui/material';
+import { Box, Typography, Alert, Divider, Avatar, Button } from '@mui/material';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ArtistRecentPlays from '../components/ArtistPage/ArtistRecentPlays';
 import ArtistTopSongsTable from '../components/ArtistPage/ArtistTopSongsTable';
 import { fetchArtistPlays, fetchArtistDetails, queryKeys } from '../api';
@@ -65,21 +66,21 @@ const normalizeRecentPlay = (play) => {
 };
 
 const ArtistPage = () => {
-  const [searchParams] = useSearchParams();
-  const artistName = searchParams.get('name');
+  const { artistId } = useParams();
+  const navigate = useNavigate();
 
   const { openSong } = useSongModal();
 
   const playsQuery = useQuery({
-    queryKey: queryKeys.artistPlays(artistName, 10),
-    queryFn: ({ signal }) => fetchArtistPlays(artistName, 10, signal),
-    enabled: Boolean(artistName)
+    queryKey: queryKeys.artistPlays(artistId, 10),
+    queryFn: ({ signal }) => fetchArtistPlays(artistId, 10, signal),
+    enabled: Boolean(artistId)
   });
 
   const detailsQuery = useQuery({
-    queryKey: queryKeys.artistDetails(artistName),
-    queryFn: ({ signal }) => fetchArtistDetails(artistName, signal),
-    enabled: Boolean(artistName),
+    queryKey: queryKeys.artistDetails(artistId),
+    queryFn: ({ signal }) => fetchArtistDetails(artistId, signal),
+    enabled: Boolean(artistId),
     // A missing artist record is a normal outcome, not something to retry.
     retry: false
   });
@@ -91,7 +92,7 @@ const ArtistPage = () => {
   const artistDetails = detailsQuery.data
     ? {
         id: detailsQuery.data.id ?? detailsQuery.data.Id ?? '',
-        name: detailsQuery.data.name ?? detailsQuery.data.Name ?? artistName,
+        name: detailsQuery.data.name ?? detailsQuery.data.Name ?? '',
         imageUrl: detailsQuery.data.imageUrl ?? detailsQuery.data.ImageUrl ?? ''
       }
     : null;
@@ -99,19 +100,32 @@ const ArtistPage = () => {
   const isLoading = playsQuery.isPending;
   const error = playsQuery.isError ? 'אירעה תקלה בטעינת נתוני האמן.' : null;
 
-  if (!artistName) {
+  if (!artistId) {
     return (
       <Box sx={{ mt: 4 }} dir="rtl">
-        <Alert severity="error">לא צוין שם אמן בכתובת</Alert>
+        <Alert severity="error">לא צוין אמן בכתובת</Alert>
       </Box>
     );
   }
 
   const heroImageUrl = artistDetails?.imageUrl || recentPlays.find((play) => play.imageUrl)?.imageUrl;
-  const displayName = artistDetails?.name || artistName;
+  const displayName = artistDetails?.name
+    || recentPlays[0]?.artist
+    || '';
 
   return (
     <Box>
+      <Box dir="rtl" sx={{ mb: 2 }}>
+        <Button
+          onClick={() => navigate(-1)}
+          startIcon={<ChevronRightIcon />}
+          size="small"
+          sx={{ color: 'text.secondary' }}
+        >
+          חזרה
+        </Button>
+      </Box>
+
       <Box dir="rtl" sx={{ mb: 4, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Avatar
           src={heroImageUrl || undefined}
@@ -138,7 +152,7 @@ const ArtistPage = () => {
       <Divider sx={{ my: 4 }} />
 
       <Box sx={{ mb: 4 }}>
-        <ArtistTopSongsTable artistName={artistDetails?.name || artistName} onSongClick={openSong} />
+        <ArtistTopSongsTable artistId={artistId} onSongClick={openSong} />
       </Box>
     </Box>
   );

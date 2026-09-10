@@ -10,21 +10,25 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Tab,
-  Tabs,
   Typography
 } from '@mui/material';
 import { fetchArtistTopHits, queryKeys } from '../../api';
+import SegmentedControl from '../SegmentedControl';
 
-const ArtistTopSongsTable = ({ artistName, onSongClick }) => {
-  const [selectedTab, setSelectedTab] = useState(0); // 0 = 30 days, 1 = 365 days
+const ARTIST_RANGE_OPTIONS = [
+  { value: '30', label: '30 ימים' },
+  { value: '365', label: '365 ימים' }
+];
 
-  const days = selectedTab === 0 ? 30 : 365;
+const ArtistTopSongsTable = ({ artistId, onSongClick }) => {
+  const [range, setRange] = useState('30');
+
+  const days = Number(range);
 
   const { data, isFetching, isError } = useQuery({
-    queryKey: queryKeys.artistTopHits(artistName, days, 10),
-    queryFn: ({ signal }) => fetchArtistTopHits(artistName, days, 10, signal),
-    enabled: Boolean(artistName),
+    queryKey: queryKeys.artistTopHits(artistId, days, 10),
+    queryFn: ({ signal }) => fetchArtistTopHits(artistId, days, 10, signal),
+    enabled: Boolean(artistId),
     placeholderData: keepPreviousData
   });
 
@@ -41,10 +45,6 @@ const ArtistTopSongsTable = ({ artistName, onSongClick }) => {
   const isLoading = isFetching;
   const errorMessage = isError ? 'אירעה תקלה בטעינת השירים המובילים.' : null;
 
-  const handleTabChange = (_, newValue) => {
-    setSelectedTab(newValue);
-  };
-
   return (
     <Paper elevation={1} sx={{ p: 0, width: '100%', boxSizing: 'border-box' }}>
       <Box dir="rtl">
@@ -52,14 +52,14 @@ const ArtistTopSongsTable = ({ artistName, onSongClick }) => {
           השירים המובילים
         </Typography>
 
-        <Tabs
-          value={selectedTab}
-          onChange={handleTabChange}
-          sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
-        >
-          <Tab label="30 ימים" />
-          <Tab label="365 ימים" />
-        </Tabs>
+        <Box sx={{ px: 2, pb: 2 }}>
+          <SegmentedControl
+            options={ARTIST_RANGE_OPTIONS}
+            value={range}
+            onChange={setRange}
+            ariaLabel="artist range"
+          />
+        </Box>
         {errorMessage && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {errorMessage}

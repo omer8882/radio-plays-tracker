@@ -184,9 +184,17 @@ const TopSongsTable = ({
                   >
                     {song.title}
                   </Typography>
-                  <Typography 
-                    variant="body2" 
+                  <Typography
+                    variant="body2"
                     color="text.secondary"
+                    sx={{
+                      // Long credit lists ("A, B, C") wrapped to four lines on a
+                      // phone and made every row a different height.
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}
                   >
                     {song.artist}
                   </Typography>

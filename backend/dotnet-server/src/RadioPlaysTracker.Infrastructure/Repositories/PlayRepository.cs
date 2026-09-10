@@ -315,21 +315,41 @@ public class PlayRepository : IPlayRepository
         };
     }
 
+    /// <summary>
+    /// Resolves by artist name. Artist names are NOT unique - the catalogue holds
+    /// hundreds of duplicate names, and the same performer can appear under both a
+    /// Hebrew and a transliterated entry. Prefer <see cref="GetArtistPlaysByIdAsync"/>.
+    /// </summary>
     public async Task<List<PlayDto>> GetArtistPlaysAsync(string artistName, int limit = 100)
     {
         var normalizedArtist = artistName.ToLowerInvariant();
-        // Get all songs by this artist
         var songIds = await _context.SongArtists
-            .Include(sa => sa.Artist)
             .Where(sa => sa.Artist.Name.ToLower() == normalizedArtist)
             .Select(sa => sa.SongId)
+            .Distinct()
             .ToListAsync();
 
-        if (!songIds.Any())
+        return await GetPlaysForSongsAsync(songIds, limit);
+    }
+
+    public async Task<List<PlayDto>> GetArtistPlaysByIdAsync(string artistId, int limit = 100)
+    {
+        var songIds = await _context.SongArtists
+            .Where(sa => sa.ArtistId == artistId)
+            .Select(sa => sa.SongId)
+            .Distinct()
+            .ToListAsync();
+
+        return await GetPlaysForSongsAsync(songIds, limit);
+    }
+
+    private async Task<List<PlayDto>> GetPlaysForSongsAsync(List<string> songIds, int limit)
+    {
+        if (songIds.Count == 0)
             return new List<PlayDto>();
 
-        // Get plays for those songs
         var plays = await _context.Plays
+            .AsNoTracking()
             .Include(p => p.Song)
                 .ThenInclude(s => s.SongArtists)
                 .ThenInclude(sa => sa.Artist)
@@ -407,17 +427,36 @@ public class PlayRepository : IPlayRepository
         }).ToList();
     }
 
+    /// <summary>
+    /// Resolves by artist name, which is not unique. Prefer
+    /// <see cref="GetArtistTopHitsByIdAsync"/>.
+    /// </summary>
     public async Task<List<TopHitDto>> GetArtistTopHitsAsync(string artistName, int? days = null, int limit = 10)
     {
         var normalizedArtist = artistName.ToLowerInvariant();
-        // Get all songs by this artist
         var songIds = await _context.SongArtists
-            .Include(sa => sa.Artist)
             .Where(sa => sa.Artist.Name.ToLower() == normalizedArtist)
             .Select(sa => sa.SongId)
+            .Distinct()
             .ToListAsync();
 
-        if (!songIds.Any())
+        return await GetTopHitsForSongsAsync(songIds, days, limit);
+    }
+
+    public async Task<List<TopHitDto>> GetArtistTopHitsByIdAsync(string artistId, int? days = null, int limit = 10)
+    {
+        var songIds = await _context.SongArtists
+            .Where(sa => sa.ArtistId == artistId)
+            .Select(sa => sa.SongId)
+            .Distinct()
+            .ToListAsync();
+
+        return await GetTopHitsForSongsAsync(songIds, days, limit);
+    }
+
+    private async Task<List<TopHitDto>> GetTopHitsForSongsAsync(List<string> songIds, int? days, int limit)
+    {
+        if (songIds.Count == 0)
             return [];
 
         // Build the plays query

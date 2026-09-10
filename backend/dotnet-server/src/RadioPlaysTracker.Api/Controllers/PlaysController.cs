@@ -104,16 +104,28 @@ public class PlaysController : ControllerBase
     [OutputCache(PolicyName = "RecentPlays")]
     [ProducesResponseType(typeof(IEnumerable<Core.DTOs.PlayDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetArtistPlays([FromQuery] string artist, [FromQuery] int limit = 20)
+    public async Task<IActionResult> GetArtistPlays(
+        [FromQuery] string? artist = null,
+        [FromQuery] string? artist_id = null,
+        [FromQuery] int limit = 20)
     {
         if (limit > 100)
         {
             return BadRequest(new { detail = "Limit is too high. Must be 100 or less" });
         }
 
+        if (string.IsNullOrWhiteSpace(artist) && string.IsNullOrWhiteSpace(artist_id))
+        {
+            return BadRequest(new { detail = "Either artist or artist_id query parameter is required" });
+        }
+
         try
         {
-            var plays = await _playRepository.GetArtistPlaysAsync(artist, limit);
+            // artist_id is authoritative: names are not unique, and the same performer
+            // can exist under both a Hebrew and a transliterated entry.
+            var plays = !string.IsNullOrWhiteSpace(artist_id)
+                ? await _playRepository.GetArtistPlaysByIdAsync(artist_id, limit)
+                : await _playRepository.GetArtistPlaysAsync(artist!, limit);
             return Ok(plays);
         }
         catch (Exception ex)
@@ -200,13 +212,21 @@ public class PlaysController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<Core.DTOs.TopHitDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetArtistTopHits(
-        [FromQuery] string artist, 
-        [FromQuery] int? days = null, 
+        [FromQuery] string? artist = null,
+        [FromQuery] string? artist_id = null,
+        [FromQuery] int? days = null,
         [FromQuery] int limit = 10)
     {
+        if (string.IsNullOrWhiteSpace(artist) && string.IsNullOrWhiteSpace(artist_id))
+        {
+            return BadRequest(new { detail = "Either artist or artist_id query parameter is required" });
+        }
+
         try
         {
-            var topHits = await _playRepository.GetArtistTopHitsAsync(artist, days, limit);
+            var topHits = !string.IsNullOrWhiteSpace(artist_id)
+                ? await _playRepository.GetArtistTopHitsByIdAsync(artist_id, days, limit)
+                : await _playRepository.GetArtistTopHitsAsync(artist!, days, limit);
             return Ok(topHits);
         }
         catch (Exception ex)

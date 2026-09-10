@@ -5,6 +5,7 @@ import TopToolbar from './components/AppBar';
 import HomePage from './pages/HomePage';
 import TopHitsPage from './pages/TopHitsPage';
 import ArtistPage from './pages/ArtistPage';
+import LegacyArtistRedirect from './pages/LegacyArtistRedirect';
 import SongDetailsPage from './components/SongDetailsPage';
 import { useSongModal } from './hooks/useSongModal';
 
@@ -18,7 +19,9 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/top-hits" element={<TopHitsPage />} />
-          <Route path="/artist" element={<ArtistPage />} />
+          <Route path="/artist/:artistId" element={<ArtistPage />} />
+          {/* Legacy ?name= links redirect to the id-based route. */}
+          <Route path="/artist" element={<LegacyArtistRedirect />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Container>

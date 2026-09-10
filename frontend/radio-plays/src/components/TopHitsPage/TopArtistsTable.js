@@ -27,8 +27,8 @@ const TopArtistsTable = ({
 }) => {
   const navigate = useNavigate();
 
-  const handleArtistClick = (artistName) => {
-    navigate(`/artist?name=${encodeURIComponent(artistName)}`);
+  const handleArtistClick = (artistId) => {
+    navigate(`/artist/${encodeURIComponent(artistId)}`);
   };
 
   return (
@@ -80,7 +80,7 @@ const TopArtistsTable = ({
               <TableRow
                 key={artist.id}
                 hover
-                onClick={() => handleArtistClick(artist.name)}
+                onClick={() => handleArtistClick(artist.id)}
                 sx={{ cursor: 'pointer' }}
               >
                 <TableCell align="center" className="num" sx={{ width: { xs: '8%', sm: '5%' } }}>{rank}</TableCell>
