@@ -14,6 +14,7 @@ public interface IPlayRepository
     Task<List<TopHitDto>> GetArtistTopHitsAsync(string artistName, int? days = null, int limit = 10);
     Task<List<TopHitDto>> GetArtistTopHitsByIdAsync(string artistId, int? days = null, int limit = 10);
     Task<Dictionary<string, int>> GetSongPlaysByStationAsync(string songId, int? days = null);
+    Task<SongPlayHistoryDto> GetSongPlayHistoryAsync(string songId, int page, int pageSize);
     Task<List<SongDetailsDto>> SearchAroundAsync(string stationName, DateTime timestamp, int rangeMinutes = 15);
     Task<Play> CreateAsync(Play play);
     Task<bool> PlayExistsAsync(string songId, int stationId, DateTime playedAt);

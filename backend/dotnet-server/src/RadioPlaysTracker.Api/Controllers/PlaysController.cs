@@ -390,6 +390,48 @@ public class PlaysController : ControllerBase
     }
 
     /// <summary>
+    /// Get a page of a song's play history, newest first, with lifetime totals
+    /// </summary>
+    /// <param name="song_id">The unique identifier of the song</param>
+    /// <param name="page">Zero-based page index (default: 0)</param>
+    /// <param name="limit">Page size (default: 20, max: 50)</param>
+    [HttpGet("song_plays")]
+    [OutputCache(PolicyName = "Aggregates")]
+    [ProducesResponseType(typeof(Core.DTOs.SongPlayHistoryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetSongPlays(
+        [FromQuery] string song_id,
+        [FromQuery] int page = 0,
+        [FromQuery] int limit = 20)
+    {
+        if (string.IsNullOrWhiteSpace(song_id))
+        {
+            return BadRequest(new { detail = "song_id query parameter is required" });
+        }
+
+        if (page < 0)
+        {
+            return BadRequest(new { detail = "Page must be zero or greater" });
+        }
+
+        if (limit is < 1 or > 50)
+        {
+            return BadRequest(new { detail = "Limit must be between 1 and 50" });
+        }
+
+        try
+        {
+            var history = await _playRepository.GetSongPlayHistoryAsync(song_id, page, limit);
+            return Ok(history);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { detail = $"Server Error: {ex.Message}" });
+        }
+    }
+
+    /// <summary>
     /// Search for songs played on a station around a specific timestamp
     /// </summary>
     /// <param name="station">The name of the radio station</param>

@@ -522,6 +522,67 @@ public class PlayRepository : IPlayRepository
             .ToDictionary(g => g.Key, g => g.Count());
     }
 
+    public async Task<SongPlayHistoryDto> GetSongPlayHistoryAsync(string songId, int page, int pageSize)
+    {
+        var skip = page * pageSize;
+
+        var songPlays = _context.Plays
+            .AsNoTracking()
+            .Where(p => p.SongId == songId);
+
+        // One aggregate pass for the lifetime figures, so the page can show totals
+        // without loading every play.
+        var summary = await songPlays
+            .GroupBy(p => 1)
+            .Select(g => new
+            {
+                Total = g.Count(),
+                First = g.Min(p => p.PlayedAt),
+                Last = g.Max(p => p.PlayedAt)
+            })
+            .FirstOrDefaultAsync();
+
+        if (summary == null)
+        {
+            return new SongPlayHistoryDto
+            {
+                Items = [],
+                Page = page,
+                PageSize = pageSize,
+                HasMore = false,
+                TotalPlays = 0
+            };
+        }
+
+        var plays = await songPlays
+            .Include(p => p.Song)
+                .ThenInclude(s => s.SongArtists)
+                .ThenInclude(sa => sa.Artist)
+            .Include(p => p.Song.Album)
+            .Include(p => p.Station)
+            .OrderByDescending(p => p.PlayedAt)
+            .Skip(skip)
+            .Take(pageSize + 1)
+            .ToListAsync();
+
+        var hasMore = plays.Count > pageSize;
+        if (hasMore)
+        {
+            plays.RemoveAt(plays.Count - 1);
+        }
+
+        return new SongPlayHistoryDto
+        {
+            Items = plays.Select(p => ToPlayDto(p, FullDateTimeFormat)).ToList(),
+            Page = page,
+            PageSize = pageSize,
+            HasMore = hasMore,
+            TotalPlays = summary.Total,
+            FirstPlayedAt = summary.First,
+            LastPlayedAt = summary.Last
+        };
+    }
+
     public async Task<List<SongDetailsDto>> SearchAroundAsync(string stationName, DateTime timestamp, int rangeMinutes = 15)
     {
         var startTime = timestamp.AddMinutes(-rangeMinutes);
