@@ -5,7 +5,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 import GlobalSearch from './GlobalSearch';
 
 const NAV_ITEMS = [
-  { to: '/', label: 'לאחרונה' },
+  { to: '/', label: 'כל התחנות' },
   { to: '/top-hits', label: 'להיטים' }
 ];
 

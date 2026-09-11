@@ -7,13 +7,17 @@ import galatzLogo from '../assets/galatz_logo.png';
 
 // Single source of truth for station identity. Includes stations that are no longer
 // polled (103fm) because historical plays still reference them.
+// `inLabel` is the station name with the Hebrew preposition already attached,
+// written out per station rather than derived. Hebrew names take the prefix
+// directly ("בגלגלצ"); Latin and numeric names need a maqaf ("ב-100FM").
+// Guessing that from the string would get it wrong often enough to matter.
 export const STATION_INFO = {
-  galatz: { name: 'galatz', displayName: 'גל"צ', logo: galatzLogo, bgColor: '#dbd944' },
-  kan88: { name: 'kan88', displayName: 'כאן 88', logo: kan88Logo, bgColor: '#b38bae' },
-  '100fm': { name: '100fm', displayName: '100FM', logo: fm100Logo, bgColor: '#cccc31' },
-  eco99: { name: 'eco99', displayName: 'Eco 99FM', logo: eco99Logo, bgColor: '#BBDEFB' },
-  glglz: { name: 'glglz', displayName: 'גלגלצ', logo: glglzLogo, bgColor: '#D1C4E9' },
-  '103fm': { name: '103fm', displayName: '103FM', logo: fm103Logo, bgColor: '#64D1DE' }
+  galatz: { name: 'galatz', displayName: 'גל"צ', inLabel: 'בגל"צ', logo: galatzLogo, bgColor: '#dbd944' },
+  kan88: { name: 'kan88', displayName: 'כאן 88', inLabel: 'בכאן 88', logo: kan88Logo, bgColor: '#b38bae' },
+  '100fm': { name: '100fm', displayName: '100FM', inLabel: 'ב-100FM', logo: fm100Logo, bgColor: '#cccc31' },
+  eco99: { name: 'eco99', displayName: 'Eco 99FM', inLabel: 'ב-Eco 99FM', logo: eco99Logo, bgColor: '#BBDEFB' },
+  glglz: { name: 'glglz', displayName: 'גלגלצ', inLabel: 'בגלגלצ', logo: glglzLogo, bgColor: '#D1C4E9' },
+  '103fm': { name: '103fm', displayName: '103FM', inLabel: 'ב-103FM', logo: fm103Logo, bgColor: '#64D1DE' }
 };
 
 // Stations currently offered in the UI, in RTL reading order: the first entry

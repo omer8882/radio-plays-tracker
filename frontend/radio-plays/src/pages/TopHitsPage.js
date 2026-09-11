@@ -19,8 +19,8 @@ import SegmentedControl from '../components/SegmentedControl';
 import { DAY_OPTIONS } from '../constants/dayRanges';
 import { STATION_FILTER_OPTIONS, STATION_LABEL_LOOKUP } from '../constants/stations';
 
-const SONGS_PAGE_SIZE = 20;
-const ARTISTS_PAGE_SIZE = 20;
+const SONGS_PAGE_SIZE = 10;
+const ARTISTS_PAGE_SIZE = 10;
 
 const TopHitsPage = () => {
   const [days, setDays] = useState('7');

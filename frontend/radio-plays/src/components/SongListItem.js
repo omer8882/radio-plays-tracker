@@ -2,13 +2,16 @@
 import React from 'react';
 import { ListItem, Box, Typography } from '@mui/material';
 import EqualizerIcon from './EqualizerIcon';
+import { dayLabel } from '../utils/dates';
 import { ROW_MIN_HEIGHT } from '../theme';
 
 const SongListItem = ({ song, onClick }) => {
     const coverUrl = song?.imageUrl;
     const coverFallbackLabel = (song?.artist || song?.title || '♫').charAt(0).toUpperCase();
     const timeLabel = song?.time || '';
-    const dateLabel = song?.dateLabel || '';
+    // Falls back to deriving it from the timestamp, so the station feed gets a
+    // day marker without every caller having to compute one.
+    const dateLabel = song?.dateLabel || dayLabel(song?.playedAt ?? song?.PlayedAt);
 
     // Uses the real timestamp when present. The old HH:mm-only comparison assumed
     // "today", so an older play sharing the current minute showed as now-playing.
@@ -42,14 +45,14 @@ const SongListItem = ({ song, onClick }) => {
           }}
         >
             <Box className="song-list-item__time">
+                <Typography variant="subtitle2" className="num">
+                    {timeLabel}
+                </Typography>
                 {dateLabel && (
                     <Typography className="song-list-item__date num" variant="caption">
                         {dateLabel}
                     </Typography>
                 )}
-                <Typography variant="subtitle2" className="num">
-                    {timeLabel}
-                </Typography>
                 {isSongPlaying() && (
                     <EqualizerIcon sx={{ animation: 'equalizer 1s infinite ease-in-out' }} />
                 )}

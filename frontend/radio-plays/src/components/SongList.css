@@ -33,15 +33,21 @@
   align-items: center;
   justify-content: center;
   margin-inline-end: 16px;
-  min-width: 52px;
+  min-width: 56px;
   text-align: center;
-  gap: 2px;
+  gap: 1px;
+  /* Fixed to the content box's height so the day marker underneath the time can
+     never make a row taller than one without it. Rows stay uniform whether or
+     not a date is shown. */
+  height: 52px;
+  overflow: hidden;
 }
 
 .song-list-item__date {
-  font-size: 0.75rem;
-  color: rgba(0, 0, 0, 0.6);
+  font-size: 0.7rem;
+  color: rgba(0, 0, 0, 0.55);
   line-height: 1.1;
+  white-space: nowrap;
 }
 
 .song-list-item__content {
@@ -80,7 +86,9 @@
 
 @media (max-width: 600px) {
   .song-list-item__time {
-    min-width: 44px;
+    /* Wide enough for dd/mm/yy without wrapping, which would break the fixed
+       height and therefore the uniform row height. */
+    min-width: 52px;
     margin-inline-end: 12px;
   }
 

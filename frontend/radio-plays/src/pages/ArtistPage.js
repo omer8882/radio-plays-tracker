@@ -135,7 +135,7 @@ const ArtistPage = () => {
         jsonLd={jsonLd}
       />
 
-      <Box dir="rtl" sx={{ mb: 2 }}>
+      <Box dir="rtl" sx={{ mb: 1 }}>
         <Button
           onClick={() => navigate(-1)}
           startIcon={<ChevronRightIcon />}

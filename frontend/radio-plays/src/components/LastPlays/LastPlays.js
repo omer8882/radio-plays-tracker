@@ -3,6 +3,7 @@ import SongList from '../SongList';
 import { Box, ToggleButton } from '@mui/material';
 import { STATIONS } from '../../constants/stations';
 import SectionColumn from '../SectionColumn';
+import ListLinkRow from '../ListLinkRow';
 
 const LastPlays = () => {
     const [selectedStation, setSelectedStation] = useState(STATIONS[0]);
@@ -66,7 +67,12 @@ const LastPlays = () => {
 
     return (
         <SectionColumn title="השמעות אחרונות" control={tabs}>
-            <SongList station={selectedStation} />
+            <SongList
+                station={selectedStation}
+                // Sits as the final row of the feed rather than floating below the
+                // pagination, where it read as disconnected and left dead space.
+                trailingRow={<ListLinkRow to={`/station/${selectedStation.name}`}>לעמוד התחנה</ListLinkRow>}
+            />
         </SectionColumn>
     );
 };

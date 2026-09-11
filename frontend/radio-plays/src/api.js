@@ -21,7 +21,8 @@ export const queryKeys = {
   songDetails: (songId) => ['songDetails', songId],
   songStations: (songId) => ['songStations', songId],
   songPlays: (songId, page, limit) => ['songPlays', songId, page, limit],
-  search: (query) => ['search', query]
+  search: (query) => ['search', query],
+  stations: () => ['stations']
 };
 
 export const fetchStationPlays = (station, page, limit, signal) =>
@@ -56,6 +57,9 @@ export const fetchSongStations = (songId, signal) =>
 
 export const fetchSongPlays = (songId, page, limit, signal) =>
   get('/api/song_plays', { song_id: songId, page, limit }, signal);
+
+export const fetchStations = (signal) =>
+  get('/api/stations', undefined, signal);
 
 export const searchSongs = (query, signal) =>
   get('/api/search', { query }, signal);

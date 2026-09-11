@@ -390,6 +390,26 @@ public class PlaysController : ControllerBase
     }
 
     /// <summary>
+    /// List the stations with their lifetime play figures
+    /// </summary>
+    [HttpGet("stations")]
+    [OutputCache(PolicyName = "Aggregates")]
+    [ProducesResponseType(typeof(IEnumerable<Core.DTOs.StationSummaryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetStations()
+    {
+        try
+        {
+            var stations = await _playRepository.GetStationSummariesAsync();
+            return Ok(stations);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { detail = $"Server Error: {ex.Message}" });
+        }
+    }
+
+    /// <summary>
     /// Get a page of a song's play history, newest first, with lifetime totals
     /// </summary>
     /// <param name="song_id">The unique identifier of the song</param>

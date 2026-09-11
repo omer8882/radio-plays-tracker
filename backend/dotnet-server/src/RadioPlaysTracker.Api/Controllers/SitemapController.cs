@@ -24,6 +24,7 @@ public class SitemapController : ControllerBase
     private const int MaxSongs = 2000;
     private const int MaxArtists = 500;
     private const int DefaultWindowDays = 365;
+    private const int StationStaleAfterDays = 30;
 
     private static readonly string[] StaticPaths = ["/", "/top-hits"];
 
@@ -61,9 +62,17 @@ public class SitemapController : ControllerBase
                 WriteUrl(writer, $"{baseUrl}{path}", null, path == "/" ? "daily" : "daily", path == "/" ? "1.0" : "0.9");
             }
 
-            foreach (var station in Constants.StationNames)
+            // Stations come from the database. A station whose last play is long
+            // past (103fm) is no longer polled, so its page is a dead archive and
+            // is left out rather than advertised to crawlers.
+            var staleCutoff = DateTime.UtcNow.AddDays(-StationStaleAfterDays);
+            foreach (var station in await _playRepository.GetStationSummariesAsync())
             {
-                WriteUrl(writer, $"{baseUrl}/station/{station}", null, "daily", "0.8");
+                if (station.LastPlayedAt is null || station.LastPlayedAt < staleCutoff)
+                {
+                    continue;
+                }
+                WriteUrl(writer, $"{baseUrl}/station/{station.Name}", station.LastPlayedAt, "daily", "0.8");
             }
 
             foreach (var song in topSongs.Items)
@@ -107,9 +116,3 @@ public class SitemapController : ControllerBase
     }
 }
 
-internal static class Constants
-{
-    // Stations with a public page. 103fm is excluded: it has historical plays
-    // but is no longer polled, so its page would be a dead archive.
-    public static readonly string[] StationNames = ["glglz", "eco99", "100fm", "kan88", "galatz"];
-}

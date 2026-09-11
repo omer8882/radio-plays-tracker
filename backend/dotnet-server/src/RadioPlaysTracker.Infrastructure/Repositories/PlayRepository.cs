@@ -583,6 +583,44 @@ public class PlayRepository : IPlayRepository
         };
     }
 
+    public async Task<List<StationSummaryDto>> GetStationSummariesAsync()
+    {
+        // One grouped pass over plays, joined back to the station rows so a
+        // station with no plays yet still appears.
+        var aggregates = await _context.Plays
+            .AsNoTracking()
+            .GroupBy(p => p.StationId)
+            .Select(g => new
+            {
+                StationId = g.Key,
+                TotalPlays = g.Count(),
+                UniqueSongs = g.Select(p => p.SongId).Distinct().Count(),
+                First = g.Min(p => p.PlayedAt),
+                Last = g.Max(p => p.PlayedAt)
+            })
+            .ToListAsync();
+
+        var stations = await _context.Stations.AsNoTracking().ToListAsync();
+        var lookup = aggregates.ToDictionary(a => a.StationId);
+
+        return stations
+            .Select(station =>
+            {
+                lookup.TryGetValue(station.Id, out var agg);
+                return new StationSummaryDto
+                {
+                    Name = station.Name,
+                    DisplayName = station.DisplayName,
+                    TotalPlays = agg?.TotalPlays ?? 0,
+                    UniqueSongs = agg?.UniqueSongs ?? 0,
+                    FirstPlayedAt = agg?.First,
+                    LastPlayedAt = agg?.Last
+                };
+            })
+            .OrderByDescending(s => s.TotalPlays)
+            .ToList();
+    }
+
     public async Task<List<SongDetailsDto>> SearchAroundAsync(string stationName, DateTime timestamp, int rangeMinutes = 15)
     {
         var startTime = timestamp.AddMinutes(-rangeMinutes);

@@ -16,13 +16,6 @@ import {
 
 const PAGE_SIZE = 20;
 
-const formatDate = (value) => {
-  if (!value) return '—';
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return '—';
-  return parsed.toLocaleDateString('he-IL', { year: 'numeric', month: '2-digit', day: '2-digit' });
-};
-
 const formatPlayedAt = (value) => {
   if (!value) return { dateLabel: '', timeLabel: '' };
   const parsed = new Date(value);
@@ -115,7 +108,7 @@ const SongPage = () => {
         jsonLd={jsonLd}
       />
 
-      <Box dir="rtl" sx={{ mb: 2 }}>
+      <Box dir="rtl" sx={{ mb: 1 }}>
         <Button
           onClick={() => navigate(-1)}
           startIcon={<ChevronRightIcon />}
@@ -142,8 +135,6 @@ const SongPage = () => {
         <Typography variant="h5" component="h2" sx={{ mb: 2 }}>סיכום</Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
           <Stat label="סה״כ השמעות" value={history ? history.totalPlays : '—'} />
-          <Stat label="הושמע לראשונה" value={formatDate(history?.firstPlayedAt)} />
-          <Stat label="הושמע לאחרונה" value={formatDate(history?.lastPlayedAt)} />
         </Box>
 
         <Divider sx={{ my: 3 }} />

@@ -11,7 +11,7 @@ import { useSongModal } from '../hooks/useSongModal';
 
 const PAGE_SIZE = 10;
 
-const SongList = ({ station }) => {
+const SongList = ({ station, trailingRow }) => {
   const [page, setPage] = useState(0);
   const { openSong } = useSongModal();
 
@@ -61,12 +61,21 @@ const SongList = ({ station }) => {
           ) : (
             <TransitionGroup component={null}>
               {songs.map((song, index) => (
-                <CSSTransition key={song.id || index} timeout={400} classNames="fade-slide">
+                <CSSTransition
+                  key={song.id || index}
+                  timeout={400}
+                  classNames="fade-slide"
+                  // Without this the outgoing page stays mounted for the exit
+                  // duration while the new one mounts, so the panel briefly
+                  // renders both pages and jumps in height.
+                  exit={false}
+                >
                   <SongListItem song={song} onClick={() => openSong(song.id)} />
                 </CSSTransition>
               ))}
             </TransitionGroup>
           )}
+          {!isPending && trailingRow}
         </List>
       </Box>
 

@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { Box, Typography, Paper, List, ListItem, Button } from '@mui/material';
+import { Box, Typography, Paper, List, ListItem } from '@mui/material';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { ROW_MIN_HEIGHT } from '../theme';
 import { fetchTopHits, queryKeys } from '../api';
 import { useSongModal } from '../hooks/useSongModal';
 import SectionColumn from './SectionColumn';
 import SegmentedControl from './SegmentedControl';
+import ListLinkRow from './ListLinkRow';
 import { DAY_OPTIONS } from '../constants/dayRanges';
-import { Link as RouterLink } from 'react-router-dom';
 
-// Matches SongList's page size so the two homepage columns end at the same height.
-const HITS_COUNT = 10;
+// The homepage is a taste of each feature, not the feature itself - five is
+// enough to show what is charting before handing off to the full page.
+const HITS_COUNT = 5;
 
 const TopHits = () => {
   const [timeRange, setTimeRange] = useState('7');
@@ -38,13 +39,6 @@ const TopHits = () => {
           attached
           fullWidth
         />
-      }
-      footer={
-        <Box display="flex" justifyContent="center" sx={{ pt: 1 }}>
-          <Button component={RouterLink} to="/top-hits" size="small" variant="text">
-            מעבר לכל הלהיטים
-          </Button>
-        </Box>
       }
     >
     <Paper
@@ -101,6 +95,7 @@ const TopHits = () => {
             </Box>
           </ListItem>
         ))}
+        <ListLinkRow to="/top-hits">מעבר לכל הלהיטים</ListLinkRow>
       </List>
     </Paper>
     </SectionColumn>
