@@ -19,11 +19,22 @@ jobs:
 
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       # There is no test project yet; a clean build is the check.
       - name: Build
         run: dotnet build backend/dotnet-server/RadioPlaysTracker.sln -c Release
+
+      # Program.cs calls Migrate() at startup, and since EF Core 9 that throws
+      # when the model and the migrations snapshot disagree — the API would
+      # crash on boot. This is the same check, without a database.
+      - name: No pending model changes
+        working-directory: backend/dotnet-server
+        run: |
+          dotnet tool install --global dotnet-ef --version 10.0.13
+          dotnet ef migrations has-pending-model-changes \
+            --project src/RadioPlaysTracker.Infrastructure \
+            --startup-project src/RadioPlaysTracker.Api
 
   frontend:
     runs-on: ubuntu-latest
@@ -68,3 +79,39 @@ jobs:
           pip check
           python -m compileall -q .
           python -c "import pydub, shazamio, requests, psycopg2, tqdm, zoneinfo; print('imports ok')"
+
+  # Known-vulnerable dependencies, separate from the builds so a security
+  # finding is distinguishable at a glance from a broken build. The frontend is
+  # not audited here: create-react-app's toolchain carries dozens of build-time
+  # advisories that never reach the browser, and replacing it is its own job.
+  dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      # `dotnet list package --vulnerable` exits 0 even when it finds things,
+      # so the output has to be inspected.
+      - name: NuGet advisories
+        working-directory: backend/dotnet-server
+        run: |
+          dotnet restore RadioPlaysTracker.sln
+          dotnet list RadioPlaysTracker.sln package --vulnerable --include-transitive 2>&1 | tee audit.txt
+          if grep -qiE '^\s*>\s|has the following vulnerable' audit.txt; then
+            echo "::error::vulnerable NuGet packages — see the log"
+            exit 1
+          fi
+          echo "No vulnerable NuGet packages."
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Python advisories
+        run: |
+          pip install --no-cache-dir pip-audit
+          pip-audit --requirement backend/recognize/requirements.txt

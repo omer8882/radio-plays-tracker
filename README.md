@@ -24,7 +24,7 @@ Python service that captures radio streams and identifies songs.
 - **Database**: Writes directly to PostgreSQL
 
 #### **API Server** (`backend/dotnet-server/`)
-RESTful API built with .NET 8+ following Clean Architecture principles.
+RESTful API built with .NET 10 following Clean Architecture principles.
 - **Stack**: ASP.NET Core Web API, Entity Framework Core, PostgreSQL (Npgsql)
 - **Architecture**: Clean Architecture (Api → Core → Infrastructure layers)
 - **Endpoints**: 
@@ -58,7 +58,7 @@ PostgreSQL with normalized schema optimized for time-series queries:
 - Docker Desktop 4.25+ (includes Docker Compose v2)
 - Spotify API credentials ([get them here](https://developer.spotify.com/dashboard))
 
-> **Manual setup?** You can still run each service without Docker, but you'll also need PostgreSQL 14+, .NET 8, Python 3.11, and Node.js 22. Those steps are documented below.
+> **Manual setup?** You can still run each service without Docker, but you'll also need PostgreSQL 14+, .NET 10, Python 3.11, and Node.js 22. Those steps are documented below.
 
 ### Option A: Docker Compose (recommended)
 
@@ -164,7 +164,7 @@ npm start
 ## 🛠️ Tech Stack
 
 **Backend**
-- .NET 8+ (ASP.NET Core, Entity Framework Core)
+- .NET 10 (ASP.NET Core, Entity Framework Core)
 - Python 3.x (ShazamIO, psycopg2, requests)
 - PostgreSQL 14+ (Npgsql, pg_trgm extension)
 
