@@ -32,7 +32,7 @@ backend/
 
 ## Prerequisites
 
-1. **.NET 8 SDK or later**
+1. **.NET 10 SDK**
    - Download: https://dotnet.microsoft.com/download
    - Verify: `dotnet --version`
 
@@ -220,13 +220,13 @@ sudo systemctl start radioplays-api
 #### Using Docker
 Create `Dockerfile` in `backend/dotnet-server/`:
 ```dockerfile
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /source
 COPY . .
 RUN dotnet restore
 RUN dotnet publish -c Release -o /app
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build /app .
 EXPOSE 5000
