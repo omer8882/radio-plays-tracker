@@ -58,7 +58,7 @@ PostgreSQL with normalized schema optimized for time-series queries:
 - Docker Desktop 4.25+ (includes Docker Compose v2)
 - Spotify API credentials ([get them here](https://developer.spotify.com/dashboard))
 
-> **Manual setup?** You can still run each service without Docker, but you'll also need PostgreSQL 14+, .NET 8, Python 3.11, and Node.js 18. Those steps are documented below.
+> **Manual setup?** You can still run each service without Docker, but you'll also need PostgreSQL 14+, .NET 8, Python 3.11, and Node.js 22. Those steps are documented below.
 
 ### Option A: Docker Compose (recommended)
 

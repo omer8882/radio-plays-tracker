@@ -1,0 +1,55 @@
+# Weekly, grouped, and deliberately quiet: one PR per ecosystem, so the bot
+# never piles up a dozen PRs nobody reads. CI (.github/workflows/ci.yml) builds
+# every one of them before it is merged.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/frontend/radio-plays"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      frontend:
+        patterns: ["*"]
+
+  - package-ecosystem: nuget
+    directory: "/backend/dotnet-server"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      dotnet:
+        patterns: ["*"]
+
+  # The recognizer's requirements.txt pins every package, transitive ones too.
+  - package-ecosystem: pip
+    directory: "/backend/recognize"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      recognizer:
+        patterns: ["*"]
+
+  # Base images: node (build), nginx, dotnet sdk/aspnet, python.
+  - package-ecosystem: docker
+    directories:
+      - "/frontend/radio-plays"
+      - "/backend/dotnet-server"
+      - "/backend/recognize"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 2
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 2
+    groups:
+      actions:
+        patterns: ["*"]
