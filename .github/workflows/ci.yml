@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A new push to a PR supersedes its older runs.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+
+      # There is no test project yet; a clean build is the check.
+      - name: Build
+        run: dotnet build backend/dotnet-server/RadioPlaysTracker.sln -c Release
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/radio-plays/package-lock.json
+
+      # CI=true makes react-scripts treat lint warnings as errors.
+      # The only test (src/App.test.js) is the create-react-app placeholder
+      # and has never passed, so tests are not run here yet.
+      - name: Build
+        working-directory: frontend/radio-plays
+        env:
+          CI: "true"
+        run: |
+          npm ci
+          npm run build
+
+  recognizer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      # Same Python as the recognizer's Docker image.
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      # Installs the pinned set, checks it is consistent, then imports what
+      # recognizer.py imports. ffmpeg is a runtime need, not an import one.
+      - name: Install and import
+        working-directory: backend/recognize
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+          pip check
+          python -m compileall -q .
+          python -c "import pydub, shazamio, requests, psycopg2, tqdm, zoneinfo; print('imports ok')"
