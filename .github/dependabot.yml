@@ -1,6 +1,11 @@
 # Weekly, grouped, and deliberately quiet: one PR per ecosystem, so the bot
 # never piles up a dozen PRs nobody reads. CI (.github/workflows/ci.yml) builds
 # every one of them before it is merged.
+#
+# Major versions are ignored for packages and base images. A grouped PR that
+# mixes one breaking major (React 19, MUI 9, shazamio-core 2) with a dozen
+# patches fails CI and blocks the patches with it. Majors are upgraded on
+# purpose, in their own PR, when there is time to migrate.
 version: 2
 updates:
   - package-ecosystem: npm
@@ -9,6 +14,9 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       frontend:
         patterns: ["*"]
@@ -19,6 +27,9 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       dotnet:
         patterns: ["*"]
@@ -30,6 +41,13 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+      # numpy 2.5+ needs Python 3.12; the recognizer image is python:3.11.
+      # Drop this together with the Python upgrade below.
+      - dependency-name: "numpy"
+        versions: [">=2.5"]
     groups:
       recognizer:
         patterns: ["*"]
@@ -44,6 +62,13 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 2
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+      # python:3.11 -> 3.12 counts as a "minor" bump, but every pin in
+      # requirements.txt is resolved for 3.11. Upgrade Python on purpose.
+      - dependency-name: "python"
+        update-types: ["version-update:semver-minor"]
 
   - package-ecosystem: github-actions
     directory: "/"
