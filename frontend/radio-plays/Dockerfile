@@ -13,7 +13,7 @@ ENV REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL}
 RUN npm run build
 
 # Runtime stage
-FROM nginx:1.27-alpine
+FROM nginx:1.31-alpine
 
 COPY --from=build /app/build /usr/share/nginx/html
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
