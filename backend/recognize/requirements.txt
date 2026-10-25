@@ -7,9 +7,9 @@
 # else below is pulled in by those.
 #
 # Resolved for Python 3.11 (the Dockerfile's base image) on amd64 and arm64.
-aiofiles==23.2.1
+aiofiles==25.1.0
 aiohappyeyeballs==2.7.1
-aiohttp==3.14.4
+aiohttp==3.14.5
 aiohttp-retry==2.9.1
 aiosignal==1.4.0
 annotated-types==0.8.0
@@ -18,21 +18,21 @@ attrs==26.1.0
 certifi==2026.10.19
 charset-normalizer==3.5.2
 dataclass-factory==2.16
-elastic-transport==8.19.0
-elasticsearch==8.19.3
+elastic-transport==9.4.2
+elasticsearch==9.5.1
 frozenlist==1.8.0
 idna==3.20
-multidict==6.9.1
-numpy==2.4.6
+multidict==7.1.0
+numpy==2.5.4
 propcache==0.5.4
 psycopg2-binary==2.9.13
-pydantic==2.14.0
-pydantic_core==2.50.0
+pydantic==2.14.1
+pydantic_core==2.50.1
 pydub==0.25.1
-python-dateutil==2.9.0.post0
+python-dateutil==3.0.0
 requests==2.34.2
 shazamio==0.8.1
-shazamio_core==1.1.2
+shazamio_core==2.0.0
 six==1.17.0
 tqdm==4.70.1
 typing-inspection==0.4.4
