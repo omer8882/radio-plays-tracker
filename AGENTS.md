@@ -254,10 +254,11 @@ Leave the services running after handing over. Do not kill them to tidy up.
 
 ## Validation notes
 
-- Frontend production build: `cd frontend/radio-plays && npm run build`.
-- The current legacy CRA/Jest setup fails before running tests because it cannot
-  parse the installed Axios ESM package. Do not claim tests passed; distinguish
-  this existing test-runner problem from application/build failures.
+- Frontend production build: `cd frontend/radio-plays && npm run build` (Vite,
+  output in `build/`).
+- Frontend tests: `cd frontend/radio-plays && npx vitest run`. CI runs both,
+  plus `npm audit --omit=dev --audit-level=high`.
+- Files containing JSX must use `.jsx`; Vite does not compile JSX in `.js`.
 - Validate Compose with `docker compose config --quiet` before recreating any
   service.
 - Preserve all pre-existing dirty work. Stage changes by explicit path or hunk,
