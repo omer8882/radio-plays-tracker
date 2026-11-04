@@ -8,6 +8,7 @@ import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import './SongList.css';
 import { fetchStationPlays, queryKeys } from '../api';
 import { useSongModal } from '../hooks/useSongModal';
+import { nowPlayingIndexes } from '../utils/nowPlaying';
 
 const PAGE_SIZE = 10;
 
@@ -33,6 +34,8 @@ const SongList = ({ station, trailingRow }) => {
 
   const payload = data ?? {};
   const songs = Array.isArray(payload) ? payload : (payload.items ?? []);
+  // Older pages can never hold the current song.
+  const playingIndexes = page === 0 ? nowPlayingIndexes(songs, () => stationName) : new Set();
   const hasMore = Array.isArray(payload) ? payload.length === PAGE_SIZE : Boolean(payload.hasMore);
 
   return (
@@ -70,7 +73,11 @@ const SongList = ({ station, trailingRow }) => {
                   // renders both pages and jumps in height.
                   exit={false}
                 >
-                  <SongListItem song={song} onClick={() => openSong(song.id)} />
+                  <SongListItem
+                    song={song}
+                    isPlaying={playingIndexes.has(index)}
+                    onClick={() => openSong(song.id)}
+                  />
                 </CSSTransition>
               ))}
             </TransitionGroup>

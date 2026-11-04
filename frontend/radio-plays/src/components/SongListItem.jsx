@@ -5,28 +5,14 @@ import EqualizerIcon from './EqualizerIcon';
 import { dayLabel } from '../utils/dates';
 import { ROW_MIN_HEIGHT } from '../theme';
 
-const SongListItem = ({ song, onClick }) => {
+// `isPlaying` is decided by the list, which knows which play is the newest.
+const SongListItem = ({ song, onClick, isPlaying = false }) => {
     const coverUrl = song?.imageUrl;
     const coverFallbackLabel = (song?.artist || song?.title || '♫').charAt(0).toUpperCase();
     const timeLabel = song?.time || '';
     // Falls back to deriving it from the timestamp, so the station feed gets a
     // day marker without every caller having to compute one.
     const dateLabel = song?.dateLabel || dayLabel(song?.playedAt ?? song?.PlayedAt);
-
-    // Uses the real timestamp when present. The old HH:mm-only comparison assumed
-    // "today", so an older play sharing the current minute showed as now-playing.
-    const isSongPlaying = () => {
-        const raw = song?.playedAt ?? song?.PlayedAt;
-        if (!raw) {
-            return false;
-        }
-        const playedTime = new Date(raw);
-        if (Number.isNaN(playedTime.getTime())) {
-            return false;
-        }
-        const differenceInMinutes = (Date.now() - playedTime.getTime()) / (1000 * 60);
-        return differenceInMinutes >= 0 && differenceInMinutes <= 2.75;
-    };
 
     return (
         <ListItem
@@ -53,7 +39,7 @@ const SongListItem = ({ song, onClick }) => {
                         {dateLabel}
                     </Typography>
                 )}
-                {isSongPlaying() && (
+                {isPlaying && (
                     <EqualizerIcon sx={{ animation: 'equalizer 1s infinite ease-in-out' }} />
                 )}
             </Box>

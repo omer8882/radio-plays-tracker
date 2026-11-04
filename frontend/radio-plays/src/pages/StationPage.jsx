@@ -4,6 +4,7 @@ import { Box, Typography, Paper, Alert, IconButton, List } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import SongListItem from '../components/SongListItem';
+import { nowPlayingIndexes } from '../utils/nowPlaying';
 import SongListSkeleton from '../components/SongListSkeleton';
 import Pagination from '../components/Pagination';
 import SegmentedControl from '../components/SegmentedControl';
@@ -102,6 +103,8 @@ const StationPage = () => {
   const displayName = info?.displayName || summary?.displayName || stationName;
   const heading = `מה הושמע ${info?.inLabel || displayName}`;
   const plays = playsQuery.data?.items ?? [];
+  // Older pages can never hold the current song.
+  const playingIndexes = page === 0 ? nowPlayingIndexes(plays, () => stationName) : new Set();
 
   if (!info && stationsQuery.isFetched && !summary) {
     return (
@@ -184,7 +187,12 @@ const StationPage = () => {
             </Typography>
           ) : (
             plays.map((song, index) => (
-              <SongListItem key={song.id || index} song={song} onClick={() => openSong(song.id)} />
+              <SongListItem
+                key={song.id || index}
+                song={song}
+                isPlaying={playingIndexes.has(index)}
+                onClick={() => openSong(song.id)}
+              />
             ))
           )}
         </List>

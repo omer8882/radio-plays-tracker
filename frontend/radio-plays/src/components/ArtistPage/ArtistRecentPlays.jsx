@@ -1,8 +1,10 @@
 import React from 'react';
 import { List, Paper, Typography, Box, Alert } from '@mui/material';
 import SongListItem from '../SongListItem';
+import { nowPlayingIndexes } from '../../utils/nowPlaying';
 
 const ArtistRecentPlays = ({ plays, onSongClick, isLoading, errorMessage }) => {
+  const playingIndexes = nowPlayingIndexes(plays);
   return (
     <Paper elevation={1} sx={{ p: 0, width: '100%', boxSizing: 'border-box' }}>
       <Box>
@@ -25,6 +27,7 @@ const ArtistRecentPlays = ({ plays, onSongClick, isLoading, errorMessage }) => {
             {plays.map((play, index) => (
               <SongListItem
                 key={`${play.id}-${index}`}
+                isPlaying={playingIndexes.has(index)}
                 song={{
                   time: play.time,
                   dateLabel: play.dateLabel,
