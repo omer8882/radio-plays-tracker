@@ -13,6 +13,8 @@ ops/cloudflared/config.yml
 ops/cloudflared/*.json
 ops/cloudflared/*.pem
 station_state.json
+# Encrypted database dumps from deploy/backup.sh (see BACKUP.md)
+backups/
 .personal/
 
 
