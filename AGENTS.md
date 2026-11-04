@@ -121,6 +121,14 @@ docker compose -f compose.pi.yaml config --quiet
 docker compose -f compose.pi.yaml up -d --no-deps mahuraa-api web
 ```
 
+## Backups
+
+The `radio_plays` database is backed up nightly by `deploy/backup.sh` (encrypted, verified,
+copied to Google Drive) and checked or restored with `deploy/restore.sh`. It works exactly
+like the MaHuRaa and MaHushma Friends backups. See [BACKUP.md](BACKUP.md) before touching
+the database, the backup scripts, or the Postgres version in `docker-compose.yml` (the
+backup image `postgres:16-alpine` must match the server's major version).
+
 ## Required verification
 
 After routing or deployment changes, check all layers rather than treating one
