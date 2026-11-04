@@ -6,6 +6,7 @@ import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import SongIdentity from '../components/SongIdentity';
 import StationBreakdown from '../components/StationBreakdown';
 import SongListItem from '../components/SongListItem';
+import { nowPlayingIndexes } from '../utils/nowPlaying';
 import Pagination from '../components/Pagination';
 import SongListSkeleton from '../components/SongListSkeleton';
 import { STATION_LABEL_LOOKUP } from '../constants/stations';
@@ -62,6 +63,7 @@ const SongPage = () => {
   const song = detailsQuery.data;
   const history = historyQuery.data;
   const plays = history?.items ?? [];
+  const playingIndexes = nowPlayingIndexes(plays);
 
   if (detailsQuery.isError) {
     return (
@@ -170,6 +172,7 @@ const SongPage = () => {
               return (
                 <SongListItem
                   key={`${play.playedAt}-${index}`}
+                  isPlaying={playingIndexes.has(index)}
                   song={{
                     // On a song page every row is the same song, so the useful
                     // second line is the station, not the artist again.
