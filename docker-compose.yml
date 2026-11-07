@@ -1,10 +1,21 @@
 version: "3.9"
 
+# Docker keeps container logs forever unless told otherwise (mahushma-api's log was
+# 107 MB and Postgres's 52 MB by Nov 2026), so cap each container at 3 × 20 MB, rotated.
+# A container picks this up only when it is recreated. For postgres and cloudflared that
+# means a short outage of every app on the Pi, so do those at a quiet time.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "3"
+
 services:
   postgres:
     image: postgres:16-bookworm
     container_name: mahushma-postgres
     restart: unless-stopped
+    logging: *logging
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
@@ -29,6 +40,7 @@ services:
       dockerfile: Dockerfile
     container_name: mahushma-api
     restart: unless-stopped
+    logging: *logging
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_URLS: http://0.0.0.0:8080
@@ -51,6 +63,7 @@ services:
       dockerfile: Dockerfile
     container_name: mahushma-worker
     restart: unless-stopped
+    logging: *logging
     environment:
       SPOTIFY_CLIENT_ID: ${SPOTIFY_CLIENT_ID:?SPOTIFY_CLIENT_ID is required}
       SPOTIFY_CLIENT_SECRET: ${SPOTIFY_CLIENT_SECRET:?SPOTIFY_CLIENT_SECRET is required}
@@ -78,6 +91,7 @@ services:
         REACT_APP_API_BASE_URL: ${FRONTEND_API_BASE_URL:-}
     container_name: mahushma-frontend
     restart: unless-stopped
+    logging: *logging
     depends_on:
       api:
         condition: service_started
@@ -93,6 +107,7 @@ services:
     pull_policy: always
     container_name: mahushma-cloudflared
     restart: unless-stopped
+    logging: *logging
     # The Pi's network has shown repeated QUIC/UDP timeouts. HTTP/2 uses the
     # verified TCP path, while explicit resolvers avoid boot-time DNS failures.
     command: tunnel --protocol http2 --config /etc/cloudflared/config.yml run
